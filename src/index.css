@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* App shell sizing */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* Custom utility classes for dashboard background */
+@layer utilities {
+  .bg-dashboard {
+    background-color: #eaeeef;
+  }
+}
