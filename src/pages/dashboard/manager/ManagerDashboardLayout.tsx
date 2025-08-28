@@ -24,6 +24,7 @@ import {
   Settings,
   X,
   Bell,
+  ShoppingCart,
 } from "lucide-react";
 import {
   Menu as MUIMenu,
@@ -57,6 +58,11 @@ function Layout() {
       to: "/dashboard/manager/customers",
       label: "Customer Management",
       icon: User,
+    },
+    {
+      to: "/dashboard/manager/orders",
+      label: "Order Management",
+      icon: ShoppingCart,
     },
     { to: "/dashboard/manager/settings", label: "Settings", icon: Settings },
   ];

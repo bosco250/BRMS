@@ -1,5 +1,6 @@
 import { Award } from "lucide-react";
 import { useCustomerDashboard } from "./context";
+import { toast } from "react-toastify";
 
 export default function LoyaltyProgram() {
   const { customer, rewards } = useCustomerDashboard();
@@ -88,6 +89,12 @@ export default function LoyaltyProgram() {
               </div>
               <button
                 disabled={!reward.available}
+                onClick={() => {
+                  if (reward.available) {
+                    // Add redemption logic here
+                    toast.success(`${reward.name} redeemed successfully!`);
+                  }
+                }}
                 className={`w-full py-2 text-sm font-medium rounded-lg ${
                   reward.available
                     ? "bg-accent text-white hover:bg-accent/90"

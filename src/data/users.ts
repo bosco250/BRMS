@@ -13,6 +13,14 @@ export type FakeUser = {
   phone: string;
   role: Role;
   password: string; // plain for demo only
+  // Customer-specific fields
+  loyaltyPoints?: number;
+  totalVisits?: number;
+  totalSpent?: number;
+  tier?: string;
+  joinDate?: string;
+  preferences?: string[];
+  avatar?: string | null;
 };
 
 export const fakeUsers: FakeUser[] = [
@@ -63,6 +71,13 @@ export const fakeUsers: FakeUser[] = [
     phone: "+250700000006",
     role: "Customer",
     password: "123",
+    loyaltyPoints: 750,
+    totalVisits: 12,
+    totalSpent: 456500, // 456,500 RWF
+    tier: "Silver",
+    joinDate: "2024-01-15",
+    preferences: ["Vegetarian", "No Nuts", "Spicy Food"],
+    avatar: null,
   },
 ];
 

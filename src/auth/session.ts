@@ -11,6 +11,15 @@ export function setSessionUser(user: FakeUser) {
         role: user.role,
         name: user.name,
         email: user.email,
+        phone: user.phone,
+        // Customer-specific fields
+        loyaltyPoints: user.loyaltyPoints,
+        totalVisits: user.totalVisits,
+        totalSpent: user.totalSpent,
+        tier: user.tier,
+        joinDate: user.joinDate,
+        preferences: user.preferences,
+        avatar: user.avatar,
       })
     );
   } catch {}
@@ -21,6 +30,15 @@ export function getSessionUser(): {
   role: string;
   name: string;
   email: string;
+  phone: string;
+  // Customer-specific fields
+  loyaltyPoints?: number;
+  totalVisits?: number;
+  totalSpent?: number;
+  tier?: string;
+  joinDate?: string;
+  preferences?: string[];
+  avatar?: string | null;
 } | null {
   try {
     const raw = localStorage.getItem(KEY);

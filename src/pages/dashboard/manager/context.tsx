@@ -129,7 +129,8 @@ const mockStaff: StaffMember[] = [
     email: "alex.chen@brms.com",
     phone: "+250 788 123 456",
     status: "active",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+    avatar:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
     joinDate: "2024-01-10",
     performance: {
       rating: 4.7,
@@ -144,7 +145,8 @@ const mockStaff: StaffMember[] = [
     email: "maria.garcia@brms.com",
     phone: "+250 788 234 567",
     status: "active",
-    avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+    avatar:
+      "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
     joinDate: "2023-11-20",
     performance: {
       rating: 4.9,
@@ -212,7 +214,7 @@ const mockMenu: MenuItem[] = [
     id: 1,
     name: "Grilled Chicken",
     category: "food",
-    price: 18.99,
+    price: 18990, // 18,990 RWF
     cost: 8.5,
     description: "Tender grilled chicken breast with herbs",
     image: null,
@@ -290,7 +292,9 @@ interface ManagerDashboardContextType {
   menu: MenuItem[];
   notifications: Notification[];
   updateTableStatus: (tableId: number, status: Table["status"]) => void;
-  addNotification: (notification: Omit<Notification, "id" | "createdAt" | "read">) => void;
+  addNotification: (
+    notification: Omit<Notification, "id" | "createdAt" | "read">
+  ) => void;
   markNotificationAsRead: (notificationId: string) => void;
 }
 

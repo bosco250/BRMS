@@ -1,6 +1,18 @@
 import { useState } from "react";
 import { useAdminDashboard } from "./context";
-import { Building2, MapPin, Users, DollarSign, Calendar, Search, Filter, MoreHorizontal, Edit, Eye, Trash2 } from "lucide-react";
+import {
+  Building2,
+  MapPin,
+  Users,
+  DollarSign,
+  Calendar,
+  Search,
+  Filter,
+  MoreHorizontal,
+  Edit,
+  Eye,
+  Trash2,
+} from "lucide-react";
 
 export default function Businesses() {
   const { businesses, updateBusinessStatus } = useAdminDashboard();
@@ -10,48 +22,59 @@ export default function Businesses() {
 
   // Filter businesses based on search and filters
   const filteredBusinesses = businesses.filter((business) => {
-    const matchesSearch = business.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         business.owner.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         business.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "all" || business.status === statusFilter;
+    const matchesSearch =
+      business.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      business.owner.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      business.location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" || business.status === statusFilter;
     const matchesType = typeFilter === "all" || business.type === typeFilter;
-    
+
     return matchesSearch && matchesStatus && matchesType;
   });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "active": return "bg-green-100 text-green-800";
-      case "inactive": return "bg-gray-100 text-gray-800";
-      case "suspended": return "bg-red-100 text-red-800";
-      case "pending": return "bg-yellow-100 text-yellow-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "active":
+        return "bg-green-100 text-green-800";
+      case "inactive":
+        return "bg-gray-100 text-gray-800";
+      case "suspended":
+        return "bg-red-100 text-red-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getSubscriptionColor = (plan: string) => {
     switch (plan) {
-      case "basic": return "bg-blue-100 text-blue-800";
-      case "premium": return "bg-purple-100 text-purple-800";
-      case "enterprise": return "bg-orange-100 text-orange-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "basic":
+        return "bg-blue-100 text-blue-800";
+      case "premium":
+        return "bg-purple-100 text-purple-800";
+      case "enterprise":
+        return "bg-orange-100 text-orange-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "RWF",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -59,7 +82,9 @@ export default function Businesses() {
     <div className="space-y-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-text-primary">Business Management</h1>
+        <h1 className="text-2xl font-bold text-text-primary">
+          Business Management
+        </h1>
         <p className="text-text-secondary">
           Manage all business accounts and their subscriptions
         </p>
@@ -74,7 +99,9 @@ export default function Businesses() {
             </div>
             <div>
               <p className="text-sm text-text-secondary">Total Businesses</p>
-              <p className="text-2xl font-bold text-text-primary">{businesses.length}</p>
+              <p className="text-2xl font-bold text-text-primary">
+                {businesses.length}
+              </p>
             </div>
           </div>
         </div>
@@ -87,7 +114,7 @@ export default function Businesses() {
             <div>
               <p className="text-sm text-text-secondary">Active</p>
               <p className="text-2xl font-bold text-text-primary">
-                {businesses.filter(b => b.status === "active").length}
+                {businesses.filter((b) => b.status === "active").length}
               </p>
             </div>
           </div>
@@ -115,7 +142,9 @@ export default function Businesses() {
             <div>
               <p className="text-sm text-text-secondary">Total Revenue</p>
               <p className="text-2xl font-bold text-text-primary">
-                {formatCurrency(businesses.reduce((sum, b) => sum + b.revenue, 0))}
+                {formatCurrency(
+                  businesses.reduce((sum, b) => sum + b.revenue, 0)
+                )}
               </p>
             </div>
           </div>
@@ -137,7 +166,7 @@ export default function Businesses() {
               />
             </div>
           </div>
-          
+
           <div className="flex gap-4">
             <select
               value={statusFilter}
@@ -150,7 +179,7 @@ export default function Businesses() {
               <option value="suspended">Suspended</option>
               <option value="pending">Pending</option>
             </select>
-            
+
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
@@ -204,8 +233,12 @@ export default function Businesses() {
                         <Building2 className="w-5 h-5 text-brand" />
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-text-primary">{business.name}</div>
-                        <div className="text-sm text-text-secondary">{business.type}</div>
+                        <div className="text-sm font-medium text-text-primary">
+                          {business.name}
+                        </div>
+                        <div className="text-sm text-text-secondary">
+                          {business.type}
+                        </div>
                         <div className="flex items-center text-xs text-text-secondary">
                           <MapPin className="w-3 h-3 mr-1" />
                           {business.location}
@@ -214,13 +247,23 @@ export default function Businesses() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(business.status)}`}>
-                      {business.status.charAt(0).toUpperCase() + business.status.slice(1)}
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                        business.status
+                      )}`}
+                    >
+                      {business.status.charAt(0).toUpperCase() +
+                        business.status.slice(1)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSubscriptionColor(business.subscription)}`}>
-                      {business.subscription.charAt(0).toUpperCase() + business.subscription.slice(1)}
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getSubscriptionColor(
+                        business.subscription
+                      )}`}
+                    >
+                      {business.subscription.charAt(0).toUpperCase() +
+                        business.subscription.slice(1)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-text-primary">

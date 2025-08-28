@@ -23,6 +23,7 @@ import {
   AlertTriangle,
   LogOut,
   MoreVertical,
+  ShoppingCart,
 } from "lucide-react";
 import {
   Menu as MUIMenu,
@@ -67,6 +68,11 @@ function Layout() {
       to: "/dashboard/admin/logs",
       label: "Audit Logs",
       icon: FileText,
+    },
+    {
+      to: "/dashboard/admin/orders",
+      label: "Order Management",
+      icon: ShoppingCart,
     },
     {
       to: "/dashboard/admin/settings",

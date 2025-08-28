@@ -1,4 +1,5 @@
 import { Link, NavLink } from "react-router-dom";
+import CartIcon from "./CartIcon";
 
 export default function Navbar() {
   return (
@@ -68,6 +69,7 @@ export default function Navbar() {
           </a>
         </nav>
         <div className="flex items-center gap-3 text-base font-semibold">
+          <CartIcon />
           <Link
             to="/login"
             className="text-text-secondary hover:text-text-primary"

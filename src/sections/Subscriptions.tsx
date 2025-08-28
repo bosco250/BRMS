@@ -12,7 +12,7 @@ type Plan = {
 const plans: Plan[] = [
   {
     name: "Basic",
-    price: "$29/mo",
+    price: "29,000 RWF/mo",
     cta: "Start Basic",
     allowances: [
       { label: "Locations", value: "1" },
@@ -27,7 +27,7 @@ const plans: Plan[] = [
   },
   {
     name: "Premium",
-    price: "$79/mo",
+    price: "79,000 RWF/mo",
     cta: "Start Premium",
     highlight: true,
     allowances: [

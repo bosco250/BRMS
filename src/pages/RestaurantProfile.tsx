@@ -21,6 +21,8 @@ import {
 } from "react-icons/fa";
 import { getRestaurantById } from "../data/restaurants";
 import InfoCard from "../components/InfoCard";
+import { useCart } from "../contexts/CartContext";
+import type { CartItem } from "../data/checkoutData";
 
 function Rating({ value }: { value: number }) {
   const fullStars = Math.floor(value);
@@ -62,6 +64,7 @@ export default function RestaurantProfile() {
   const { id } = useParams<{ id: string }>();
   const restaurant = id ? getRestaurantById(id) : undefined;
   const [showExplore, setShowExplore] = useState(true);
+  const { addItem } = useCart();
 
   // Redirect to restaurants page if restaurant not found
   if (!restaurant) {
@@ -455,6 +458,30 @@ export default function RestaurantProfile() {
                             )}
                           </div>
                         </div>
+                        {item.available && (
+                          <div className="mt-4">
+                            <button
+                              onClick={() => {
+                                const cartItem: CartItem = {
+                                  id: `item_${Date.now()}`,
+                                  productId: item.id,
+                                  name: item.name,
+                                  description: item.description,
+                                  price: item.price,
+                                  quantity: 1,
+                                  totalPrice: item.price,
+                                  image: item.image,
+                                  category: item.category,
+                                  modifiers: [],
+                                };
+                                addItem(cartItem);
+                              }}
+                              className="w-full bg-brand text-white py-2 px-4 rounded-lg font-medium hover:bg-brand-dark transition-colors duration-200"
+                            >
+                              Add to Cart
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   ))}

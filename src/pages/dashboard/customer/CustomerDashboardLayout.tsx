@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   Outlet,
   Link,
@@ -19,9 +19,10 @@ import {
   X,
   Utensils,
   Bell,
+  MoreVertical,
+  ShoppingCart,
   Settings,
   LogOut,
-  MoreVertical,
 } from "lucide-react";
 import {
   Menu as MUIMenu,
@@ -30,6 +31,7 @@ import {
   ListItemText,
   Divider,
 } from "@mui/material";
+import NotificationMenu from "../../../components/NotificationMenu";
 
 function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -42,9 +44,11 @@ function Layout() {
       icon: Utensils,
       end: true,
     },
-    { to: "/dashboard/customer/menu", label: "Browse Menu", icon: Menu },
-    { to: "/dashboard/customer/profile", label: "Account Profile", icon: User },
-    { to: "/dashboard/customer/loyalty", label: "Loyalty Program", icon: Gift },
+    {
+      to: "/dashboard/customer/orders",
+      label: "Order History",
+      icon: ShoppingCart,
+    },
     {
       to: "/dashboard/customer/reservations",
       label: "Reservations",
@@ -55,11 +59,15 @@ function Layout() {
       label: "Communication",
       icon: MessageSquare,
     },
+    { to: "/dashboard/customer/menu", label: "Browse Menu", icon: Menu },
+    { to: "/dashboard/customer/profile", label: "Account Profile", icon: User },
+    { to: "/dashboard/customer/loyalty", label: "Loyalty Program", icon: Gift },
     {
       to: "/dashboard/customer/help",
       label: "Help & Support",
       icon: HelpCircle,
     },
+    { to: "/dashboard/customer/settings", label: "Settings", icon: Settings },
   ];
 
   const current = nav.find((n) =>
@@ -164,6 +172,7 @@ function SidebarNav({
   );
 }
 
+// Separate component that uses the context
 function SidebarFooter() {
   const { customer } = useCustomerDashboard();
   const navigate = useNavigate();
@@ -230,7 +239,10 @@ function SidebarFooter() {
           }}
         >
           <MenuItem
-            onClick={handleClose}
+            onClick={() => {
+              handleClose();
+              navigate("/dashboard/customer/profile");
+            }}
             className="text-text-primary hover:bg-surface-secondary"
           >
             <ListItemIcon>
@@ -239,7 +251,10 @@ function SidebarFooter() {
             <ListItemText>Profile</ListItemText>
           </MenuItem>
           <MenuItem
-            onClick={handleClose}
+            onClick={() => {
+              handleClose();
+              navigate("/dashboard/customer/settings");
+            }}
             className="text-text-primary hover:bg-surface-secondary"
           >
             <ListItemIcon>
@@ -264,19 +279,14 @@ function SidebarFooter() {
 }
 
 function HeaderActions() {
+  const navigate = useNavigate();
+  
   return (
     <div className="flex items-center gap-4">
+      <NotificationMenu />
       <button
-        className="relative text-text-secondary hover:text-text-primary"
-        aria-label="Notifications"
-      >
-        <Bell className="w-6 h-6" />
-        <span className="absolute -top-1 -right-1 bg-error text-text-inverted text-xs rounded-full w-4 h-4 flex items-center justify-center">
-          2
-        </span>
-      </button>
-      <button
-        className="text-text-secondary hover:text-text-primary"
+        onClick={() => navigate("/dashboard/customer/settings")}
+        className="text-text-secondary hover:text-text-primary transition-colors"
         aria-label="Settings"
       >
         <Settings className="w-6 h-6" />

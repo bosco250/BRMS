@@ -10,6 +10,8 @@ import RestaurantProfile from "./pages/RestaurantProfile.tsx";
 import Login from "./pages/auth/Login.tsx";
 import Register from "./pages/auth/Register.tsx";
 import ForgotPassword from "./pages/auth/ForgotPassword.tsx";
+import Checkout from "./pages/Checkout.tsx";
+import OrderSuccess from "./pages/OrderSuccess.tsx";
 // Admin Dashboard Components
 import AdminDashboardLayout from "./pages/dashboard/admin/AdminDashboardLayout.tsx";
 import AdminDashboardMain from "./pages/dashboard/admin/Dashboard.tsx";
@@ -18,6 +20,7 @@ import AdminSubscriptions from "./pages/dashboard/admin/Subscriptions.tsx";
 import AdminUserManagement from "./pages/dashboard/admin/UserManagement.tsx";
 import AdminSystemAnalytics from "./pages/dashboard/admin/SystemAnalytics.tsx";
 import AdminAuditLogs from "./pages/dashboard/admin/AuditLogs.tsx";
+import AdminOrders from "./pages/dashboard/admin/Orders.tsx";
 import AdminSettings from "./pages/dashboard/admin/Settings.tsx";
 // Manager Dashboard Components
 import ManagerDashboardLayout from "./pages/dashboard/manager/ManagerDashboardLayout.tsx";
@@ -28,6 +31,7 @@ import InventoryManagement from "./pages/dashboard/manager/InventoryManagement.t
 import MenuManagement from "./pages/dashboard/manager/MenuManagement.tsx";
 import ReportsAnalytics from "./pages/dashboard/manager/ReportsAnalytics.tsx";
 import CustomerManagement from "./pages/dashboard/manager/CustomerManagement.tsx";
+import ManagerOrders from "./pages/dashboard/manager/Orders.tsx";
 import Settings from "./pages/dashboard/manager/Settings.tsx";
 
 // Owner Dashboard Components
@@ -63,7 +67,9 @@ import AccountProfile from "./pages/dashboard/customer/AccountProfile.tsx";
 import LoyaltyProgram from "./pages/dashboard/customer/LoyaltyProgram.tsx";
 import Reservations from "./pages/dashboard/customer/Reservations.tsx";
 import Communication from "./pages/dashboard/customer/Communication.tsx";
+import CustomerOrders from "./pages/dashboard/customer/Orders.tsx";
 import HelpSupport from "./pages/dashboard/customer/HelpSupport.tsx";
+import CustomerSettings from "./pages/dashboard/customer/Settings.tsx";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -81,6 +87,8 @@ const router = createBrowserRouter([
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
       { path: "forgot", element: <ForgotPassword /> },
+      { path: "checkout", element: <Checkout /> },
+      { path: "order-success", element: <OrderSuccess /> },
     ],
   },
   // Admin Dashboard with nested routes
@@ -94,6 +102,7 @@ const router = createBrowserRouter([
       { path: "users", element: <AdminUserManagement /> },
       { path: "analytics", element: <AdminSystemAnalytics /> },
       { path: "logs", element: <AdminAuditLogs /> },
+      { path: "orders", element: <AdminOrders /> },
       { path: "settings", element: <AdminSettings /> },
     ],
   },
@@ -128,6 +137,7 @@ const router = createBrowserRouter([
         path: "customers",
         element: <CustomerManagement />,
       },
+      { path: "orders", element: <ManagerOrders /> },
       { path: "settings", element: <Settings /> },
     ],
   },
@@ -171,7 +181,9 @@ const router = createBrowserRouter([
       { path: "loyalty", element: <LoyaltyProgram /> },
       { path: "reservations", element: <Reservations /> },
       { path: "communication", element: <Communication /> },
+      { path: "orders", element: <CustomerOrders /> },
       { path: "help", element: <HelpSupport /> },
+      { path: "settings", element: <CustomerSettings /> },
     ],
   },
 ]);

@@ -1,6 +1,19 @@
 import { useState } from "react";
 import { useAdminDashboard } from "./context";
-import { CreditCard, Building2, Calendar, DollarSign, CheckCircle, AlertTriangle, Clock, Search, Filter, Eye, Edit, MoreHorizontal } from "lucide-react";
+import {
+  CreditCard,
+  Building2,
+  Calendar,
+  DollarSign,
+  CheckCircle,
+  AlertTriangle,
+  Clock,
+  Search,
+  Filter,
+  Eye,
+  Edit,
+  MoreHorizontal,
+} from "lucide-react";
 
 export default function Subscriptions() {
   const { subscriptions, updateSubscriptionStatus } = useAdminDashboard();
@@ -10,45 +23,57 @@ export default function Subscriptions() {
 
   // Filter subscriptions based on search and filters
   const filteredSubscriptions = subscriptions.filter((subscription) => {
-    const matchesSearch = subscription.businessName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "all" || subscription.status === statusFilter;
-    const matchesPlan = planFilter === "all" || subscription.plan === planFilter;
-    
+    const matchesSearch = subscription.businessName
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" || subscription.status === statusFilter;
+    const matchesPlan =
+      planFilter === "all" || subscription.plan === planFilter;
+
     return matchesSearch && matchesStatus && matchesPlan;
   });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "active": return "bg-green-100 text-green-800";
-      case "expired": return "bg-red-100 text-red-800";
-      case "cancelled": return "bg-gray-100 text-gray-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "active":
+        return "bg-green-100 text-green-800";
+      case "expired":
+        return "bg-red-100 text-red-800";
+      case "cancelled":
+        return "bg-gray-100 text-gray-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getPlanColor = (plan: string) => {
     switch (plan) {
-      case "basic": return "bg-blue-100 text-blue-800";
-      case "premium": return "bg-purple-100 text-purple-800";
-      case "enterprise": return "bg-orange-100 text-orange-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "basic":
+        return "bg-blue-100 text-blue-800";
+      case "premium":
+        return "bg-purple-100 text-purple-800";
+      case "enterprise":
+        return "bg-orange-100 text-orange-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "RWF",
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(amount);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -71,7 +96,9 @@ export default function Subscriptions() {
     <div className="space-y-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-text-primary">Subscription Management</h1>
+        <h1 className="text-2xl font-bold text-text-primary">
+          Subscription Management
+        </h1>
         <p className="text-text-secondary">
           Monitor and manage all business subscriptions
         </p>
@@ -86,7 +113,9 @@ export default function Subscriptions() {
             </div>
             <div>
               <p className="text-sm text-text-secondary">Total Subscriptions</p>
-              <p className="text-2xl font-bold text-text-primary">{subscriptions.length}</p>
+              <p className="text-2xl font-bold text-text-primary">
+                {subscriptions.length}
+              </p>
             </div>
           </div>
         </div>
@@ -99,7 +128,7 @@ export default function Subscriptions() {
             <div>
               <p className="text-sm text-text-secondary">Active</p>
               <p className="text-2xl font-bold text-text-primary">
-                {subscriptions.filter(s => s.status === "active").length}
+                {subscriptions.filter((s) => s.status === "active").length}
               </p>
             </div>
           </div>
@@ -113,7 +142,11 @@ export default function Subscriptions() {
             <div>
               <p className="text-sm text-text-secondary">Expiring Soon</p>
               <p className="text-2xl font-bold text-text-primary">
-                {subscriptions.filter(s => getExpiryStatus(s.endDate) === "expiring-soon").length}
+                {
+                  subscriptions.filter(
+                    (s) => getExpiryStatus(s.endDate) === "expiring-soon"
+                  ).length
+                }
               </p>
             </div>
           </div>
@@ -127,7 +160,11 @@ export default function Subscriptions() {
             <div>
               <p className="text-sm text-text-secondary">Monthly Revenue</p>
               <p className="text-2xl font-bold text-text-primary">
-                {formatCurrency(subscriptions.filter(s => s.status === "active").reduce((sum, s) => sum + s.amount, 0))}
+                {formatCurrency(
+                  subscriptions
+                    .filter((s) => s.status === "active")
+                    .reduce((sum, s) => sum + s.amount, 0)
+                )}
               </p>
             </div>
           </div>
@@ -149,7 +186,7 @@ export default function Subscriptions() {
               />
             </div>
           </div>
-          
+
           <div className="flex gap-4">
             <select
               value={statusFilter}
@@ -161,7 +198,7 @@ export default function Subscriptions() {
               <option value="expired">Expired</option>
               <option value="cancelled">Cancelled</option>
             </select>
-            
+
             <select
               value={planFilter}
               onChange={(e) => setPlanFilter(e.target.value)}
@@ -208,30 +245,49 @@ export default function Subscriptions() {
             <tbody className="bg-white divide-y divide-border-secondary">
               {filteredSubscriptions.map((subscription) => {
                 const expiryStatus = getExpiryStatus(subscription.endDate);
-                const daysUntilExpiry = getDaysUntilExpiry(subscription.endDate);
-                
+                const daysUntilExpiry = getDaysUntilExpiry(
+                  subscription.endDate
+                );
+
                 return (
-                  <tr key={subscription.id} className="hover:bg-surface-secondary/50">
+                  <tr
+                    key={subscription.id}
+                    className="hover:bg-surface-secondary/50"
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="w-10 h-10 bg-brand/10 rounded-lg flex items-center justify-center">
                           <Building2 className="w-5 h-5 text-brand" />
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-text-primary">{subscription.businessName}</div>
-                          <div className="text-xs text-text-secondary">ID: {subscription.businessId}</div>
+                          <div className="text-sm font-medium text-text-primary">
+                            {subscription.businessName}
+                          </div>
+                          <div className="text-xs text-text-secondary">
+                            ID: {subscription.businessId}
+                          </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPlanColor(subscription.plan)}`}>
-                        {subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)}
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getPlanColor(
+                          subscription.plan
+                        )}`}
+                      >
+                        {subscription.plan.charAt(0).toUpperCase() +
+                          subscription.plan.slice(1)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(subscription.status)}`}>
-                          {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                            subscription.status
+                          )}`}
+                        >
+                          {subscription.status.charAt(0).toUpperCase() +
+                            subscription.status.slice(1)}
                         </span>
                         {expiryStatus === "expiring-soon" && (
                           <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">

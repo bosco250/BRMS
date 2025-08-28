@@ -1,8 +1,35 @@
 import { User } from "lucide-react";
 import { useCustomerDashboard } from "./context";
+import { getSessionUser } from "../../../auth/session";
 
 export default function AccountProfile() {
   const { customer, setCustomer } = useCustomerDashboard();
+  const sessionUser = getSessionUser();
+
+  // If no user is logged in, show a message
+  if (!sessionUser) {
+    return (
+      <div className="space-y-6">
+        <div className="p-6 rounded-lg border border-border-primary bg-dashboard">
+          <div className="text-center py-12">
+            <User className="w-16 h-16 text-text-secondary mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-text-primary mb-2">
+              Not Logged In
+            </h3>
+            <p className="text-text-secondary mb-4">
+              Please log in to view and edit your profile.
+            </p>
+            <button 
+              onClick={() => window.location.href = "/login"}
+              className="bg-brand text-white px-6 py-2 rounded-lg hover:bg-brand/90 transition-colors"
+            >
+              Go to Login
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -21,7 +48,7 @@ export default function AccountProfile() {
           </div>
           <div>
             <h3 className="text-xl font-semibold text-text-primary">
-              {customer.name}
+              {customer.name || "Loading..."}
             </h3>
             <p className="text-text-secondary">{customer.tier} Member</p>
             <button className="text-brand hover:text-brand/80 text-sm mt-1">
@@ -37,11 +64,12 @@ export default function AccountProfile() {
             </label>
             <input
               type="text"
-              value={customer.name}
+              value={customer.name || ""}
               onChange={(e) =>
                 setCustomer((c) => ({ ...c, name: e.target.value }))
               }
               className="w-full px-3 py-2 border border-border-primary rounded-lg bg-surface-primary text-text-primary"
+              placeholder="Enter your full name"
             />
           </div>
           <div>
@@ -50,11 +78,12 @@ export default function AccountProfile() {
             </label>
             <input
               type="email"
-              value={customer.email}
+              value={customer.email || ""}
               onChange={(e) =>
                 setCustomer((c) => ({ ...c, email: e.target.value }))
               }
               className="w-full px-3 py-2 border border-border-primary rounded-lg bg-surface-primary text-text-primary"
+              placeholder="Enter your email"
             />
           </div>
           <div>
@@ -63,11 +92,12 @@ export default function AccountProfile() {
             </label>
             <input
               type="tel"
-              value={customer.phone}
+              value={customer.phone || ""}
               onChange={(e) =>
                 setCustomer((c) => ({ ...c, phone: e.target.value }))
               }
               className="w-full px-3 py-2 border border-border-primary rounded-lg bg-surface-primary text-text-primary"
+              placeholder="Enter your phone number"
             />
           </div>
           <div>
@@ -76,7 +106,7 @@ export default function AccountProfile() {
             </label>
             <input
               type="text"
-              value={new Date(customer.joinDate).toLocaleDateString()}
+              value={customer.joinDate ? new Date(customer.joinDate).toLocaleDateString() : "Loading..."}
               disabled
               className="w-full px-3 py-2 border border-border-primary rounded-lg bg-surface-secondary text-text-muted"
             />
@@ -88,14 +118,18 @@ export default function AccountProfile() {
             Dietary Preferences
           </label>
           <div className="flex flex-wrap gap-2">
-            {customer.preferences.map((pref, index) => (
-              <span
-                key={index}
-                className="px-3 py-1 bg-accent/10 text-accent rounded-full text-sm"
-              >
-                {pref}
-              </span>
-            ))}
+            {customer.preferences && customer.preferences.length > 0 ? (
+              customer.preferences.map((pref, index) => (
+                <span
+                  key={index}
+                  className="px-3 py-1 bg-accent/10 text-accent rounded-full text-sm"
+                >
+                  {pref}
+                </span>
+              ))
+            ) : (
+              <span className="text-text-secondary text-sm">No preferences set</span>
+            )}
             <button className="px-3 py-1 border border-border-primary rounded-full text-sm text-brand hover:bg-brand/10">
               + Add Preference
             </button>

@@ -189,7 +189,7 @@ export const mockMenuItems: MenuItemSchema[] = [
     description: "Classic pizza with tomato sauce, mozzarella, and basil",
     category: "food",
     subcategory: "Pizza",
-    price: 16.99,
+    price: 16990, // 16,990 RWF
     cost: 7.2,
     image: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=400",
     available: true,
