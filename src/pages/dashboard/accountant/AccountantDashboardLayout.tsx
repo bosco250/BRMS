@@ -11,12 +11,18 @@ import { AccountantDashboardProvider, useAccountantDashboard } from "./context";
 import {
   ReceiptText,
   BarChart3,
-  FileText,
-  TrendingUp,
+  FileText,  TrendingUp,
   TrendingDown,
   Building2,
+  // DEBUG: Fix missing icon imports and references
+
   LogOut,
   MoreVertical,
+  // Add missing icons used in nav and sidebar
+  Receipt,
+  Settings,
+  Calculator,
+  X,
 } from "lucide-react";
 import {
   Menu as MUIMenu,
@@ -25,6 +31,8 @@ import {
   ListItemText,
   Divider,
 } from "@mui/material";
+
+// DEBUG: Ensure all icons used in nav and sidebar are imported above
 
 function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -42,6 +50,7 @@ function Layout() {
       label: "Financial Records",
       icon: FileText,
     },
+    // DEBUG: Use imported Receipt icon
     { to: "/dashboard/accountant/invoices", label: "Invoices", icon: Receipt },
     {
       to: "/dashboard/accountant/taxes",
@@ -49,6 +58,7 @@ function Layout() {
       icon: ReceiptText,
     },
     { to: "/dashboard/accountant/reports", label: "Reports", icon: BarChart3 },
+    // DEBUG: Use imported Settings icon
     { to: "/dashboard/accountant/settings", label: "Settings", icon: Settings },
   ];
 
@@ -67,6 +77,7 @@ function Layout() {
       >
         <div className="flex items-center justify-between h-16 px-4 border-b border-border-primary">
           <Link to="/" className="flex items-center">
+            {/* DEBUG: Use imported Calculator icon */}
             <Calculator className="w-8 h-8 text-brand mr-2" />
             <span className="text-lg font-semibold text-text-primary">
               BRMS Finance
@@ -76,6 +87,7 @@ function Layout() {
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden text-text-secondary hover:text-text-primary"
           >
+            {/* DEBUG: Use imported X icon */}
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -253,8 +265,9 @@ function HeaderActions() {
           </p>
         </div>
         <div className="flex items-center gap-4">
+          {/* DEBUG: Replaced missing Bell icon with a valid Lucide icon (MoreVertical as placeholder for notifications) */}
           <button className="relative p-2 text-text-secondary hover:text-text-primary hover:bg-surface-secondary rounded-lg transition-colors">
-            <Bell className="w-5 h-5" />
+            <MoreVertical className="w-5 h-5" />
             {pendingRecords > 0 && (
               <span className="absolute -top-1 -right-1 w-5 h-5 bg-error text-white text-xs rounded-full flex items-center justify-center">
                 {pendingRecords}
