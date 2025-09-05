@@ -16,6 +16,8 @@ import {
   Settings,
   X,
   ShoppingCart,
+  Activity,
+  DollarSign,
 } from "lucide-react";
 import ManagerNotificationMenu from "../../../components/ManagerNotificationMenu";
 import {
@@ -35,6 +37,26 @@ function Layout() {
       label: "Dashboard",
       icon: BarChart3,
       end: true,
+    },
+    {
+      to: "/dashboard/manager/daily-operations",
+      label: "Daily Operations",
+      icon: Activity,
+    },
+    {
+      to: "/dashboard/manager/financial-monitoring",
+      label: "Financial Monitoring",
+      icon: DollarSign,
+    },
+    {
+      to: "/dashboard/manager/business-operations",
+      label: "Business Operations",
+      icon: Menu,
+    },
+    {
+      to: "/dashboard/manager/system-administration",
+      label: "System Administration",
+      icon: Shield,
     },
     { to: "/dashboard/manager/tables", label: "Table Management", icon: Users },
     { to: "/dashboard/manager/staff", label: "Staff Management", icon: Users },

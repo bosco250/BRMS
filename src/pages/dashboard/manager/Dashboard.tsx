@@ -9,6 +9,19 @@ import {
   Database,
   BarChart3,
   Settings,
+  Package,
+  ShoppingCart,
+  Activity,
+  Shield,
+  Menu,
+  Target,
+  CheckCircle,
+  AlertCircle,
+  RefreshCw,
+  Eye,
+  Calendar,
+  Star,
+  Zap,
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -30,32 +43,60 @@ export default function Dashboard() {
 
   const quickActions = [
     {
+      title: "Daily Operations",
+      description: "Manage daily operations and staff",
+      icon: Activity,
+      link: "/dashboard/manager/daily-operations",
+      color: "bg-blue-500",
+    },
+    {
+      title: "Financial Monitoring",
+      description: "Track sales and costs",
+      icon: DollarSign,
+      link: "/dashboard/manager/financial-monitoring",
+      color: "bg-green-500",
+    },
+    {
+      title: "Business Operations",
+      description: "Menu, pricing, and customers",
+      icon: Menu,
+      link: "/dashboard/manager/business-operations",
+      color: "bg-purple-500",
+    },
+    {
+      title: "System Administration",
+      description: "Manage users and security",
+      icon: Shield,
+      link: "/dashboard/manager/system-administration",
+      color: "bg-red-500",
+    },
+    {
       title: "Table Management",
       description: "View table status",
       icon: Users,
       link: "/dashboard/manager/tables",
-      color: "bg-green-500",
+      color: "bg-orange-500",
     },
     {
       title: "Staff Overview",
       description: "Monitor staff performance",
       icon: Users,
       link: "/dashboard/manager/staff",
-      color: "bg-purple-500",
+      color: "bg-indigo-500",
     },
     {
       title: "Inventory Check",
       description: "Check stock levels",
       icon: Database,
       link: "/dashboard/manager/inventory",
-      color: "bg-red-500",
+      color: "bg-yellow-500",
     },
     {
       title: "Reports",
       description: "View analytics",
       icon: BarChart3,
       link: "/dashboard/manager/reports",
-      color: "bg-indigo-500",
+      color: "bg-pink-500",
     },
   ];
 

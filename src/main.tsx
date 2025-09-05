@@ -25,6 +25,10 @@ import AdminSettings from "./pages/dashboard/admin/Settings.tsx";
 // Manager Dashboard Components
 import ManagerDashboardLayout from "./pages/dashboard/manager/ManagerDashboardLayout.tsx";
 import ManagerDashboardMain from "./pages/dashboard/manager/Dashboard.tsx";
+import DailyOperations from "./pages/dashboard/manager/DailyOperations.tsx";
+import FinancialMonitoring from "./pages/dashboard/manager/FinancialMonitoring.tsx";
+import BusinessOperations from "./pages/dashboard/manager/BusinessOperations.tsx";
+import SystemAdministration from "./pages/dashboard/manager/SystemAdministration.tsx";
 import TableManagement from "./pages/dashboard/manager/TableManagement.tsx";
 import StaffManagement from "./pages/dashboard/manager/StaffManagement.tsx";
 import InventoryManagement from "./pages/dashboard/manager/InventoryManagement.tsx";
@@ -127,6 +131,10 @@ const router = createBrowserRouter([
     element: <ManagerDashboardLayout />,
     children: [
       { index: true, element: <ManagerDashboardMain /> },
+      { path: "daily-operations", element: <DailyOperations /> },
+      { path: "financial-monitoring", element: <FinancialMonitoring /> },
+      { path: "business-operations", element: <BusinessOperations /> },
+      { path: "system-administration", element: <SystemAdministration /> },
       { path: "tables", element: <TableManagement /> },
       { path: "staff", element: <StaffManagement /> },
       { path: "inventory", element: <InventoryManagement /> },
