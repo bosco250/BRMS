@@ -10,18 +10,17 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
-import { useCustomerDashboard } from "../pages/dashboard/customer/context";
+import { useAccountantDashboard } from "../pages/dashboard/accountant/context";
 import { toast } from "react-toastify";
-import type { Notification } from "../types/notification";
 
-const NotificationMenu: React.FC = () => {
+const AccountantNotificationMenu: React.FC = () => {
   const {
     notifications,
     markNotificationAsRead,
     markAllNotificationsAsRead,
     clearAllNotifications,
     unreadCount,
-  } = useCustomerDashboard();
+  } = useAccountantDashboard();
 
   const [isOpen, setIsOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
@@ -319,4 +318,4 @@ const NotificationMenu: React.FC = () => {
   );
 };
 
-export default NotificationMenu;
+export default AccountantNotificationMenu;

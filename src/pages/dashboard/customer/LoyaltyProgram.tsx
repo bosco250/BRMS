@@ -16,7 +16,7 @@ export default function LoyaltyProgram() {
             {customer.loyaltyPoints}
           </div>
           <p className="text-text-secondary">Available Points</p>
-          <div className="w-full bg-surface-secondary rounded-full h-3 mt-4">
+          <div className="w-full bg-surface-secondary rounded-full h-3 mt-4 border border-border-secondary">
             <div
               className="bg-accent h-3 rounded-full"
               style={{
@@ -33,7 +33,7 @@ export default function LoyaltyProgram() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center p-4 bg-surface-secondary rounded-lg">
+          <div className="text-center p-4 bg-surface-secondary rounded-lg border border-border-secondary">
             <Award className="w-8 h-8 text-brand mx-auto mb-2" />
             <div className="text-lg font-bold text-text-primary">Bronze</div>
             <div className="text-xs text-text-secondary">0-999 points</div>
@@ -44,7 +44,7 @@ export default function LoyaltyProgram() {
             <div className="text-xs text-text-secondary">1000-4999 points</div>
             <div className="text-xs text-accent mt-1">Current Tier</div>
           </div>
-          <div className="text-center p-4 bg-surface-secondary rounded-lg">
+          <div className="text-center p-4 bg-surface-secondary rounded-lg border border-border-secondary">
             <Award className="w-8 h-8 text-warning mx-auto mb-2" />
             <div className="text-lg font-bold text-warning">Gold</div>
             <div className="text-xs text-text-secondary">5000+ points</div>
@@ -95,10 +95,10 @@ export default function LoyaltyProgram() {
                     toast.success(`${reward.name} redeemed successfully!`);
                   }
                 }}
-                className={`w-full py-2 text-sm font-medium rounded-lg ${
+                className={`w-full py-2 text-sm font-medium rounded-lg border ${
                   reward.available
-                    ? "bg-accent text-white hover:bg-accent/90"
-                    : "bg-surface-card text-text-muted cursor-not-allowed"
+                    ? "bg-accent text-white hover:bg-accent/90 border-accent-dark"
+                    : "bg-surface-card text-text-muted cursor-not-allowed border-border-secondary"
                 }`}
               >
                 {reward.available ? "Redeem" : "Not Enough Points"}

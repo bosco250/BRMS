@@ -1,5 +1,12 @@
-import React, { useState } from "react";
-import { ChevronRight, Phone, Mail, MessageSquare, FileText, Search, X } from "lucide-react";
+import { useState } from "react";
+import {
+  ChevronRight,
+  Phone,
+  Mail,
+  MessageSquare,
+  Search,
+  X,
+} from "lucide-react";
 import { toast } from "react-toastify";
 
 export default function HelpSupport() {
@@ -15,33 +22,40 @@ export default function HelpSupport() {
   const faqs = [
     {
       question: "How do I earn loyalty points?",
-      answer: "You earn loyalty points for every order you place. Points are calculated based on your order value: 1 point for every 100 RWF spent. You can also earn bonus points during special promotions and events.",
+      answer:
+        "You earn loyalty points for every order you place. Points are calculated based on your order value: 1 point for every 100 RWF spent. You can also earn bonus points during special promotions and events.",
     },
     {
       question: "Can I modify my reservation?",
-      answer: "Yes, you can modify your reservation up to 2 hours before your scheduled time. Simply go to the Reservations section in your dashboard and click the edit button. Changes are subject to availability.",
+      answer:
+        "Yes, you can modify your reservation up to 2 hours before your scheduled time. Simply go to the Reservations section in your dashboard and click the edit button. Changes are subject to availability.",
     },
     {
       question: "What payment methods do you accept?",
-      answer: "We accept mobile money (MTN MoMo, Airtel Money, M-Pesa), credit/debit cards, and cash payments. All online payments are processed securely through our payment gateway.",
+      answer:
+        "We accept mobile money (MTN MoMo, Airtel Money, M-Pesa), credit/debit cards, and cash payments. All online payments are processed securely through our payment gateway.",
     },
     {
       question: "How do I update my dietary preferences?",
-      answer: "You can update your dietary preferences in your Account Profile. Go to Settings > Profile and add any allergies or dietary restrictions. This information will be shared with our kitchen staff.",
+      answer:
+        "You can update your dietary preferences in your Account Profile. Go to Settings > Profile and add any allergies or dietary restrictions. This information will be shared with our kitchen staff.",
     },
     {
       question: "What is your cancellation policy?",
-      answer: "Reservations can be cancelled up to 2 hours before your scheduled time without any charges. Late cancellations may incur a small fee. Orders can be cancelled within 10 minutes of placement.",
+      answer:
+        "Reservations can be cancelled up to 2 hours before your scheduled time without any charges. Late cancellations may incur a small fee. Orders can be cancelled within 10 minutes of placement.",
     },
     {
       question: "How do I track my order?",
-      answer: "You can track your order in real-time through the Orders section in your dashboard. You'll also receive notifications at each stage: confirmed, preparing, ready, and delivered.",
+      answer:
+        "You can track your order in real-time through the Orders section in your dashboard. You'll also receive notifications at each stage: confirmed, preparing, ready, and delivered.",
     },
   ];
 
-  const filteredFAQs = faqs.filter(faq =>
-    faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredFAQs = faqs.filter(
+    (faq) =>
+      faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleContactSubmit = (e: React.FormEvent) => {
@@ -50,7 +64,9 @@ export default function HelpSupport() {
       toast.error("Please fill in all required fields");
       return;
     }
-    toast.success("Support ticket submitted successfully! We'll get back to you soon.");
+    toast.success(
+      "Support ticket submitted successfully! We'll get back to you soon."
+    );
     setContactForm({ subject: "", message: "", priority: "medium" });
     setShowContactForm(false);
   };
@@ -84,7 +100,7 @@ export default function HelpSupport() {
           </h3>
           <button
             onClick={() => setShowContactForm(true)}
-            className="bg-brand text-white px-4 py-2 rounded-lg hover:bg-brand-dark transition-colors flex items-center gap-2"
+            className="bg-brand text-white px-4 py-2 rounded-lg hover:bg-brand-dark transition-colors flex items-center gap-2 border border-brand-dark"
           >
             <MessageSquare className="w-4 h-4" />
             Contact Support
@@ -92,18 +108,25 @@ export default function HelpSupport() {
         </div>
         <div className="space-y-4">
           {filteredFAQs.map((faq) => (
-            <div key={faq.question} className="border border-border-secondary rounded-lg">
+            <div
+              key={faq.question}
+              className="border border-border-secondary rounded-lg"
+            >
               <button
-                onClick={() => setExpandedFAQ(expandedFAQ === faq.question ? null : faq.question)}
-                className="w-full p-4 text-left flex items-center justify-between hover:bg-surface-secondary transition-colors"
+                onClick={() =>
+                  setExpandedFAQ(
+                    expandedFAQ === faq.question ? null : faq.question
+                  )
+                }
+                className="w-full p-4 text-left flex items-center justify-between hover:bg-surface-secondary transition-colors border border-transparent hover:border-border-secondary"
               >
                 <span className="text-sm font-medium text-text-primary">
                   {faq.question}
                 </span>
-                <ChevronRight 
+                <ChevronRight
                   className={`w-4 h-4 text-text-secondary transition-transform ${
-                    expandedFAQ === faq.question ? 'rotate-90' : ''
-                  }`} 
+                    expandedFAQ === faq.question ? "rotate-90" : ""
+                  }`}
                 />
               </button>
               {expandedFAQ === faq.question && (
@@ -119,7 +142,9 @@ export default function HelpSupport() {
         {filteredFAQs.length === 0 && (
           <div className="text-center py-8">
             <Search className="w-16 h-16 text-text-secondary mx-auto mb-4" />
-            <p className="text-text-secondary">No help topics found for your search.</p>
+            <p className="text-text-secondary">
+              No help topics found for your search.
+            </p>
           </div>
         )}
       </div>
@@ -130,7 +155,7 @@ export default function HelpSupport() {
           Contact Support
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="p-4 bg-surface-secondary rounded-lg">
+          <div className="p-4 bg-surface-secondary rounded-lg border border-border-secondary">
             <Phone className="w-8 h-8 text-brand mb-3" />
             <h4 className="font-medium text-text-primary mb-2">
               Phone Support
@@ -142,7 +167,7 @@ export default function HelpSupport() {
               +250 788 123 456
             </p>
           </div>
-          <div className="p-4 bg-surface-secondary rounded-lg">
+          <div className="p-4 bg-surface-secondary rounded-lg border border-border-secondary">
             <Mail className="w-8 h-8 text-brand mb-3" />
             <h4 className="font-medium text-text-primary mb-2">
               Email Support
@@ -160,7 +185,7 @@ export default function HelpSupport() {
       {/* Contact Form Modal */}
       {showContactForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto border border-border-primary">
             <div className="p-6">
               <div className="flex justify-between items-start mb-6">
                 <div>
@@ -188,7 +213,10 @@ export default function HelpSupport() {
                     type="text"
                     value={contactForm.subject}
                     onChange={(e) =>
-                      setContactForm({ ...contactForm, subject: e.target.value })
+                      setContactForm({
+                        ...contactForm,
+                        subject: e.target.value,
+                      })
                     }
                     className="w-full px-3 py-2 border border-border-primary rounded-lg bg-surface-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/20"
                     required
@@ -202,7 +230,10 @@ export default function HelpSupport() {
                   <select
                     value={contactForm.priority}
                     onChange={(e) =>
-                      setContactForm({ ...contactForm, priority: e.target.value })
+                      setContactForm({
+                        ...contactForm,
+                        priority: e.target.value,
+                      })
                     }
                     className="w-full px-3 py-2 border border-border-primary rounded-lg bg-surface-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/20"
                   >
@@ -220,7 +251,10 @@ export default function HelpSupport() {
                   <textarea
                     value={contactForm.message}
                     onChange={(e) =>
-                      setContactForm({ ...contactForm, message: e.target.value })
+                      setContactForm({
+                        ...contactForm,
+                        message: e.target.value,
+                      })
                     }
                     rows={4}
                     placeholder="Describe your issue or question..."
@@ -232,14 +266,14 @@ export default function HelpSupport() {
                 <div className="flex gap-3 pt-4">
                   <button
                     type="submit"
-                    className="flex-1 bg-brand text-white py-2 px-4 rounded-lg font-medium hover:bg-brand-dark transition-colors"
+                    className="flex-1 bg-brand text-white py-2 px-4 rounded-lg font-medium hover:bg-brand-dark transition-colors border border-brand-dark"
                   >
                     Submit Ticket
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowContactForm(false)}
-                    className="flex-1 bg-surface-secondary text-text-primary py-2 px-4 rounded-lg font-medium hover:bg-surface-card transition-colors"
+                    className="flex-1 bg-surface-secondary text-text-primary py-2 px-4 rounded-lg font-medium hover:bg-surface-card transition-colors border border-border-secondary"
                   >
                     Cancel
                   </button>

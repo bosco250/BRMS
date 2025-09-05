@@ -15,7 +15,6 @@ import {
   Calendar,
   Settings,
   X,
-  Bell,
   Clock,
   DollarSign,
   Star,
@@ -23,7 +22,9 @@ import {
   MapPin,
   LogOut,
   MoreVertical,
+  ShoppingCart,
 } from "lucide-react";
+import WaiterNotificationMenu from "../../../components/WaiterNotificationMenu";
 import {
   Menu as MUIMenu,
   MenuItem,
@@ -43,6 +44,7 @@ function Layout() {
       icon: Coffee,
       end: true,
     },
+    { to: "/dashboard/waiter/orders", label: "Orders", icon: ShoppingCart },
     { to: "/dashboard/waiter/tables", label: "Table Management", icon: Table },
     {
       to: "/dashboard/waiter/reservations",
@@ -63,7 +65,7 @@ function Layout() {
       <div
         className={`${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } fixed left-0 top-0 z-50 w-64 h-screen overflow-y-auto border-r border-border-primary transform transition-transform duration-300 ease-in-out lg:translate-x-0 bg-surface-card`}
+        } fixed left-0 top-0 z-20 w-64 h-screen overflow-y-auto border-r border-border-primary transform transition-transform duration-300 ease-in-out lg:translate-x-0 bg-surface-card`}
       >
         <div className="flex items-center justify-between h-16 px-4 border-b border-border-primary">
           <Link to="/" className="flex items-center">
@@ -93,8 +95,10 @@ function Layout() {
 
       {/* Main Content */}
       <div className="flex-1 lg:ml-64">
-        <HeaderActions setSidebarOpen={setSidebarOpen} />
-        <main className="p-6">
+        <div className="fixed top-0 right-0 left-0 lg:left-64 z-30">
+          <HeaderActions setSidebarOpen={setSidebarOpen} />
+        </div>
+        <main className="p-6 pt-20">
           <Outlet />
         </main>
       </div>
@@ -284,14 +288,7 @@ function HeaderActions({
           </div>
 
           {/* Notifications */}
-          <button className="relative p-2 text-text-secondary hover:text-text-primary hover:bg-surface-secondary rounded-lg transition-colors">
-            <Bell className="w-5 h-5" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-error text-white text-xs rounded-full flex items-center justify-center">
-                {unreadCount}
-              </span>
-            )}
-          </button>
+          <WaiterNotificationMenu />
 
           {/* Waiter Info */}
           <div className="flex items-center gap-3">

@@ -1,12 +1,9 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   Search,
-  Filter,
   Eye,
   Clock,
-  MapPin,
   UtensilsCrossed,
-  Calendar,
   Receipt,
   Package,
   Truck,
@@ -66,7 +63,6 @@ export default function OrderHistory() {
       case "out_for_delivery":
         return <Truck className="w-4 h-4" />;
       case "delivered":
-      case "completed":
         return <CheckCircle className="w-4 h-4" />;
       case "cancelled":
         return <XCircle className="w-4 h-4" />;
@@ -89,8 +85,6 @@ export default function OrderHistory() {
         return "Out for Delivery";
       case "delivered":
         return "Delivered";
-      case "completed":
-        return "Completed";
       case "cancelled":
         return "Cancelled";
       default:
@@ -215,7 +209,7 @@ export default function OrderHistory() {
                   <td className="px-6 py-4">
                     <div className="flex items-start space-x-3">
                       <div className="flex-shrink-0">
-                        <div className="w-12 h-12 bg-surface-primary rounded-lg flex items-center justify-center">
+                        <div className="w-12 h-12 bg-surface-primary rounded-lg flex items-center justify-center border border-border-secondary">
                           {getOrderTypeIcon(order.orderType)}
                         </div>
                       </div>
@@ -231,7 +225,7 @@ export default function OrderHistory() {
                             {order.items.length} items
                           </span>
                           {order.tableNumber && (
-                            <span className="text-xs text-brand bg-brand/10 px-2 py-1 rounded">
+                            <span className="text-xs text-brand bg-brand/10 px-2 py-1 rounded border border-brand/20">
                               {order.tableNumber}
                             </span>
                           )}
@@ -364,7 +358,7 @@ export default function OrderHistory() {
 
               {/* Order Summary */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="bg-surface-secondary p-4 rounded-lg">
+                <div className="bg-surface-secondary p-4 rounded-lg border border-border-secondary">
                   <h4 className="font-medium text-text-primary mb-2">
                     Order Information
                   </h4>
@@ -405,7 +399,7 @@ export default function OrderHistory() {
                   </div>
                 </div>
 
-                <div className="bg-surface-secondary p-4 rounded-lg">
+                <div className="bg-surface-secondary p-4 rounded-lg border border-border-secondary">
                   <h4 className="font-medium text-text-primary mb-2">
                     Timing & Location
                   </h4>
@@ -465,9 +459,9 @@ export default function OrderHistory() {
                   {selectedOrder.items.map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center space-x-3 p-3 bg-surface-secondary rounded-lg"
+                      className="flex items-center space-x-3 p-3 bg-surface-secondary rounded-lg border border-border-secondary"
                     >
-                      <div className="w-12 h-12 bg-surface-primary rounded-lg flex items-center justify-center">
+                      <div className="w-12 h-12 bg-surface-primary rounded-lg flex items-center justify-center border border-border-secondary">
                         {item.image ? (
                           <img
                             src={item.image}
@@ -490,7 +484,7 @@ export default function OrderHistory() {
                             {item.modifiers.map((mod) => (
                               <span
                                 key={mod.id}
-                                className="text-xs bg-brand/10 text-brand px-2 py-1 rounded"
+                                className="text-xs bg-brand/10 text-brand px-2 py-1 rounded border border-brand/20"
                               >
                                 +{mod.name} ({formatCurrency(mod.price)})
                               </span>

@@ -55,6 +55,7 @@ import AccountantSettings from "./pages/dashboard/accountant/Settings.tsx";
 // Waiter Dashboard Components
 import WaiterDashboardLayout from "./pages/dashboard/waiter/WaiterDashboardLayout.tsx";
 import WaiterDashboardMain from "./pages/dashboard/waiter/Dashboard.tsx";
+import WaiterOrders from "./pages/dashboard/waiter/Orders.tsx";
 import WaiterTables from "./pages/dashboard/waiter/Tables.tsx";
 import WaiterReservations from "./pages/dashboard/waiter/Reservations.tsx";
 import WaiterSettings from "./pages/dashboard/waiter/Settings.tsx";
@@ -113,6 +114,7 @@ const router = createBrowserRouter([
     element: <WaiterDashboardLayout />,
     children: [
       { index: true, element: <WaiterDashboardMain /> },
+      { path: "orders", element: <WaiterOrders /> },
       { path: "tables", element: <WaiterTables /> },
       { path: "reservations", element: <WaiterReservations /> },
       { path: "settings", element: <WaiterSettings /> },

@@ -10,49 +10,32 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
-import { useCustomerDashboard } from "../pages/dashboard/customer/context";
+import { useWaiterDashboard } from "../pages/dashboard/waiter/context";
 import { toast } from "react-toastify";
-import type { Notification } from "../types/notification";
 
-const NotificationMenu: React.FC = () => {
-  const {
-    notifications,
-    markNotificationAsRead,
-    markAllNotificationsAsRead,
-    clearAllNotifications,
-    unreadCount,
-  } = useCustomerDashboard();
+const WaiterNotificationMenu: React.FC = () => {
+  const { notifications, markNotificationAsRead } = useWaiterDashboard();
 
   const [isOpen, setIsOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
 
-  // Get priority color
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "border-l-red-500 bg-red-50";
-      case "medium":
-        return "border-l-yellow-500 bg-yellow-50";
-      case "low":
-        return "border-l-blue-500 bg-blue-50";
-      default:
-        return "border-l-gray-500 bg-gray-50";
-    }
+  // Calculate unread count
+  const unreadCount = notifications.filter((notif) => !notif.read).length;
+
+  // Get priority color based on action required
+  const getPriorityColor = (actionRequired: boolean) => {
+    return actionRequired
+      ? "border-l-red-500 bg-red-50"
+      : "border-l-blue-500 bg-blue-50";
   };
 
   // Get type color
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "order":
+      case "table":
         return "bg-blue-100 text-blue-800";
       case "reservation":
         return "bg-green-100 text-green-800";
-      case "payment":
-        return "bg-purple-100 text-purple-800";
-      case "account":
-        return "bg-gray-100 text-gray-800";
-      case "loyalty":
-        return "bg-yellow-100 text-yellow-800";
       case "system":
         return "bg-indigo-100 text-indigo-800";
       default:
@@ -82,26 +65,31 @@ const NotificationMenu: React.FC = () => {
 
   // Handle mark all as read
   const handleMarkAllAsRead = () => {
-    markAllNotificationsAsRead();
+    notifications.forEach((notif) => {
+      if (!notif.read) {
+        markNotificationAsRead(notif.id);
+      }
+    });
     toast.success("All notifications marked as read");
   };
 
   // Handle clear all
   const handleClearAll = () => {
     if (window.confirm("Are you sure you want to clear all notifications?")) {
-      clearAllNotifications();
+      // In a real app, this would clear notifications from the backend
       toast.success("All notifications cleared");
     }
   };
 
   // Handle notification click
   const handleNotificationClick = (notification: any) => {
-    if (!notification.isRead) {
+    if (!notification.read) {
       markNotificationAsRead(notification.id);
     }
 
-    if (notification.actionUrl) {
-      window.location.href = notification.actionUrl;
+    // Navigate to relevant page based on notification type
+    if (notification.tableId) {
+      window.location.href = `/dashboard/waiter/tables`;
     }
   };
 
@@ -203,14 +191,14 @@ const NotificationMenu: React.FC = () => {
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ duration: 0.2 }}
                         className={`relative p-4 rounded-lg border-l-4 cursor-pointer transition-all hover:shadow-md ${
-                          notification.isRead
+                          notification.read
                             ? "bg-white border-gray-200"
                             : "bg-blue-50 border-blue-300"
-                        } ${getPriorityColor(notification.priority)}`}
+                        } ${getPriorityColor(notification.actionRequired)}`}
                         onClick={() => handleNotificationClick(notification)}
                       >
                         {/* Unread Indicator */}
-                        {!notification.isRead && (
+                        {!notification.read && (
                           <div className="absolute top-4 right-4 w-2 h-2 bg-blue-500 rounded-full" />
                         )}
 
@@ -218,7 +206,11 @@ const NotificationMenu: React.FC = () => {
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center gap-3">
                             <span className="text-2xl">
-                              {notification.icon}
+                              {notification.type === "table"
+                                ? "🍽️"
+                                : notification.type === "reservation"
+                                ? "📅"
+                                : "🔔"}
                             </span>
                             <div className="flex-1">
                               <h4 className="font-medium text-gray-900 text-sm">
@@ -235,8 +227,13 @@ const NotificationMenu: React.FC = () => {
                                 </span>
                                 <span className="text-xs text-gray-500 flex items-center gap-1">
                                   <Clock className="w-3 h-3" />
-                                  {formatTimestamp(notification.timestamp)}
+                                  {formatTimestamp(notification.createdAt)}
                                 </span>
+                                {notification.actionRequired && (
+                                  <span className="text-xs text-red-600 font-medium">
+                                    Action Required
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -244,13 +241,13 @@ const NotificationMenu: React.FC = () => {
 
                         {/* Description */}
                         <p className="text-sm text-gray-600 mb-3 leading-relaxed">
-                          {notification.description}
+                          {notification.message}
                         </p>
 
                         {/* Actions */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            {!notification.isRead && (
+                            {!notification.read && (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -263,7 +260,7 @@ const NotificationMenu: React.FC = () => {
                               </button>
                             )}
                           </div>
-                          {notification.actionUrl && (
+                          {notification.tableId && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -272,7 +269,7 @@ const NotificationMenu: React.FC = () => {
                               className="flex items-center gap-1 px-2 py-1 text-xs text-brand hover:text-brand-dark hover:bg-brand/10 rounded transition-colors"
                             >
                               <ExternalLink className="w-3 h-3" />
-                              View
+                              View Table
                             </button>
                           )}
                         </div>
@@ -319,4 +316,4 @@ const NotificationMenu: React.FC = () => {
   );
 };
 
-export default NotificationMenu;
+export default WaiterNotificationMenu;

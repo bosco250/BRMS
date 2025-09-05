@@ -168,7 +168,7 @@ export default function Settings() {
               </div>
               <button
                 onClick={handleProfileSave}
-                className="mt-6 bg-brand text-white px-6 py-2 rounded-lg hover:bg-brand-dark transition-colors flex items-center gap-2"
+                className="mt-6 bg-brand text-white px-6 py-2 rounded-lg hover:bg-brand-dark transition-colors flex items-center gap-2 border border-brand-dark"
               >
                 <Save className="w-4 h-4" />
                 Save Changes
@@ -265,7 +265,7 @@ export default function Settings() {
                 </div>
                 <button
                   onClick={handlePasswordChange}
-                  className="w-full bg-brand text-white px-6 py-2 rounded-lg hover:bg-brand-dark transition-colors flex items-center justify-center gap-2"
+                  className="w-full bg-brand text-white px-6 py-2 rounded-lg hover:bg-brand-dark transition-colors flex items-center justify-center gap-2 border border-brand-dark"
                 >
                   <Lock className="w-4 h-4" />
                   Change Password
@@ -283,7 +283,7 @@ export default function Settings() {
                 Notification Preferences
               </h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg border border-border-secondary">
                   <div className="flex items-center gap-3">
                     <Mail className="w-5 h-5 text-text-secondary" />
                     <div>
@@ -307,11 +307,11 @@ export default function Settings() {
                       }
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-surface-card peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
+                    <div className="w-11 h-6 bg-surface-card peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand border border-border-secondary"></div>
                   </label>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg border border-border-secondary">
                   <div className="flex items-center gap-3">
                     <Smartphone className="w-5 h-5 text-text-secondary" />
                     <div>
@@ -335,11 +335,11 @@ export default function Settings() {
                       }
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-surface-card peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
+                    <div className="w-11 h-6 bg-surface-card peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand border border-border-secondary"></div>
                   </label>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg border border-border-secondary">
                   <div className="flex items-center gap-3">
                     <Bell className="w-5 h-5 text-text-secondary" />
                     <div>
@@ -363,11 +363,11 @@ export default function Settings() {
                       }
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-surface-card peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
+                    <div className="w-11 h-6 bg-surface-card peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand border border-border-secondary"></div>
                   </label>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg border border-border-secondary">
                   <div className="flex items-center gap-3">
                     <Bell className="w-5 h-5 text-text-secondary" />
                     <div>
@@ -391,13 +391,13 @@ export default function Settings() {
                       }
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-surface-card peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
+                    <div className="w-11 h-6 bg-surface-card peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand border border-border-secondary"></div>
                   </label>
                 </div>
               </div>
               <button
                 onClick={handleNotificationSave}
-                className="mt-6 bg-brand text-white px-6 py-2 rounded-lg hover:bg-brand-dark transition-colors flex items-center gap-2"
+                className="mt-6 bg-brand text-white px-6 py-2 rounded-lg hover:bg-brand-dark transition-colors flex items-center gap-2 border border-brand-dark"
               >
                 <Save className="w-4 h-4" />
                 Save Notification Settings
@@ -414,7 +414,7 @@ export default function Settings() {
                 Privacy Settings
               </h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg border border-border-secondary">
                   <div>
                     <h4 className="font-medium text-text-primary">
                       Profile Visibility
@@ -439,7 +439,7 @@ export default function Settings() {
                   </select>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg border border-border-secondary">
                   <div>
                     <h4 className="font-medium text-text-primary">
                       Order History
@@ -463,7 +463,7 @@ export default function Settings() {
                   </select>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg border border-border-secondary">
                   <div>
                     <h4 className="font-medium text-text-primary">
                       Analytics & Tracking
@@ -484,13 +484,13 @@ export default function Settings() {
                       }
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-surface-card peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
+                    <div className="w-11 h-6 bg-surface-card peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand border border-border-secondary"></div>
                   </label>
                 </div>
               </div>
               <button
                 onClick={handlePrivacySave}
-                className="mt-6 bg-brand text-white px-6 py-2 rounded-lg hover:bg-brand-dark transition-colors flex items-center gap-2"
+                className="mt-6 bg-brand text-white px-6 py-2 rounded-lg hover:bg-brand-dark transition-colors flex items-center gap-2 border border-brand-dark"
               >
                 <Save className="w-4 h-4" />
                 Save Privacy Settings
@@ -507,7 +507,7 @@ export default function Settings() {
                 App Preferences
               </h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg border border-border-secondary">
                   <div>
                     <h4 className="font-medium text-text-primary">Language</h4>
                     <p className="text-sm text-text-secondary">
@@ -530,7 +530,7 @@ export default function Settings() {
                   </select>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg border border-border-secondary">
                   <div>
                     <h4 className="font-medium text-text-primary">Currency</h4>
                     <p className="text-sm text-text-secondary">
@@ -553,7 +553,7 @@ export default function Settings() {
                   </select>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg border border-border-secondary">
                   <div>
                     <h4 className="font-medium text-text-primary">Theme</h4>
                     <p className="text-sm text-text-secondary">
@@ -578,7 +578,7 @@ export default function Settings() {
               </div>
               <button
                 onClick={handlePreferencesSave}
-                className="mt-6 bg-brand text-white px-6 py-2 rounded-lg hover:bg-brand-dark transition-colors flex items-center gap-2"
+                className="mt-6 bg-brand text-white px-6 py-2 rounded-lg hover:bg-brand-dark transition-colors flex items-center gap-2 border border-brand-dark"
               >
                 <Save className="w-4 h-4" />
                 Save Preferences

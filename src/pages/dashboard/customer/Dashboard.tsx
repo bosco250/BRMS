@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Clock,
   CheckCircle,
@@ -7,20 +6,12 @@ import {
   Calendar,
   ShoppingBag,
   Gift,
-  HelpCircle,
-  Bell,
-  ArrowRight,
-  Plus,
-  Search,
-  Filter,
-  Eye,
-  EyeOff,
   Receipt,
   MapPin,
   Heart,
 } from "lucide-react";
 import { useCustomerDashboard } from "./context";
-import NotificationDemo from "../../../components/NotificationDemo";
+// import NotificationDemo from "../../../components/NotificationDemo";
 import { formatCurrency } from "../../../data/customerOrderData";
 
 export default function Dashboard() {
@@ -76,7 +67,7 @@ export default function Dashboard() {
                 {totalOrders}
               </p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center border border-blue-200">
               <Receipt className="w-6 h-6 text-blue-600" />
             </div>
           </div>
@@ -118,7 +109,7 @@ export default function Dashboard() {
                 {customer.totalVisits}
               </p>
             </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center border border-purple-200">
               <MapPin className="w-6 h-6 text-purple-600" />
             </div>
           </div>
@@ -146,7 +137,7 @@ export default function Dashboard() {
               {recentOrders.map((order) => (
                 <div
                   key={order.id}
-                  className="flex items-center justify-between p-3 bg-surface-secondary rounded-lg"
+                  className="flex items-center justify-between p-3 bg-surface-secondary rounded-lg border border-border-secondary"
                 >
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-surface-primary rounded-lg flex items-center justify-center">
@@ -211,28 +202,28 @@ export default function Dashboard() {
             <div className="space-y-3">
               <a
                 href="/dashboard/customer/menu"
-                className="flex items-center space-x-3 p-3 bg-surface-secondary rounded-lg hover:bg-surface-card transition-colors"
+                className="flex items-center space-x-3 p-3 bg-surface-secondary rounded-lg hover:bg-surface-card transition-colors border border-border-secondary"
               >
                 <ShoppingBag className="w-5 h-5 text-brand" />
                 <span className="text-text-primary">Browse Menu</span>
               </a>
               <a
                 href="/dashboard/customer/reservations"
-                className="flex items-center space-x-3 p-3 bg-surface-secondary rounded-lg hover:bg-surface-card transition-colors"
+                className="flex items-center space-x-3 p-3 bg-surface-secondary rounded-lg hover:bg-surface-card transition-colors border border-border-secondary"
               >
                 <Calendar className="w-5 h-5 text-brand" />
                 <span className="text-text-primary">Make Reservation</span>
               </a>
               <a
                 href="/dashboard/customer/loyalty"
-                className="flex items-center space-x-3 p-3 bg-surface-secondary rounded-lg hover:bg-surface-card transition-colors"
+                className="flex items-center space-x-3 p-3 bg-surface-secondary rounded-lg hover:bg-surface-card transition-colors border border-border-secondary"
               >
                 <Gift className="w-5 h-5 text-brand" />
                 <span className="text-text-primary">View Rewards</span>
               </a>
               <a
                 href="/dashboard/customer/profile"
-                className="flex items-center space-x-3 p-3 bg-surface-secondary rounded-lg hover:bg-surface-card transition-colors"
+                className="flex items-center space-x-3 p-3 bg-surface-secondary rounded-lg hover:bg-surface-card transition-colors border border-border-secondary"
               >
                 <Heart className="w-5 h-5 text-brand" />
                 <span className="text-text-primary">Edit Profile</span>
@@ -250,7 +241,7 @@ export default function Dashboard() {
                 {upcomingReservations.map((reservation) => (
                   <div
                     key={reservation.id}
-                    className="p-3 bg-surface-secondary rounded-lg"
+                    className="p-3 bg-surface-secondary rounded-lg border border-border-secondary"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-medium text-text-primary">
@@ -285,14 +276,14 @@ export default function Dashboard() {
               Loyalty Status
             </h3>
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-3 border border-yellow-300">
                 <Star className="w-8 h-8 text-white" />
               </div>
               <h4 className="text-xl font-bold text-text-primary mb-1">
                 {customer.tier}
               </h4>
               <p className="text-text-secondary text-sm mb-3">Member</p>
-              <div className="bg-surface-secondary rounded-full h-2 mb-2">
+              <div className="bg-surface-secondary rounded-full h-2 mb-2 border border-border-secondary">
                 <div
                   className="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full"
                   style={{
@@ -342,9 +333,7 @@ export default function Dashboard() {
       </div>
 
       {/* Notification System Demo */}
-      <div className="mt-8">
-        <NotificationDemo />
-      </div>
+      <div className="mt-8">{/* <NotificationDemo /> */}</div>
     </div>
   );
 }

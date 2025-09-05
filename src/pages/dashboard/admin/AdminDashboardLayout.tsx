@@ -1,11 +1,5 @@
 import { useState } from "react";
-import {
-  Outlet,
-  Link,
-  NavLink,
-  useLocation,
-  useNavigate,
-} from "react-router-dom";
+import { Outlet, Link, NavLink, useNavigate } from "react-router-dom";
 import { withRoleGuard } from "../../../auth/roleGuard";
 import { AdminDashboardProvider, useAdminDashboard } from "./context";
 import {
@@ -17,14 +11,11 @@ import {
   FileText,
   Settings,
   X,
-  Bell,
-  Activity,
-  TrendingUp,
-  AlertTriangle,
   LogOut,
   MoreVertical,
   ShoppingCart,
 } from "lucide-react";
+import AdminNotificationMenu from "../../../components/AdminNotificationMenu";
 import {
   Menu as MUIMenu,
   MenuItem,
@@ -35,7 +26,6 @@ import {
 
 function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const location = useLocation();
 
   const nav = [
     {
@@ -81,18 +71,13 @@ function Layout() {
     },
   ];
 
-  const current = nav.find((n) =>
-    n.end ? location.pathname === n.to : location.pathname.startsWith(n.to)
-  );
-  const currentTitle = current?.label ?? "Admin";
-
   return (
     <div className="min-h-screen bg-surface-primary flex">
       {/* Sidebar */}
       <div
         className={`${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } fixed left-0 top-0 z-50 w-64 h-screen overflow-y-auto border-r border-border-primary transform transition-transform duration-300 ease-in-out lg:translate-x-0 bg-surface-card`}
+        } fixed left-0 top-0 z-20 w-64 h-screen overflow-y-auto border-r border-border-primary transform transition-transform duration-300 ease-in-out lg:translate-x-0 bg-surface-card`}
       >
         <div className="flex items-center justify-between h-16 px-4 border-b border-border-primary">
           <Link to="/" className="flex items-center">
@@ -122,8 +107,10 @@ function Layout() {
 
       {/* Main Content */}
       <div className="flex-1 lg:ml-64">
-        <HeaderActions setSidebarOpen={setSidebarOpen} />
-        <main className="p-6">
+        <div className="fixed top-0 right-0 left-0 lg:left-64 z-30">
+          <HeaderActions setSidebarOpen={setSidebarOpen} />
+        </div>
+        <main className="p-6 pt-20">
           <Outlet />
         </main>
       </div>
@@ -265,12 +252,6 @@ function HeaderActions({
   setSidebarOpen: (open: boolean) => void;
 }) {
   const { admin, auditLogs } = useAdminDashboard();
-  const [showNotifications, setShowNotifications] = useState(false);
-
-  // Calculate unread notifications (high severity logs)
-  const highSeverityLogs = auditLogs.filter(
-    (log) => log.severity === "high"
-  ).length;
 
   // Calculate system health based on recent activity
   const recentLogs = auditLogs.slice(0, 10);
@@ -307,25 +288,8 @@ function HeaderActions({
             </div>
           </div>
 
-          {/* Alerts */}
-          <button className="relative p-2 text-text-secondary hover:text-text-primary hover:bg-surface-secondary rounded-lg transition-colors">
-            <AlertTriangle className="w-5 h-5" />
-            {highSeverityLogs > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                {highSeverityLogs}
-              </span>
-            )}
-          </button>
-
           {/* Notifications */}
-          <button className="relative p-2 text-text-secondary hover:text-text-primary hover:bg-surface-secondary rounded-lg transition-colors">
-            <Bell className="w-5 h-5" />
-            {auditLogs.filter((log) => !log.read).length > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-brand text-white text-xs rounded-full flex items-center justify-center">
-                {auditLogs.filter((log) => !log.read).length}
-              </span>
-            )}
-          </button>
+          <AdminNotificationMenu />
 
           {/* Admin Info */}
           <div className="flex items-center gap-3">

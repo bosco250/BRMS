@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useMemo, useState } from "react";
+import type { Notification } from "../../../types/notification";
 
 export type Accountant = {
   id: number;
@@ -101,7 +102,7 @@ const mockFinancialRecords: FinancialRecord[] = [
     type: "income",
     category: "Food Sales",
     description: "Daily restaurant sales",
-    amount: 2500.00,
+    amount: 2500.0,
     reference: "SALES-2024-08-20",
     status: "approved",
     approvedBy: "Sarah Johnson",
@@ -115,7 +116,7 @@ const mockFinancialRecords: FinancialRecord[] = [
     type: "expense",
     category: "Supplies",
     description: "Kitchen supplies and ingredients",
-    amount: 450.00,
+    amount: 450.0,
     reference: "SUPPLIES-2024-08-20",
     status: "approved",
     approvedBy: "Sarah Johnson",
@@ -129,7 +130,7 @@ const mockFinancialRecords: FinancialRecord[] = [
     type: "expense",
     category: "Utilities",
     description: "Electricity and water bills",
-    amount: 180.00,
+    amount: 180.0,
     reference: "UTILITIES-2024-08-20",
     status: "pending",
     restaurantId: "REST-002",
@@ -141,7 +142,7 @@ const mockFinancialRecords: FinancialRecord[] = [
     type: "income",
     category: "Beverage Sales",
     description: "Bar sales for the day",
-    amount: 1200.00,
+    amount: 1200.0,
     reference: "BAR-SALES-2024-08-19",
     status: "approved",
     approvedBy: "Maria Garcia",
@@ -156,7 +157,7 @@ const mockTaxRecords: TaxRecord[] = [
     id: "TAX-001",
     period: "August 2024",
     type: "VAT",
-    amount: 4500.00,
+    amount: 4500.0,
     dueDate: "2024-09-20",
     status: "pending",
     reference: "VAT-AUG-2024",
@@ -165,7 +166,7 @@ const mockTaxRecords: TaxRecord[] = [
     id: "TAX-002",
     period: "July 2024",
     type: "VAT",
-    amount: 4200.00,
+    amount: 4200.0,
     dueDate: "2024-08-20",
     status: "paid",
     paymentDate: "2024-08-18",
@@ -175,7 +176,7 @@ const mockTaxRecords: TaxRecord[] = [
     id: "TAX-003",
     period: "Q2 2024",
     type: "Income Tax",
-    amount: 15000.00,
+    amount: 15000.0,
     dueDate: "2024-09-30",
     status: "pending",
     reference: "INCOME-TAX-Q2-2024",
@@ -184,7 +185,7 @@ const mockTaxRecords: TaxRecord[] = [
     id: "TAX-004",
     period: "August 2024",
     type: "Payroll Tax",
-    amount: 2800.00,
+    amount: 2800.0,
     dueDate: "2024-09-15",
     status: "pending",
     reference: "PAYROLL-TAX-AUG-2024",
@@ -197,9 +198,9 @@ const mockInvoices: Invoice[] = [
     invoiceNumber: "INV-2024-001",
     customerName: "Corporate Event Ltd",
     customerEmail: "accounts@corporateevent.com",
-    amount: 2500.00,
-    tax: 250.00,
-    total: 2750.00,
+    amount: 2500.0,
+    tax: 250.0,
+    total: 2750.0,
     status: "paid",
     issueDate: "2024-08-15",
     dueDate: "2024-08-30",
@@ -212,9 +213,9 @@ const mockInvoices: Invoice[] = [
     invoiceNumber: "INV-2024-002",
     customerName: "Wedding Planner Pro",
     customerEmail: "finance@weddingplanner.com",
-    amount: 1800.00,
-    tax: 180.00,
-    total: 1980.00,
+    amount: 1800.0,
+    tax: 180.0,
+    total: 1980.0,
     status: "sent",
     issueDate: "2024-08-18",
     dueDate: "2024-09-02",
@@ -226,9 +227,9 @@ const mockInvoices: Invoice[] = [
     invoiceNumber: "INV-2024-003",
     customerName: "Tech Startup Inc",
     customerEmail: "payables@techstartup.com",
-    amount: 1200.00,
-    tax: 120.00,
-    total: 1320.00,
+    amount: 1200.0,
+    tax: 120.0,
+    total: 1320.0,
     status: "overdue",
     issueDate: "2024-08-01",
     dueDate: "2024-08-15",
@@ -241,33 +242,33 @@ const mockExpenseCategories: ExpenseCategory[] = [
   {
     id: "CAT-001",
     name: "Food & Beverages",
-    budget: 15000.00,
-    spent: 12500.00,
-    remaining: 2500.00,
+    budget: 15000.0,
+    spent: 12500.0,
+    remaining: 2500.0,
     color: "bg-blue-500",
   },
   {
     id: "CAT-002",
     name: "Supplies",
-    budget: 5000.00,
-    spent: 3200.00,
-    remaining: 1800.00,
+    budget: 5000.0,
+    spent: 3200.0,
+    remaining: 1800.0,
     color: "bg-green-500",
   },
   {
     id: "CAT-003",
     name: "Utilities",
-    budget: 3000.00,
-    spent: 2800.00,
-    remaining: 200.00,
+    budget: 3000.0,
+    spent: 2800.0,
+    remaining: 200.0,
     color: "bg-yellow-500",
   },
   {
     id: "CAT-004",
     name: "Maintenance",
-    budget: 2000.00,
-    spent: 1800.00,
-    remaining: 200.00,
+    budget: 2000.0,
+    spent: 1800.0,
+    remaining: 200.0,
     color: "bg-purple-500",
   },
 ];
@@ -281,12 +282,12 @@ const mockFinancialReports: FinancialReport[] = [
     generatedAt: "2024-08-20T09:00:00Z",
     generatedBy: "Emma Thompson",
     data: {
-      totalRevenue: 95000.00,
-      totalExpenses: 65000.00,
-      netProfit: 30000.00,
-      taxObligations: 4500.00,
-      outstandingInvoices: 3300.00,
-      overduePayments: 1320.00,
+      totalRevenue: 95000.0,
+      totalExpenses: 65000.0,
+      netProfit: 30000.0,
+      taxObligations: 4500.0,
+      outstandingInvoices: 3300.0,
+      overduePayments: 1320.0,
     },
   },
   {
@@ -297,12 +298,12 @@ const mockFinancialReports: FinancialReport[] = [
     generatedAt: "2024-07-01T09:00:00Z",
     generatedBy: "Emma Thompson",
     data: {
-      totalRevenue: 280000.00,
-      totalExpenses: 190000.00,
-      netProfit: 90000.00,
-      taxObligations: 15000.00,
-      outstandingInvoices: 8500.00,
-      overduePayments: 2100.00,
+      totalRevenue: 280000.0,
+      totalExpenses: 190000.0,
+      netProfit: 90000.0,
+      taxObligations: 15000.0,
+      outstandingInvoices: 8500.0,
+      overduePayments: 2100.0,
     },
   },
 ];
@@ -314,85 +315,270 @@ interface AccountantDashboardContextType {
   invoices: Invoice[];
   expenseCategories: ExpenseCategory[];
   financialReports: FinancialReport[];
-  updateFinancialRecordStatus: (recordId: string, status: FinancialRecord["status"], approvedBy?: string) => void;
-  updateTaxRecordStatus: (recordId: string, status: TaxRecord["status"], paymentDate?: string) => void;
-  updateInvoiceStatus: (invoiceId: string, status: Invoice["status"], paidDate?: string) => void;
-  addFinancialRecord: (record: Omit<FinancialRecord, "id" | "date" | "status">) => void;
-  generateFinancialReport: (type: FinancialReport["type"], period: string) => void;
+  updateFinancialRecordStatus: (
+    recordId: string,
+    status: FinancialRecord["status"],
+    approvedBy?: string
+  ) => void;
+  updateTaxRecordStatus: (
+    recordId: string,
+    status: TaxRecord["status"],
+    paymentDate?: string
+  ) => void;
+  updateInvoiceStatus: (
+    invoiceId: string,
+    status: Invoice["status"],
+    paidDate?: string
+  ) => void;
+  addFinancialRecord: (
+    record: Omit<FinancialRecord, "id" | "date" | "status">
+  ) => void;
+  generateFinancialReport: (
+    type: FinancialReport["type"],
+    period: string
+  ) => void;
+  // Notification functions
+  notifications: Notification[];
+  markNotificationAsRead: (notificationId: string) => void;
+  markAllNotificationsAsRead: () => void;
+  clearAllNotifications: () => void;
+  addNotification: (
+    notification: Omit<Notification, "id" | "timestamp">
+  ) => void;
+  unreadCount: number;
 }
 
-const AccountantDashboardContext = createContext<AccountantDashboardContextType | undefined>(undefined);
+const AccountantDashboardContext = createContext<
+  AccountantDashboardContextType | undefined
+>(undefined);
 
-export function AccountantDashboardProvider({ children }: { children: React.ReactNode }) {
-  const [financialRecords, setFinancialRecords] = useState<FinancialRecord[]>(mockFinancialRecords);
+// Mock notifications for accountant
+const mockAccountantNotifications: Notification[] = [
+  {
+    id: "acc_notif_001",
+    type: "system",
+    title: "Financial Report Generated",
+    description:
+      "Monthly financial report for January 2024 has been successfully generated and is ready for review.",
+    timestamp: "2024-01-22T10:30:00Z",
+    isRead: false,
+    actionUrl: "/dashboard/accountant/reports",
+    icon: "📊",
+    priority: "high",
+  },
+  {
+    id: "acc_notif_002",
+    type: "payment",
+    title: "Invoice Payment Received",
+    description:
+      "Payment of 125,000 RWF received for Invoice #INV-2024-015 from Kigali City Restaurant.",
+    timestamp: "2024-01-22T09:15:00Z",
+    isRead: false,
+    actionUrl: "/dashboard/accountant/invoices",
+    icon: "💳",
+    priority: "medium",
+  },
+  {
+    id: "acc_notif_003",
+    type: "system",
+    title: "Tax Deadline Reminder",
+    description:
+      "VAT return for Q4 2023 is due in 3 days. Please ensure all records are up to date.",
+    timestamp: "2024-01-21T14:20:00Z",
+    isRead: false,
+    actionUrl: "/dashboard/accountant/taxes",
+    icon: "⚠️",
+    priority: "high",
+  },
+  {
+    id: "acc_notif_004",
+    type: "system",
+    title: "Expense Record Approved",
+    description:
+      "Expense record #EXP-2024-089 for office supplies has been approved by management.",
+    timestamp: "2024-01-21T11:45:00Z",
+    isRead: true,
+    actionUrl: "/dashboard/accountant/records",
+    icon: "✅",
+    priority: "low",
+  },
+  {
+    id: "acc_notif_005",
+    type: "system",
+    title: "Budget Alert",
+    description:
+      "Marketing budget has reached 85% of allocated amount for this month.",
+    timestamp: "2024-01-20T16:30:00Z",
+    isRead: true,
+    actionUrl: "/dashboard/accountant/records",
+    icon: "💰",
+    priority: "medium",
+  },
+  {
+    id: "acc_notif_006",
+    type: "system",
+    title: "System Maintenance",
+    description:
+      "Scheduled system maintenance will occur tonight from 2:00 AM to 4:00 AM.",
+    timestamp: "2024-01-20T10:00:00Z",
+    isRead: true,
+    icon: "🔧",
+    priority: "low",
+  },
+];
+
+export function AccountantDashboardProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [financialRecords, setFinancialRecords] =
+    useState<FinancialRecord[]>(mockFinancialRecords);
   const [taxRecords, setTaxRecords] = useState<TaxRecord[]>(mockTaxRecords);
   const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
+  const [notifications, setNotifications] = useState<Notification[]>(
+    mockAccountantNotifications
+  );
 
-  const updateFinancialRecordStatus = (recordId: string, status: FinancialRecord["status"], approvedBy?: string) => {
-    setFinancialRecords(prev => prev.map(record => 
-      record.id === recordId 
-        ? { 
-            ...record, 
-            status, 
-            approvedBy: approvedBy || record.approvedBy,
-            approvedAt: status === "approved" ? new Date().toISOString() : record.approvedAt
-          }
-        : record
-    ));
+  const updateFinancialRecordStatus = (
+    recordId: string,
+    status: FinancialRecord["status"],
+    approvedBy?: string
+  ) => {
+    setFinancialRecords((prev) =>
+      prev.map((record) =>
+        record.id === recordId
+          ? {
+              ...record,
+              status,
+              approvedBy: approvedBy || record.approvedBy,
+              approvedAt:
+                status === "approved"
+                  ? new Date().toISOString()
+                  : record.approvedAt,
+            }
+          : record
+      )
+    );
   };
 
-  const updateTaxRecordStatus = (recordId: string, status: TaxRecord["status"], paymentDate?: string) => {
-    setTaxRecords(prev => prev.map(record => 
-      record.id === recordId 
-        ? { 
-            ...record, 
-            status, 
-            paymentDate: status === "paid" ? (paymentDate || new Date().toISOString()) : record.paymentDate
-          }
-        : record
-    ));
+  const updateTaxRecordStatus = (
+    recordId: string,
+    status: TaxRecord["status"],
+    paymentDate?: string
+  ) => {
+    setTaxRecords((prev) =>
+      prev.map((record) =>
+        record.id === recordId
+          ? {
+              ...record,
+              status,
+              paymentDate:
+                status === "paid"
+                  ? paymentDate || new Date().toISOString()
+                  : record.paymentDate,
+            }
+          : record
+      )
+    );
   };
 
-  const updateInvoiceStatus = (invoiceId: string, status: Invoice["status"], paidDate?: string) => {
-    setInvoices(prev => prev.map(invoice => 
-      invoice.id === invoiceId 
-        ? { 
-            ...invoice, 
-            status, 
-            paidDate: status === "paid" ? (paidDate || new Date().toISOString()) : invoice.paidDate
-          }
-        : invoice
-    ));
+  const updateInvoiceStatus = (
+    invoiceId: string,
+    status: Invoice["status"],
+    paidDate?: string
+  ) => {
+    setInvoices((prev) =>
+      prev.map((invoice) =>
+        invoice.id === invoiceId
+          ? {
+              ...invoice,
+              status,
+              paidDate:
+                status === "paid"
+                  ? paidDate || new Date().toISOString()
+                  : invoice.paidDate,
+            }
+          : invoice
+      )
+    );
   };
 
-  const addFinancialRecord = (record: Omit<FinancialRecord, "id" | "date" | "status">) => {
+  const addFinancialRecord = (
+    record: Omit<FinancialRecord, "id" | "date" | "status">
+  ) => {
     const newRecord: FinancialRecord = {
       ...record,
       id: `FIN-${Date.now()}`,
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toISOString().split("T")[0],
       status: "pending",
     };
-    setFinancialRecords(prev => [newRecord, ...prev]);
+    setFinancialRecords((prev) => [newRecord, ...prev]);
   };
 
-  const generateFinancialReport = (type: FinancialReport["type"], period: string) => {
+  const generateFinancialReport = (
+    type: FinancialReport["type"],
+    period: string
+  ) => {
     // This would typically call an API to generate a report
     console.log(`Generating ${type} report for ${period}`);
   };
 
-  const value = useMemo(() => ({
-    accountant: mockAccountant,
-    financialRecords,
-    taxRecords,
-    invoices,
-    expenseCategories: mockExpenseCategories,
-    financialReports: mockFinancialReports,
-    updateFinancialRecordStatus,
-    updateTaxRecordStatus,
-    updateInvoiceStatus,
-    addFinancialRecord,
-    generateFinancialReport,
-  }), [financialRecords, taxRecords, invoices]);
+  // Notification functions
+  const markNotificationAsRead = (notificationId: string) => {
+    setNotifications((prev) =>
+      prev.map((notif) =>
+        notif.id === notificationId ? { ...notif, isRead: true } : notif
+      )
+    );
+  };
+
+  const markAllNotificationsAsRead = () => {
+    setNotifications((prev) =>
+      prev.map((notif) => ({ ...notif, isRead: true }))
+    );
+  };
+
+  const clearAllNotifications = () => {
+    setNotifications([]);
+  };
+
+  const addNotification = (
+    notification: Omit<Notification, "id" | "timestamp">
+  ) => {
+    const newNotification: Notification = {
+      ...notification,
+      id: `acc_notif_${Date.now()}`,
+      timestamp: new Date().toISOString(),
+    };
+    setNotifications((prev) => [newNotification, ...prev]);
+  };
+
+  const unreadCount = notifications.filter((notif) => !notif.isRead).length;
+
+  const value = useMemo(
+    () => ({
+      accountant: mockAccountant,
+      financialRecords,
+      taxRecords,
+      invoices,
+      expenseCategories: mockExpenseCategories,
+      financialReports: mockFinancialReports,
+      updateFinancialRecordStatus,
+      updateTaxRecordStatus,
+      updateInvoiceStatus,
+      addFinancialRecord,
+      generateFinancialReport,
+      // Notification functions
+      notifications,
+      markNotificationAsRead,
+      markAllNotificationsAsRead,
+      clearAllNotifications,
+      addNotification,
+      unreadCount,
+    }),
+    [financialRecords, taxRecords, invoices, notifications]
+  );
 
   return (
     <AccountantDashboardContext.Provider value={value}>
@@ -404,7 +590,9 @@ export function AccountantDashboardProvider({ children }: { children: React.Reac
 export function useAccountantDashboard() {
   const context = useContext(AccountantDashboardContext);
   if (context === undefined) {
-    throw new Error("useAccountantDashboard must be used within an AccountantDashboardProvider");
+    throw new Error(
+      "useAccountantDashboard must be used within an AccountantDashboardProvider"
+    );
   }
   return context;
 }

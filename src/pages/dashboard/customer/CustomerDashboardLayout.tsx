@@ -82,7 +82,7 @@ function Layout() {
         <div
           className={`${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } fixed left-0 top-0 z-50 w-64 h-screen overflow-y-auto border-r border-border-primary transform transition-transform duration-300 ease-in-out lg:translate-x-0 bg-dashboard`}
+          } fixed left-0 top-0 z-20 w-64 h-screen overflow-y-auto border-r border-border-primary transform transition-transform duration-300 ease-in-out lg:translate-x-0 bg-dashboard`}
         >
           <div className="flex items-center justify-between h-16 px-4 border-b border-border-primary">
             <Link to="/" className="flex items-center">
@@ -104,7 +104,7 @@ function Layout() {
 
         {/* Main */}
         <div className="flex-1 flex flex-col min-w-0 lg:ml-64">
-          <header className="border-b border-border-primary bg-dashboard">
+          <header className="fixed top-0 right-0 left-0 lg:left-64 border-b border-border-primary bg-dashboard z-30">
             <div className="flex items-center justify-between h-16 px-4">
               <div className="flex items-center">
                 <button
@@ -120,7 +120,7 @@ function Layout() {
               <HeaderActions />
             </div>
           </header>
-          <main className="flex-1 p-6 overflow-y-auto">
+          <main className="flex-1 p-6 overflow-y-auto pt-20">
             <Outlet />
           </main>
         </div>
@@ -280,7 +280,7 @@ function SidebarFooter() {
 
 function HeaderActions() {
   const navigate = useNavigate();
-  
+
   return (
     <div className="flex items-center gap-4">
       <NotificationMenu />

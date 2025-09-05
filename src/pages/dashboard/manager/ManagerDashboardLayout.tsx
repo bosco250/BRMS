@@ -1,11 +1,5 @@
 import { useState } from "react";
-import {
-  Outlet,
-  Link,
-  NavLink,
-  useLocation,
-  useNavigate,
-} from "react-router-dom";
+import { Outlet, Link, NavLink, useNavigate } from "react-router-dom";
 import { withRoleGuard } from "../../../auth/roleGuard";
 import { ManagerDashboardProvider, useManagerDashboard } from "./context";
 import {
@@ -13,8 +7,6 @@ import {
   BarChart3,
   Users,
   Utensils,
-  CreditCard,
-  FileText,
   Database,
   LogOut,
   MoreVertical,
@@ -23,9 +15,9 @@ import {
   User,
   Settings,
   X,
-  Bell,
   ShoppingCart,
 } from "lucide-react";
+import ManagerNotificationMenu from "../../../components/ManagerNotificationMenu";
 import {
   Menu as MUIMenu,
   MenuItem,
@@ -36,7 +28,6 @@ import {
 
 function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const location = useLocation();
 
   const nav = [
     {
@@ -67,18 +58,13 @@ function Layout() {
     { to: "/dashboard/manager/settings", label: "Settings", icon: Settings },
   ];
 
-  const current = nav.find((n) =>
-    n.end ? location.pathname === n.to : location.pathname.startsWith(n.to)
-  );
-  const currentTitle = current?.label ?? "Manager";
-
   return (
     <div className="min-h-screen bg-surface-primary flex">
       {/* Sidebar */}
       <div
         className={`${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } fixed left-0 top-0 z-50 w-64 h-screen overflow-y-auto border-r border-border-primary transform transition-transform duration-300 ease-in-out lg:translate-x-0 bg-dashboard`}
+        } fixed left-0 top-0 z-20 w-64 h-screen overflow-y-auto border-r border-border-primary transform transition-transform duration-300 ease-in-out lg:translate-x-0 bg-dashboard`}
       >
         <div className="flex items-center justify-between h-16 px-4 border-b border-border-primary">
           <Link to="/" className="flex items-center">
@@ -108,8 +94,10 @@ function Layout() {
 
       {/* Main Content */}
       <div className="flex-1 lg:ml-64">
-        <HeaderActions />
-        <main className="p-6">
+        <div className="fixed top-0 right-0 left-0 lg:left-64 z-30">
+          <HeaderActions />
+        </div>
+        <main className="p-6 pt-20">
           <Outlet />
         </main>
       </div>
@@ -248,8 +236,7 @@ function SidebarFooter() {
 }
 
 function HeaderActions() {
-  const { manager, notifications } = useManagerDashboard();
-  const [showNotifications, setShowNotifications] = useState(false);
+  const { manager } = useManagerDashboard();
 
   return (
     <header className="bg-dashboard border-b border-border-primary px-6 py-4">
@@ -263,14 +250,7 @@ function HeaderActions() {
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <button className="relative p-2 text-text-secondary hover:text-text-primary hover:bg-surface-secondary rounded-lg transition-colors">
-            <Bell className="w-5 h-5" />
-            {notifications.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-error text-white text-xs rounded-full flex items-center justify-center">
-                {notifications.length}
-              </span>
-            )}
-          </button>
+          <ManagerNotificationMenu />
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-brand/10 rounded-full flex items-center justify-center">
               <Shield className="w-4 h-4 text-brand" />

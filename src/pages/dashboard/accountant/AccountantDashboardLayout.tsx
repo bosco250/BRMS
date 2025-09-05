@@ -1,21 +1,12 @@
 import { useState } from "react";
-import {
-  Outlet,
-  Link,
-  NavLink,
-  useLocation,
-  useNavigate,
-} from "react-router-dom";
+import { Outlet, Link, NavLink, useNavigate } from "react-router-dom";
 import { withRoleGuard } from "../../../auth/roleGuard";
 import { AccountantDashboardProvider, useAccountantDashboard } from "./context";
 import {
   ReceiptText,
   BarChart3,
-  FileText,  TrendingUp,
-  TrendingDown,
-  Building2,
+  FileText,
   // DEBUG: Fix missing icon imports and references
-
   LogOut,
   MoreVertical,
   // Add missing icons used in nav and sidebar
@@ -24,6 +15,7 @@ import {
   Calculator,
   X,
 } from "lucide-react";
+import AccountantNotificationMenu from "../../../components/AccountantNotificationMenu";
 import {
   Menu as MUIMenu,
   MenuItem,
@@ -36,7 +28,6 @@ import {
 
 function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const location = useLocation();
 
   const nav = [
     {
@@ -61,11 +52,6 @@ function Layout() {
     // DEBUG: Use imported Settings icon
     { to: "/dashboard/accountant/settings", label: "Settings", icon: Settings },
   ];
-
-  const current = nav.find((n) =>
-    n.end ? location.pathname === n.to : location.pathname.startsWith(n.to)
-  );
-  const currentTitle = current?.label ?? "Accountant";
 
   return (
     <div className="min-h-screen bg-surface-primary flex">
@@ -105,8 +91,10 @@ function Layout() {
 
       {/* Main Content */}
       <div className="flex-1 lg:ml-64">
-        <HeaderActions />
-        <main className="p-6">
+        <div className="fixed top-0 right-0 left-0 lg:left-64 z-30">
+          <HeaderActions />
+        </div>
+        <main className="p-6 pt-20">
           <Outlet />
         </main>
       </div>
@@ -245,13 +233,7 @@ function SidebarFooter() {
 }
 
 function HeaderActions() {
-  const { accountant, financialRecords } = useAccountantDashboard();
-  const [showNotifications, setShowNotifications] = useState(false);
-
-  // Calculate pending records for notification badge
-  const pendingRecords = financialRecords.filter(
-    (record) => record.status === "pending"
-  ).length;
+  const { accountant } = useAccountantDashboard();
 
   return (
     <header className="bg-dashboard border-b border-border-primary px-6 py-4">
@@ -265,15 +247,8 @@ function HeaderActions() {
           </p>
         </div>
         <div className="flex items-center gap-4">
-          {/* DEBUG: Replaced missing Bell icon with a valid Lucide icon (MoreVertical as placeholder for notifications) */}
-          <button className="relative p-2 text-text-secondary hover:text-text-primary hover:bg-surface-secondary rounded-lg transition-colors">
-            <MoreVertical className="w-5 h-5" />
-            {pendingRecords > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-error text-white text-xs rounded-full flex items-center justify-center">
-                {pendingRecords}
-              </span>
-            )}
-          </button>
+          {/* Notifications */}
+          <AccountantNotificationMenu />
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-brand/10 rounded-full flex items-center justify-center">
               <Calculator className="w-4 h-4 text-brand" />

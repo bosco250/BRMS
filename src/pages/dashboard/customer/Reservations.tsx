@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Calendar,
   Clock,
@@ -11,12 +11,10 @@ import {
   XCircle,
   AlertCircle,
   Search,
-  Filter,
   X,
 } from "lucide-react";
 import { useCustomerDashboard } from "./context";
 import { toast } from "react-toastify";
-import type { Notification } from "../../../types/notification";
 
 interface ReservationFormData {
   date: string;
@@ -28,7 +26,7 @@ interface ReservationFormData {
 
 export default function Reservations() {
   const { reservations } = useCustomerDashboard();
-  const [showForm, setShowForm] = useState(false);
+  // const [showForm, setShowForm] = useState(false);
   const [editingReservation, setEditingReservation] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -178,14 +176,14 @@ export default function Reservations() {
   };
 
   // Handle cancel reservation
-  const handleCancel = (reservationId: number) => {
+  const handleCancel = (_reservationId: number) => {
     if (window.confirm("Are you sure you want to cancel this reservation?")) {
       toast.success("Reservation cancelled successfully!");
     }
   };
 
   // Handle delete reservation
-  const handleDelete = (reservationId: number) => {
+  const handleDelete = (_reservationId: number) => {
     if (window.confirm("Are you sure you want to delete this reservation?")) {
       toast.success("Reservation deleted successfully!");
     }
@@ -293,13 +291,13 @@ export default function Reservations() {
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => handleEdit(reservation)}
-                          className="p-1 text-text-secondary hover:text-text-primary hover:bg-surface-primary rounded"
+                          className="p-1 text-text-secondary hover:text-text-primary hover:bg-surface-primary rounded border border-transparent hover:border-border-secondary"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleCancel(reservation.id)}
-                          className="p-1 text-text-secondary hover:text-error hover:bg-error/10 rounded"
+                          className="p-1 text-text-secondary hover:text-error hover:bg-error/10 rounded border border-transparent hover:border-error/20"
                         >
                           <XCircle className="w-4 h-4" />
                         </button>
@@ -369,7 +367,7 @@ export default function Reservations() {
                       </div>
                       <button
                         onClick={() => handleDelete(reservation.id)}
-                        className="p-1 text-text-secondary hover:text-error hover:bg-error/10 rounded"
+                        className="p-1 text-text-secondary hover:text-error hover:bg-error/10 rounded border border-transparent hover:border-error/20"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -435,7 +433,7 @@ export default function Reservations() {
       {/* Reservation Form Modal */}
       {showFormModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto border border-border-primary">
             <div className="p-6">
               <div className="flex justify-between items-start mb-6">
                 <div>
