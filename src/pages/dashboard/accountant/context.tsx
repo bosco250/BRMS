@@ -521,7 +521,7 @@ export function AccountantDashboardProvider({
     period: string
   ) => {
     // This would typically call an API to generate a report
-    console.log(`Generating ${type} report for ${period}`);
+    // Generating report
   };
 
   // Notification functions

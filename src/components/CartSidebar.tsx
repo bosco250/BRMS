@@ -210,7 +210,7 @@ const CartSidebar: React.FC = () => {
                 {/* Test Navigation Button */}
                 <motion.button
                   onClick={() => {
-                    console.log("Test navigation clicked");
+                    // Test navigation
                     window.location.href = "/checkout";
                   }}
                   className="w-full bg-gray-500 text-white py-2 rounded-lg font-medium hover:bg-gray-600 transition-colors mb-2"

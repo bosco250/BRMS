@@ -90,7 +90,7 @@ const Checkout: React.FC = () => {
       createdAt: new Date().toISOString(),
     };
 
-    console.log("Order placed:", orderData);
+    // Order placed successfully
 
     // Show success toast
     toast.success(

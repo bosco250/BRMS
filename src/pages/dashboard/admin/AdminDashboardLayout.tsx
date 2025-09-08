@@ -14,6 +14,7 @@ import {
   LogOut,
   MoreVertical,
   ShoppingCart,
+  Server,
 } from "lucide-react";
 import AdminNotificationMenu from "../../../components/AdminNotificationMenu";
 import {
@@ -63,6 +64,16 @@ function Layout() {
       to: "/dashboard/admin/orders",
       label: "Order Management",
       icon: ShoppingCart,
+    },
+    {
+      to: "/dashboard/admin/technical-infrastructure",
+      label: "Technical Infrastructure",
+      icon: Server,
+    },
+    {
+      to: "/dashboard/admin/system-administration",
+      label: "System Administration",
+      icon: Shield,
     },
     {
       to: "/dashboard/admin/settings",

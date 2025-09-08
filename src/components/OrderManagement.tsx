@@ -100,7 +100,7 @@ const OrderManagement: React.FC<OrderManagementProps> = ({ userRole }) => {
 
   const handleStatusUpdate = (orderId: string, newStatus: string) => {
     // In a real app, this would update the database
-    console.log(`Updating order ${orderId} status to ${newStatus}`);
+    // Updating order status
   };
 
   const openOrderDetails = (order: CheckoutOrder) => {

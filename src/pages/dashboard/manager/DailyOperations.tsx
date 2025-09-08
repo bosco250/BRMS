@@ -40,7 +40,9 @@ export default function DailyOperations() {
   const [filterStatus, setFilterStatus] = useState("all");
 
   // Mock data for daily operations
-  const lowStockItems = inventory.filter(item => item.currentStock <= item.minStock);
+  const lowStockItems = inventory.filter(
+    (item) => item.currentStock <= item.minStock
+  );
   const recentDeliveries = [
     {
       id: "DEL-001",
@@ -49,11 +51,11 @@ export default function DailyOperations() {
       totalValue: 125000,
       status: "received",
       timestamp: "2024-01-15T09:30:00Z",
-      items: [
+      deliveryItems: [
         { name: "Tomatoes", quantity: 50, unit: "kg", price: 2000 },
         { name: "Onions", quantity: 30, unit: "kg", price: 1500 },
         { name: "Lettuce", quantity: 20, unit: "heads", price: 800 },
-      ]
+      ],
     },
     {
       id: "DEL-002",
@@ -62,11 +64,11 @@ export default function DailyOperations() {
       totalValue: 85000,
       status: "pending",
       timestamp: "2024-01-15T14:00:00Z",
-      items: [
+      deliveryItems: [
         { name: "Coca Cola", quantity: 24, unit: "bottles", price: 1200 },
         { name: "Orange Juice", quantity: 12, unit: "bottles", price: 2500 },
-      ]
-    }
+      ],
+    },
   ];
 
   const staffPerformance = [
@@ -80,7 +82,7 @@ export default function DailyOperations() {
       status: "active",
       shiftStart: "08:00",
       shiftEnd: "16:00",
-      efficiency: 92
+      efficiency: 92,
     },
     {
       id: 2,
@@ -92,7 +94,7 @@ export default function DailyOperations() {
       status: "active",
       shiftStart: "12:00",
       shiftEnd: "20:00",
-      efficiency: 88
+      efficiency: 88,
     },
     {
       id: 3,
@@ -104,8 +106,8 @@ export default function DailyOperations() {
       status: "break",
       shiftStart: "10:00",
       shiftEnd: "18:00",
-      efficiency: 95
-    }
+      efficiency: 95,
+    },
   ];
 
   const orderFlow = [
@@ -117,7 +119,7 @@ export default function DailyOperations() {
       status: "preparing",
       timeElapsed: "12m",
       assignedTo: "Sarah Johnson",
-      priority: "normal"
+      priority: "normal",
     },
     {
       id: "ORD-002",
@@ -127,7 +129,7 @@ export default function DailyOperations() {
       status: "ready",
       timeElapsed: "8m",
       assignedTo: "Mike Wilson",
-      priority: "high"
+      priority: "high",
     },
     {
       id: "ORD-003",
@@ -137,8 +139,8 @@ export default function DailyOperations() {
       status: "served",
       timeElapsed: "15m",
       assignedTo: "Emma Davis",
-      priority: "normal"
-    }
+      priority: "normal",
+    },
   ];
 
   const customerComplaints = [
@@ -150,7 +152,7 @@ export default function DailyOperations() {
       severity: "medium",
       status: "resolved",
       timestamp: "2024-01-15T13:30:00Z",
-      resolution: "Reheated food and offered complimentary dessert"
+      resolution: "Reheated food and offered complimentary dessert",
     },
     {
       id: "COMP-002",
@@ -160,8 +162,8 @@ export default function DailyOperations() {
       severity: "low",
       status: "pending",
       timestamp: "2024-01-15T14:15:00Z",
-      resolution: null
-    }
+      resolution: null,
+    },
   ];
 
   const formatCurrency = (amount: number) => {
@@ -174,34 +176,52 @@ export default function DailyOperations() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "active": return "bg-green-100 text-green-800";
-      case "break": return "bg-yellow-100 text-yellow-800";
-      case "off": return "bg-gray-100 text-gray-800";
-      case "received": return "bg-green-100 text-green-800";
-      case "pending": return "bg-yellow-100 text-yellow-800";
-      case "preparing": return "bg-blue-100 text-blue-800";
-      case "ready": return "bg-green-100 text-green-800";
-      case "served": return "bg-gray-100 text-gray-800";
-      case "resolved": return "bg-green-100 text-green-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "active":
+        return "bg-green-100 text-green-800";
+      case "break":
+        return "bg-yellow-100 text-yellow-800";
+      case "off":
+        return "bg-gray-100 text-gray-800";
+      case "received":
+        return "bg-green-100 text-green-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "preparing":
+        return "bg-blue-100 text-blue-800";
+      case "ready":
+        return "bg-green-100 text-green-800";
+      case "served":
+        return "bg-gray-100 text-gray-800";
+      case "resolved":
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "high": return "text-red-600 bg-red-50";
-      case "medium": return "text-yellow-600 bg-yellow-50";
-      case "low": return "text-blue-600 bg-blue-50";
-      default: return "text-gray-600 bg-gray-50";
+      case "high":
+        return "text-red-600 bg-red-50";
+      case "medium":
+        return "text-yellow-600 bg-yellow-50";
+      case "low":
+        return "text-blue-600 bg-blue-50";
+      default:
+        return "text-gray-600 bg-gray-50";
     }
   };
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case "high": return "text-red-600 bg-red-50";
-      case "medium": return "text-yellow-600 bg-yellow-50";
-      case "low": return "text-blue-600 bg-blue-50";
-      default: return "text-gray-600 bg-gray-50";
+      case "high":
+        return "text-red-600 bg-red-50";
+      case "medium":
+        return "text-yellow-600 bg-yellow-50";
+      case "low":
+        return "text-blue-600 bg-blue-50";
+      default:
+        return "text-gray-600 bg-gray-50";
     }
   };
 
@@ -210,8 +230,12 @@ export default function DailyOperations() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">Daily Operations</h1>
-          <p className="text-text-secondary">Manage daily restaurant operations and monitor performance</p>
+          <h1 className="text-2xl font-bold text-text-primary">
+            Daily Operations
+          </h1>
+          <p className="text-text-secondary">
+            Manage daily restaurant operations and monitor performance
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <button className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand-dark transition-colors">
@@ -231,14 +255,18 @@ export default function DailyOperations() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-text-secondary">Low Stock Items</p>
-              <p className="text-2xl font-bold text-red-600">{lowStockItems.length}</p>
+              <p className="text-2xl font-bold text-red-600">
+                {lowStockItems.length}
+              </p>
             </div>
             <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
               <AlertTriangle className="w-6 h-6 text-red-600" />
             </div>
           </div>
           <div className="mt-2 text-xs text-text-secondary">
-            {lowStockItems.length > 0 ? "Action required" : "All items in stock"}
+            {lowStockItems.length > 0
+              ? "Action required"
+              : "All items in stock"}
           </div>
         </div>
 
@@ -247,7 +275,7 @@ export default function DailyOperations() {
             <div>
               <p className="text-sm text-text-secondary">Active Staff</p>
               <p className="text-2xl font-bold text-green-600">
-                {staffPerformance.filter(s => s.status === "active").length}
+                {staffPerformance.filter((s) => s.status === "active").length}
               </p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -264,7 +292,7 @@ export default function DailyOperations() {
             <div>
               <p className="text-sm text-text-secondary">Orders in Progress</p>
               <p className="text-2xl font-bold text-blue-600">
-                {orderFlow.filter(o => o.status === "preparing").length}
+                {orderFlow.filter((o) => o.status === "preparing").length}
               </p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -281,7 +309,10 @@ export default function DailyOperations() {
             <div>
               <p className="text-sm text-text-secondary">Pending Complaints</p>
               <p className="text-2xl font-bold text-yellow-600">
-                {customerComplaints.filter(c => c.status === "pending").length}
+                {
+                  customerComplaints.filter((c) => c.status === "pending")
+                    .length
+                }
               </p>
             </div>
             <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
@@ -327,20 +358,28 @@ export default function DailyOperations() {
             {/* Low Stock Alerts */}
             <div className="bg-dashboard p-6 rounded-lg border border-border-primary">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-text-primary">Low Stock Alerts</h3>
+                <h3 className="text-lg font-semibold text-text-primary">
+                  Low Stock Alerts
+                </h3>
                 <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
                   {lowStockItems.length} items
                 </span>
               </div>
               <div className="space-y-3">
                 {lowStockItems.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200"
+                  >
                     <div className="flex items-center gap-3">
                       <Package className="w-5 h-5 text-red-600" />
                       <div>
-                        <p className="font-medium text-text-primary">{item.name}</p>
+                        <p className="font-medium text-text-primary">
+                          {item.name}
+                        </p>
                         <p className="text-sm text-text-secondary">
-                          Current: {item.currentStock} {item.unit} | Min: {item.minStock} {item.unit}
+                          Current: {item.currentStock} {item.unit} | Min:{" "}
+                          {item.minStock} {item.unit}
                         </p>
                       </div>
                     </div>
@@ -360,7 +399,9 @@ export default function DailyOperations() {
             {/* Recent Deliveries */}
             <div className="bg-dashboard p-6 rounded-lg border border-border-primary">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-text-primary">Recent Deliveries</h3>
+                <h3 className="text-lg font-semibold text-text-primary">
+                  Recent Deliveries
+                </h3>
                 <button className="flex items-center gap-2 px-3 py-1 bg-brand text-white text-sm rounded hover:bg-brand-dark transition-colors">
                   <Plus className="w-4 h-4" />
                   Add Delivery
@@ -368,16 +409,26 @@ export default function DailyOperations() {
               </div>
               <div className="space-y-4">
                 {recentDeliveries.map((delivery) => (
-                  <div key={delivery.id} className="p-4 bg-white rounded-lg border border-border-primary">
+                  <div
+                    key={delivery.id}
+                    className="p-4 bg-white rounded-lg border border-border-primary"
+                  >
                     <div className="flex items-center justify-between mb-3">
                       <div>
-                        <p className="font-medium text-text-primary">{delivery.supplier}</p>
+                        <p className="font-medium text-text-primary">
+                          {delivery.supplier}
+                        </p>
                         <p className="text-sm text-text-secondary">
-                          {delivery.items} items • {formatCurrency(delivery.totalValue)}
+                          {delivery.items.length} items •{" "}
+                          {formatCurrency(delivery.totalValue)}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(delivery.status)}`}>
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full ${getStatusColor(
+                            delivery.status
+                          )}`}
+                        >
                           {delivery.status}
                         </span>
                         <button className="p-1 text-text-secondary hover:text-text-primary">
@@ -386,11 +437,15 @@ export default function DailyOperations() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      {delivery.items.map((item, index) => (
-                        <div key={index} className="flex items-center justify-between text-sm">
+                      {delivery.deliveryItems.map((item, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between text-sm"
+                        >
                           <span className="text-text-primary">{item.name}</span>
                           <span className="text-text-secondary">
-                            {item.quantity} {item.unit} • {formatCurrency(item.price)}
+                            {item.quantity} {item.unit} •{" "}
+                            {formatCurrency(item.price)}
                           </span>
                         </div>
                       ))}
@@ -407,11 +462,13 @@ export default function DailyOperations() {
           <div className="space-y-6">
             <div className="bg-dashboard p-6 rounded-lg border border-border-primary">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-text-primary">Staff Performance</h3>
+                <h3 className="text-lg font-semibold text-text-primary">
+                  Staff Performance
+                </h3>
                 <div className="flex items-center gap-2">
                   <Filter className="w-4 h-4 text-text-secondary" />
-                  <select 
-                    value={filterStatus} 
+                  <select
+                    value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
                     className="text-sm border border-border-primary rounded px-2 py-1"
                   >
@@ -424,49 +481,75 @@ export default function DailyOperations() {
               </div>
               <div className="space-y-4">
                 {staffPerformance
-                  .filter(staff => filterStatus === "all" || staff.status === filterStatus)
+                  .filter(
+                    (staff) =>
+                      filterStatus === "all" || staff.status === filterStatus
+                  )
                   .map((member) => (
-                  <div key={member.id} className="p-4 bg-white rounded-lg border border-border-primary">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-brand/10 rounded-full flex items-center justify-center">
-                          <Users className="w-5 h-5 text-brand" />
+                    <div
+                      key={member.id}
+                      className="p-4 bg-white rounded-lg border border-border-primary"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-brand/10 rounded-full flex items-center justify-center">
+                            <Users className="w-5 h-5 text-brand" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-text-primary">
+                              {member.name}
+                            </p>
+                            <p className="text-sm text-text-secondary">
+                              {member.role}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${getStatusColor(
+                              member.status
+                            )}`}
+                          >
+                            {member.status}
+                          </span>
+                          <div className="text-right">
+                            <p className="text-sm font-medium text-text-primary">
+                              {member.efficiency}%
+                            </p>
+                            <p className="text-xs text-text-secondary">
+                              Efficiency
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <p className="text-text-secondary">Orders Served</p>
+                          <p className="font-medium text-text-primary">
+                            {member.ordersServed}
+                          </p>
                         </div>
                         <div>
-                          <p className="font-medium text-text-primary">{member.name}</p>
-                          <p className="text-sm text-text-secondary">{member.role}</p>
+                          <p className="text-text-secondary">Total Sales</p>
+                          <p className="font-medium text-text-primary">
+                            {formatCurrency(member.totalSales)}
+                          </p>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(member.status)}`}>
-                          {member.status}
-                        </span>
-                        <div className="text-right">
-                          <p className="text-sm font-medium text-text-primary">{member.efficiency}%</p>
-                          <p className="text-xs text-text-secondary">Efficiency</p>
+                        <div>
+                          <p className="text-text-secondary">Rating</p>
+                          <p className="font-medium text-text-primary">
+                            {member.rating}/5
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-text-secondary">Shift</p>
+                          <p className="font-medium text-text-primary">
+                            {member.shiftStart} - {member.shiftEnd}
+                          </p>
                         </div>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <p className="text-text-secondary">Orders Served</p>
-                        <p className="font-medium text-text-primary">{member.ordersServed}</p>
-                      </div>
-                      <div>
-                        <p className="text-text-secondary">Total Sales</p>
-                        <p className="font-medium text-text-primary">{formatCurrency(member.totalSales)}</p>
-                      </div>
-                      <div>
-                        <p className="text-text-secondary">Rating</p>
-                        <p className="font-medium text-text-primary">{member.rating}/5</p>
-                      </div>
-                      <div>
-                        <p className="text-text-secondary">Shift</p>
-                        <p className="font-medium text-text-primary">{member.shiftStart} - {member.shiftEnd}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </div>
           </div>
@@ -477,7 +560,9 @@ export default function DailyOperations() {
           <div className="space-y-6">
             <div className="bg-dashboard p-6 rounded-lg border border-border-primary">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-text-primary">Order Flow</h3>
+                <h3 className="text-lg font-semibold text-text-primary">
+                  Order Flow
+                </h3>
                 <div className="flex items-center gap-2">
                   <Search className="w-4 h-4 text-text-secondary" />
                   <input
@@ -491,58 +576,82 @@ export default function DailyOperations() {
               </div>
               <div className="space-y-3">
                 {orderFlow
-                  .filter(order => 
-                    searchQuery === "" || 
-                    order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    order.table.toString().includes(searchQuery)
+                  .filter(
+                    (order) =>
+                      searchQuery === "" ||
+                      order.id
+                        .toLowerCase()
+                        .includes(searchQuery.toLowerCase()) ||
+                      order.table.toString().includes(searchQuery)
                   )
                   .map((order) => (
-                  <div key={order.id} className="p-4 bg-white rounded-lg border border-border-primary">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <ShoppingCart className="w-5 h-5 text-blue-600" />
+                    <div
+                      key={order.id}
+                      className="p-4 bg-white rounded-lg border border-border-primary"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <ShoppingCart className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-text-primary">
+                              {order.id}
+                            </p>
+                            <p className="text-sm text-text-secondary">
+                              Table {order.table} • {order.items} items
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-text-primary">{order.id}</p>
-                          <p className="text-sm text-text-secondary">Table {order.table} • {order.items} items</p>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(
+                              order.priority
+                            )}`}
+                          >
+                            {order.priority}
+                          </span>
+                          <span
+                            className={`px-2 py-1 text-xs rounded-full ${getStatusColor(
+                              order.status
+                            )}`}
+                          >
+                            {order.status}
+                          </span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(order.priority)}`}>
-                          {order.priority}
-                        </span>
-                        <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(order.status)}`}>
-                          {order.status}
-                        </span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4 text-sm">
+                          <div>
+                            <p className="text-text-secondary">Total</p>
+                            <p className="font-medium text-text-primary">
+                              {formatCurrency(order.total)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-text-secondary">Time</p>
+                            <p className="font-medium text-text-primary">
+                              {order.timeElapsed}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-text-secondary">Assigned to</p>
+                            <p className="font-medium text-text-primary">
+                              {order.assignedTo}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button className="p-2 text-text-secondary hover:text-text-primary hover:bg-surface-secondary rounded">
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button className="p-2 text-text-secondary hover:text-text-primary hover:bg-surface-secondary rounded">
+                            <Edit className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 text-sm">
-                        <div>
-                          <p className="text-text-secondary">Total</p>
-                          <p className="font-medium text-text-primary">{formatCurrency(order.total)}</p>
-                        </div>
-                        <div>
-                          <p className="text-text-secondary">Time</p>
-                          <p className="font-medium text-text-primary">{order.timeElapsed}</p>
-                        </div>
-                        <div>
-                          <p className="text-text-secondary">Assigned to</p>
-                          <p className="font-medium text-text-primary">{order.assignedTo}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button className="p-2 text-text-secondary hover:text-text-primary hover:bg-surface-secondary rounded">
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button className="p-2 text-text-secondary hover:text-text-primary hover:bg-surface-secondary rounded">
-                          <Edit className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </div>
           </div>
@@ -553,7 +662,9 @@ export default function DailyOperations() {
           <div className="space-y-6">
             <div className="bg-dashboard p-6 rounded-lg border border-border-primary">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-text-primary">Customer Complaints</h3>
+                <h3 className="text-lg font-semibold text-text-primary">
+                  Customer Complaints
+                </h3>
                 <button className="flex items-center gap-2 px-3 py-1 bg-brand text-white text-sm rounded hover:bg-brand-dark transition-colors">
                   <Plus className="w-4 h-4" />
                   Add Complaint
@@ -561,17 +672,32 @@ export default function DailyOperations() {
               </div>
               <div className="space-y-4">
                 {customerComplaints.map((complaint) => (
-                  <div key={complaint.id} className="p-4 bg-white rounded-lg border border-border-primary">
+                  <div
+                    key={complaint.id}
+                    className="p-4 bg-white rounded-lg border border-border-primary"
+                  >
                     <div className="flex items-center justify-between mb-3">
                       <div>
-                        <p className="font-medium text-text-primary">{complaint.customer}</p>
-                        <p className="text-sm text-text-secondary">Table {complaint.table} • {complaint.issue}</p>
+                        <p className="font-medium text-text-primary">
+                          {complaint.customer}
+                        </p>
+                        <p className="text-sm text-text-secondary">
+                          Table {complaint.table} • {complaint.issue}
+                        </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 text-xs rounded-full ${getSeverityColor(complaint.severity)}`}>
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full ${getSeverityColor(
+                            complaint.severity
+                          )}`}
+                        >
                           {complaint.severity}
                         </span>
-                        <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(complaint.status)}`}>
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full ${getStatusColor(
+                            complaint.status
+                          )}`}
+                        >
                           {complaint.status}
                         </span>
                       </div>

@@ -12,7 +12,6 @@ import {
   MoreVertical,
   Menu,
   TrendingUp,
-  User,
   Settings,
   X,
   ShoppingCart,
@@ -48,16 +47,6 @@ function Layout() {
       label: "Financial Monitoring",
       icon: DollarSign,
     },
-    {
-      to: "/dashboard/manager/business-operations",
-      label: "Business Operations",
-      icon: Menu,
-    },
-    {
-      to: "/dashboard/manager/system-administration",
-      label: "System Administration",
-      icon: Shield,
-    },
     { to: "/dashboard/manager/tables", label: "Table Management", icon: Users },
     { to: "/dashboard/manager/staff", label: "Staff Management", icon: Users },
     { to: "/dashboard/manager/inventory", label: "Inventory", icon: Database },
@@ -66,11 +55,6 @@ function Layout() {
       to: "/dashboard/manager/reports",
       label: "Reports & Analytics",
       icon: TrendingUp,
-    },
-    {
-      to: "/dashboard/manager/customers",
-      label: "Customer Management",
-      icon: User,
     },
     {
       to: "/dashboard/manager/orders",

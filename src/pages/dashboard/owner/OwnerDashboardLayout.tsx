@@ -14,6 +14,8 @@ import {
   Shield,
   LogOut,
   MoreVertical,
+  Target,
+  Menu,
 } from "lucide-react";
 import OwnerNotificationMenu from "../../../components/OwnerNotificationMenu";
 import {
@@ -35,6 +37,11 @@ function Layout() {
       end: true,
     },
     {
+      to: "/dashboard/owner/business-management",
+      label: "Business Management",
+      icon: Building2,
+    },
+    {
       to: "/dashboard/owner/restaurants",
       label: "Restaurants",
       icon: Building2,
@@ -42,6 +49,16 @@ function Layout() {
     { to: "/dashboard/owner/financial", label: "Financial", icon: DollarSign },
     { to: "/dashboard/owner/staff", label: "Staff Management", icon: Users },
     { to: "/dashboard/owner/reports", label: "Reports", icon: TrendingUp },
+    {
+      to: "/dashboard/owner/strategic-decisions",
+      label: "Strategic Decisions",
+      icon: Target,
+    },
+    {
+      to: "/dashboard/owner/business-operations",
+      label: "Business Operations",
+      icon: Menu,
+    },
     { to: "/dashboard/owner/settings", label: "Settings", icon: Settings },
   ];
 

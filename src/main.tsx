@@ -22,30 +22,32 @@ import AdminSystemAnalytics from "./pages/dashboard/admin/SystemAnalytics.tsx";
 import AdminAuditLogs from "./pages/dashboard/admin/AuditLogs.tsx";
 import AdminOrders from "./pages/dashboard/admin/Orders.tsx";
 import AdminSettings from "./pages/dashboard/admin/Settings.tsx";
+import TechnicalInfrastructure from "./pages/dashboard/admin/TechnicalInfrastructure.tsx";
+import SystemAdministration from "./pages/dashboard/admin/SystemAdministration.tsx";
 // Manager Dashboard Components
 import ManagerDashboardLayout from "./pages/dashboard/manager/ManagerDashboardLayout.tsx";
 import ManagerDashboardMain from "./pages/dashboard/manager/Dashboard.tsx";
 import DailyOperations from "./pages/dashboard/manager/DailyOperations.tsx";
 import FinancialMonitoring from "./pages/dashboard/manager/FinancialMonitoring.tsx";
-import BusinessOperations from "./pages/dashboard/manager/BusinessOperations.tsx";
-import SystemAdministration from "./pages/dashboard/manager/SystemAdministration.tsx";
 import TableManagement from "./pages/dashboard/manager/TableManagement.tsx";
 import StaffManagement from "./pages/dashboard/manager/StaffManagement.tsx";
 import InventoryManagement from "./pages/dashboard/manager/InventoryManagement.tsx";
 import MenuManagement from "./pages/dashboard/manager/MenuManagement.tsx";
 import ReportsAnalytics from "./pages/dashboard/manager/ReportsAnalytics.tsx";
-import CustomerManagement from "./pages/dashboard/manager/CustomerManagement.tsx";
 import ManagerOrders from "./pages/dashboard/manager/Orders.tsx";
 import Settings from "./pages/dashboard/manager/Settings.tsx";
 
 // Owner Dashboard Components
 import OwnerDashboardLayout from "./pages/dashboard/owner/OwnerDashboardLayout.tsx";
 import OwnerDashboardMain from "./pages/dashboard/owner/Dashboard.tsx";
+import BusinessManagement from "./pages/dashboard/owner/BusinessManagement.tsx";
 import Restaurants from "./pages/dashboard/owner/Restaurants.tsx";
 import Financial from "./pages/dashboard/owner/Financial.tsx";
 import OwnerStaffManagement from "./pages/dashboard/owner/StaffManagement.tsx";
 import Reports from "./pages/dashboard/owner/Reports.tsx";
 import OwnerSettings from "./pages/dashboard/owner/Settings.tsx";
+import StrategicDecisions from "./pages/dashboard/owner/StrategicDecisions.tsx";
+import BusinessOperations from "./pages/dashboard/owner/BusinessOperations.tsx";
 
 // Accountant Dashboard Components
 import AccountantDashboardLayout from "./pages/dashboard/accountant/AccountantDashboardLayout.tsx";
@@ -59,6 +61,8 @@ import AccountantSettings from "./pages/dashboard/accountant/Settings.tsx";
 // Waiter Dashboard Components
 import WaiterDashboardLayout from "./pages/dashboard/waiter/WaiterDashboardLayout.tsx";
 import WaiterDashboardMain from "./pages/dashboard/waiter/Dashboard.tsx";
+import OrderTaking from "./pages/dashboard/waiter/OrderTaking.tsx";
+import PaymentProcessing from "./pages/dashboard/waiter/PaymentProcessing.tsx";
 import WaiterOrders from "./pages/dashboard/waiter/Orders.tsx";
 import WaiterTables from "./pages/dashboard/waiter/Tables.tsx";
 import WaiterReservations from "./pages/dashboard/waiter/Reservations.tsx";
@@ -75,6 +79,7 @@ import Communication from "./pages/dashboard/customer/Communication.tsx";
 import CustomerOrders from "./pages/dashboard/customer/Orders.tsx";
 import HelpSupport from "./pages/dashboard/customer/HelpSupport.tsx";
 import CustomerSettings from "./pages/dashboard/customer/Settings.tsx";
+import SelfServiceOrdering from "./pages/dashboard/customer/SelfServiceOrdering.tsx";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -108,6 +113,14 @@ const router = createBrowserRouter([
       { path: "analytics", element: <AdminSystemAnalytics /> },
       { path: "logs", element: <AdminAuditLogs /> },
       { path: "orders", element: <AdminOrders /> },
+      {
+        path: "technical-infrastructure",
+        element: <TechnicalInfrastructure />,
+      },
+      {
+        path: "system-administration",
+        element: <SystemAdministration />,
+      },
       { path: "settings", element: <AdminSettings /> },
     ],
   },
@@ -118,6 +131,8 @@ const router = createBrowserRouter([
     element: <WaiterDashboardLayout />,
     children: [
       { index: true, element: <WaiterDashboardMain /> },
+      { path: "order-taking", element: <OrderTaking /> },
+      { path: "payment-processing", element: <PaymentProcessing /> },
       { path: "orders", element: <WaiterOrders /> },
       { path: "tables", element: <WaiterTables /> },
       { path: "reservations", element: <WaiterReservations /> },
@@ -133,8 +148,6 @@ const router = createBrowserRouter([
       { index: true, element: <ManagerDashboardMain /> },
       { path: "daily-operations", element: <DailyOperations /> },
       { path: "financial-monitoring", element: <FinancialMonitoring /> },
-      { path: "business-operations", element: <BusinessOperations /> },
-      { path: "system-administration", element: <SystemAdministration /> },
       { path: "tables", element: <TableManagement /> },
       { path: "staff", element: <StaffManagement /> },
       { path: "inventory", element: <InventoryManagement /> },
@@ -142,10 +155,6 @@ const router = createBrowserRouter([
       {
         path: "reports",
         element: <ReportsAnalytics />,
-      },
-      {
-        path: "customers",
-        element: <CustomerManagement />,
       },
       { path: "orders", element: <ManagerOrders /> },
       { path: "settings", element: <Settings /> },
@@ -158,10 +167,13 @@ const router = createBrowserRouter([
     element: <OwnerDashboardLayout />,
     children: [
       { index: true, element: <OwnerDashboardMain /> },
+      { path: "business-management", element: <BusinessManagement /> },
       { path: "restaurants", element: <Restaurants /> },
       { path: "financial", element: <Financial /> },
       { path: "staff", element: <OwnerStaffManagement /> },
       { path: "reports", element: <Reports /> },
+      { path: "strategic-decisions", element: <StrategicDecisions /> },
+      { path: "business-operations", element: <BusinessOperations /> },
       { path: "settings", element: <OwnerSettings /> },
     ],
   },
@@ -187,6 +199,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Dashboard /> },
       { path: "menu", element: <BrowseMenu /> },
+      { path: "self-service", element: <SelfServiceOrdering /> },
       { path: "profile", element: <AccountProfile /> },
       { path: "loyalty", element: <LoyaltyProgram /> },
       { path: "reservations", element: <Reservations /> },

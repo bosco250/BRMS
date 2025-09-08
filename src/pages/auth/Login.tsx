@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { authenticate } from "../../data/users";
 import { setSessionUser } from "../../auth/session";
+import { sanitizeInput, validateEmail } from "../../utils/sanitize";
 import MarketingPanel from "../../components/auth/MarketingPanel";
 
 export default function Login() {
@@ -13,7 +14,37 @@ export default function Login() {
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    const user = authenticate(identifier, password);
+
+    // Sanitize inputs
+    const sanitizedIdentifier = sanitizeInput(identifier);
+    const sanitizedPassword = sanitizeInput(password);
+
+    // Form validation
+    if (!sanitizedIdentifier.trim()) {
+      setError("Email or phone number is required");
+      return;
+    }
+
+    if (!sanitizedPassword.trim()) {
+      setError("Password is required");
+      return;
+    }
+
+    if (sanitizedPassword.length < 3) {
+      setError("Password must be at least 3 characters");
+      return;
+    }
+
+    // Validate email format if it looks like an email
+    if (
+      sanitizedIdentifier.includes("@") &&
+      !validateEmail(sanitizedIdentifier)
+    ) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    const user = authenticate(sanitizedIdentifier, sanitizedPassword);
     if (!user) {
       setError(
         "Invalid credentials. Try the demo users (e.g., admin@brms.dev / admin123)."

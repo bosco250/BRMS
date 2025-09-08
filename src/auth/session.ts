@@ -4,25 +4,27 @@ const KEY = "brms_user";
 
 export function setSessionUser(user: FakeUser) {
   try {
-    localStorage.setItem(
-      KEY,
-      JSON.stringify({
-        id: user.id,
-        role: user.role,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        // Customer-specific fields
-        loyaltyPoints: user.loyaltyPoints,
-        totalVisits: user.totalVisits,
-        totalSpent: user.totalSpent,
-        tier: user.tier,
-        joinDate: user.joinDate,
-        preferences: user.preferences,
-        avatar: user.avatar,
-      })
-    );
-  } catch {}
+    const sessionData = {
+      id: user.id,
+      role: user.role,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      // Customer-specific fields
+      loyaltyPoints: user.loyaltyPoints,
+      totalVisits: user.totalVisits,
+      totalSpent: user.totalSpent,
+      tier: user.tier,
+      joinDate: user.joinDate,
+      preferences: user.preferences,
+      avatar: user.avatar,
+      // Add session expiration
+      expiresAt: Date.now() + 12 * 60 * 60 * 1000, // 12 hours
+    };
+    localStorage.setItem(KEY, JSON.stringify(sessionData));
+  } catch (error) {
+    console.error("Failed to save session:", error);
+  }
 }
 
 export function getSessionUser(): {
@@ -39,12 +41,24 @@ export function getSessionUser(): {
   joinDate?: string;
   preferences?: string[];
   avatar?: string | null;
+  expiresAt?: number;
 } | null {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
+
+    const sessionData = JSON.parse(raw);
+
+    // Check if session has expired
+    if (sessionData.expiresAt && Date.now() > sessionData.expiresAt) {
+      clearSessionUser();
+      return null;
+    }
+
+    return sessionData;
+  } catch (error) {
+    // Failed to parse session data
+    clearSessionUser();
     return null;
   }
 }

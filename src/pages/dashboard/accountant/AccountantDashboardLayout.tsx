@@ -59,7 +59,7 @@ function Layout() {
       <div
         className={`${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } fixed left-0 top-0 z-50 w-64 h-screen overflow-y-auto border-r border-border-primary transform transition-transform duration-300 ease-in-out lg:translate-x-0 bg-dashboard`}
+        } fixed left-0 top-0 z-20 w-64 h-screen overflow-y-auto border-r border-border-primary transform transition-transform duration-300 ease-in-out lg:translate-x-0 bg-dashboard`}
       >
         <div className="flex items-center justify-between h-16 px-4 border-b border-border-primary">
           <Link to="/" className="flex items-center">
@@ -106,7 +106,12 @@ function SidebarNav({
   nav,
   onNavigate,
 }: {
-  nav: any[];
+  nav: Array<{
+    to: string;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    end?: boolean;
+  }>;
   onNavigate: () => void;
 }) {
   return (

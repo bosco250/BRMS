@@ -1,7 +1,88 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import MarketingPanel from "../../components/auth/MarketingPanel";
 
 export default function Register() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Full name is required";
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = "Name must be at least 2 characters";
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = "Phone number is required";
+    } else if (!/^\+?[\d\s-()]+$/.test(formData.phone)) {
+      newErrors.phone = "Please enter a valid phone number";
+    }
+
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password";
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // In a real app, you would register the user here
+      // For demo purposes, redirect to login
+      navigate("/login");
+    } catch (error) {
+      setErrors({ general: "Registration failed. Please try again." });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
   return (
     <section className="py-12 sm:py-16 bg-surface-secondary">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -45,7 +126,16 @@ export default function Register() {
             </h1>
             <p className="mt-2 text-text-secondary">Start your BRMS journey.</p>
 
-            <form className="mt-8 rounded-2xl bg-surface-card p-6 ring-1 ring-border-secondary shadow-md">
+            <form
+              onSubmit={handleSubmit}
+              className="mt-8 rounded-2xl bg-surface-card p-6 ring-1 ring-border-secondary shadow-md"
+            >
+              {errors.general && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-sm text-red-600">{errors.general}</p>
+                </div>
+              )}
+
               <div className="grid gap-5">
                 <div>
                   <label
@@ -56,11 +146,22 @@ export default function Register() {
                   </label>
                   <input
                     id="name"
+                    name="name"
                     type="text"
-                    className="mt-1 block w-full rounded-md bg-surface-primary px-3 py-2 text-sm text-text-primary placeholder:text-text-muted ring-1 ring-border-subtle focus:outline-none focus:ring-2 focus:ring-brand/30"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className={`mt-1 block w-full rounded-md bg-surface-primary px-3 py-2 text-sm text-text-primary placeholder:text-text-muted ring-1 ${
+                      errors.name
+                        ? "ring-red-300 focus:ring-red-500"
+                        : "ring-border-subtle focus:ring-brand/30"
+                    } focus:outline-none focus:ring-2`}
                     placeholder="Jane Doe"
                   />
+                  {errors.name && (
+                    <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                  )}
                 </div>
+
                 <div>
                   <label
                     htmlFor="email"
@@ -70,12 +171,23 @@ export default function Register() {
                   </label>
                   <input
                     id="email"
+                    name="email"
                     type="email"
                     autoComplete="email"
-                    className="mt-1 block w-full rounded-md bg-surface-primary px-3 py-2 text-sm text-text-primary placeholder:text-text-muted ring-1 ring-border-subtle focus:outline-none focus:ring-2 focus:ring-brand/30"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className={`mt-1 block w-full rounded-md bg-surface-primary px-3 py-2 text-sm text-text-primary placeholder:text-text-muted ring-1 ${
+                      errors.email
+                        ? "ring-red-300 focus:ring-red-500"
+                        : "ring-border-subtle focus:ring-brand/30"
+                    } focus:outline-none focus:ring-2`}
                     placeholder="you@example.com"
                   />
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                  )}
                 </div>
+
                 <div>
                   <label
                     htmlFor="phone"
@@ -85,12 +197,23 @@ export default function Register() {
                   </label>
                   <input
                     id="phone"
+                    name="phone"
                     type="tel"
                     autoComplete="tel"
-                    className="mt-1 block w-full rounded-md bg-surface-primary px-3 py-2 text-sm text-text-primary placeholder:text-text-muted ring-1 ring-border-subtle focus:outline-none focus:ring-2 focus:ring-brand/30"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className={`mt-1 block w-full rounded-md bg-surface-primary px-3 py-2 text-sm text-text-primary placeholder:text-text-muted ring-1 ${
+                      errors.phone
+                        ? "ring-red-300 focus:ring-red-500"
+                        : "ring-border-subtle focus:ring-brand/30"
+                    } focus:outline-none focus:ring-2`}
                     placeholder="+250 7xx xxx xxx"
                   />
+                  {errors.phone && (
+                    <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                  )}
                 </div>
+
                 <div>
                   <label
                     htmlFor="password"
@@ -100,17 +223,59 @@ export default function Register() {
                   </label>
                   <input
                     id="password"
+                    name="password"
                     type="password"
                     autoComplete="new-password"
-                    className="mt-1 block w-full rounded-md bg-surface-primary px-3 py-2 text-sm text-text-primary placeholder:text-text-muted ring-1 ring-border-subtle focus:outline-none focus:ring-2 focus:ring-brand/30"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className={`mt-1 block w-full rounded-md bg-surface-primary px-3 py-2 text-sm text-text-primary placeholder:text-text-muted ring-1 ${
+                      errors.password
+                        ? "ring-red-300 focus:ring-red-500"
+                        : "ring-border-subtle focus:ring-brand/30"
+                    } focus:outline-none focus:ring-2`}
                     placeholder="••••••••"
                   />
+                  {errors.password && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.password}
+                    </p>
+                  )}
                 </div>
+
+                <div>
+                  <label
+                    htmlFor="confirmPassword"
+                    className="block text-sm font-medium text-text-primary"
+                  >
+                    Confirm Password
+                  </label>
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    className={`mt-1 block w-full rounded-md bg-surface-primary px-3 py-2 text-sm text-text-primary placeholder:text-text-muted ring-1 ${
+                      errors.confirmPassword
+                        ? "ring-red-300 focus:ring-red-500"
+                        : "ring-border-subtle focus:ring-brand/30"
+                    } focus:outline-none focus:ring-2`}
+                    placeholder="••••••••"
+                  />
+                  {errors.confirmPassword && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.confirmPassword}
+                    </p>
+                  )}
+                </div>
+
                 <button
                   type="submit"
-                  className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-text-inverted hover:bg-brand-hover shadow-sm"
+                  disabled={isSubmitting}
+                  className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-text-inverted hover:bg-brand-hover shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Create account
+                  {isSubmitting ? "Creating account..." : "Create account"}
                 </button>
               </div>
               <p className="mt-6 text-center text-sm text-text-secondary border-t border-border-subtle pt-4">

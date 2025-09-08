@@ -10,8 +10,8 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
-import { useAccountantDashboard } from "../pages/dashboard/accountant/context";
 import { toast } from "react-toastify";
+import { useAccountantDashboard } from "../pages/dashboard/accountant/context";
 
 const AccountantNotificationMenu: React.FC = () => {
   const {
@@ -94,7 +94,10 @@ const AccountantNotificationMenu: React.FC = () => {
   };
 
   // Handle notification click
-  const handleNotificationClick = (notification: any) => {
+  const handleNotificationClick = (notification: {
+    id: string;
+    actionUrl?: string;
+  }) => {
     if (!notification.isRead) {
       markNotificationAsRead(notification.id);
     }
@@ -140,7 +143,7 @@ const AccountantNotificationMenu: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black bg-opacity-50 z-[70]"
+              className="fixed inset-0 bg-black bg-opacity-50 z-[90]"
               onClick={() => setIsOpen(false)}
             />
 
@@ -150,7 +153,7 @@ const AccountantNotificationMenu: React.FC = () => {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: "100%", opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl z-[80] max-h-[80vh] overflow-hidden"
+              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl z-[100] max-h-[80vh] overflow-hidden"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-brand to-brand-dark text-white rounded-t-2xl">

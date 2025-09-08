@@ -10,6 +10,7 @@ import {
   MapPin,
   Heart,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useCustomerDashboard } from "./context";
 // import NotificationDemo from "../../../components/NotificationDemo";
 import { formatCurrency } from "../../../data/customerOrderData";
@@ -123,12 +124,12 @@ export default function Dashboard() {
             <h2 className="text-lg font-semibold text-text-primary">
               Recent Orders
             </h2>
-            <a
-              href="/dashboard/customer/orders"
+            <Link
+              to="/dashboard/customer/orders"
               className="text-brand hover:text-brand-dark text-sm font-medium"
             >
               View All
-            </a>
+            </Link>
           </div>
         </div>
         <div className="p-4">
@@ -200,34 +201,34 @@ export default function Dashboard() {
               Quick Actions
             </h3>
             <div className="space-y-3">
-              <a
-                href="/dashboard/customer/menu"
+              <Link
+                to="/dashboard/customer/menu"
                 className="flex items-center space-x-3 p-3 bg-surface-secondary rounded-lg hover:bg-surface-card transition-colors border border-border-secondary"
               >
                 <ShoppingBag className="w-5 h-5 text-brand" />
                 <span className="text-text-primary">Browse Menu</span>
-              </a>
-              <a
-                href="/dashboard/customer/reservations"
+              </Link>
+              <Link
+                to="/dashboard/customer/reservations"
                 className="flex items-center space-x-3 p-3 bg-surface-secondary rounded-lg hover:bg-surface-card transition-colors border border-border-secondary"
               >
                 <Calendar className="w-5 h-5 text-brand" />
                 <span className="text-text-primary">Make Reservation</span>
-              </a>
-              <a
-                href="/dashboard/customer/loyalty"
+              </Link>
+              <Link
+                to="/dashboard/customer/loyalty"
                 className="flex items-center space-x-3 p-3 bg-surface-secondary rounded-lg hover:bg-surface-card transition-colors border border-border-secondary"
               >
                 <Gift className="w-5 h-5 text-brand" />
                 <span className="text-text-primary">View Rewards</span>
-              </a>
-              <a
-                href="/dashboard/customer/profile"
+              </Link>
+              <Link
+                to="/dashboard/customer/profile"
                 className="flex items-center space-x-3 p-3 bg-surface-secondary rounded-lg hover:bg-surface-card transition-colors border border-border-secondary"
               >
                 <Heart className="w-5 h-5 text-brand" />
                 <span className="text-text-primary">Edit Profile</span>
-              </a>
+              </Link>
             </div>
           </div>
 

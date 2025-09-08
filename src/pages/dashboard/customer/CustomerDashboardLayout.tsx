@@ -45,6 +45,11 @@ function Layout() {
       end: true,
     },
     {
+      to: "/dashboard/customer/self-service",
+      label: "Self-Service Ordering",
+      icon: ShoppingCart,
+    },
+    {
       to: "/dashboard/customer/orders",
       label: "Order History",
       icon: ShoppingCart,

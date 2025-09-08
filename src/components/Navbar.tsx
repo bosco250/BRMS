@@ -3,7 +3,7 @@ import CartIcon from "./CartIcon";
 
 export default function Navbar() {
   return (
-    <header className="sticky top-0 z-50 bg-surface-primary/90 backdrop-blur border-b border-border-secondary shadow-sm">
+    <header className="sticky top-0 z-40 bg-surface-primary/90 backdrop-blur border-b border-border-secondary shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link
           to="/"

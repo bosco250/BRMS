@@ -378,10 +378,10 @@ export function CustomerDashboardProvider({
         avatar: user.avatar || null,
       });
     } else if (user && user.role !== "Customer") {
-      console.warn("User is not a customer:", user.role);
+      // User is not a customer
       // Redirect or show appropriate message for non-customer users
     } else {
-      console.log("No user logged in");
+      // No user logged in
       // Keep default empty customer state
     }
   }, []);

@@ -44,7 +44,21 @@ function Layout() {
       icon: Coffee,
       end: true,
     },
-    { to: "/dashboard/waiter/orders", label: "Orders", icon: ShoppingCart },
+    {
+      to: "/dashboard/waiter/order-taking",
+      label: "Take Orders",
+      icon: Utensils,
+    },
+    {
+      to: "/dashboard/waiter/payment-processing",
+      label: "Payment Processing",
+      icon: DollarSign,
+    },
+    {
+      to: "/dashboard/waiter/orders",
+      label: "Order Management",
+      icon: ShoppingCart,
+    },
     { to: "/dashboard/waiter/tables", label: "Table Management", icon: Table },
     {
       to: "/dashboard/waiter/reservations",

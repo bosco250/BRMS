@@ -556,7 +556,7 @@ export default function Reports() {
         };
       }
     } catch (error) {
-      console.error("Error generating PDF:", error);
+      // Error generating PDF
       toast.error("Failed to generate PDF. Please try again.");
     }
   };
@@ -603,7 +603,7 @@ export default function Reports() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Error generating Excel file:", error);
+      // Error generating Excel file
       toast.error("Failed to generate Excel file. Please try again.");
     }
   };
