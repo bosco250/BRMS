@@ -207,19 +207,6 @@ const CartSidebar: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Test Navigation Button */}
-                <motion.button
-                  onClick={() => {
-                    // Test navigation
-                    window.location.href = "/checkout";
-                  }}
-                  className="w-full bg-gray-500 text-white py-2 rounded-lg font-medium hover:bg-gray-600 transition-colors mb-2"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  Test Navigation (Direct)
-                </motion.button>
-
                 <motion.button
                   onClick={handleProceedToCheckout}
                   className="w-full bg-brand text-white py-3 rounded-lg font-medium hover:bg-brand-dark transition-colors"
