@@ -35,7 +35,7 @@ const Checkout: React.FC = () => {
             Add some items to your cart to proceed with checkout.
           </p>
           <button
-            onClick={() => navigate("/resto")}
+            onClick={() => navigate("/businesses")}
             className="bg-brand text-white px-6 py-3 rounded-lg hover:bg-brand-dark transition-colors"
           >
             Continue Shopping

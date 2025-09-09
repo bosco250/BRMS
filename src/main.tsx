@@ -4,7 +4,6 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 import App from "./App.tsx";
 import Landing from "./pages/Landing.tsx";
-import Bars from "./pages/Bars.tsx";
 import Resto from "./pages/Resto.tsx";
 import RestaurantProfile from "./pages/RestaurantProfile.tsx";
 import Login from "./pages/auth/Login.tsx";
@@ -48,6 +47,7 @@ import Reports from "./pages/dashboard/owner/Reports.tsx";
 import OwnerSettings from "./pages/dashboard/owner/Settings.tsx";
 import StrategicDecisions from "./pages/dashboard/owner/StrategicDecisions.tsx";
 import BusinessOperations from "./pages/dashboard/owner/BusinessOperations.tsx";
+import SubscriptionManagement from "./pages/dashboard/owner/SubscriptionManagement.tsx";
 
 // Accountant Dashboard Components
 import AccountantDashboardLayout from "./pages/dashboard/accountant/AccountantDashboardLayout.tsx";
@@ -91,9 +91,8 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       { index: true, element: <Landing /> },
-      { path: "bars", element: <Bars /> },
-      { path: "resto", element: <Resto /> },
-      { path: "resto/:id", element: <RestaurantProfile /> },
+      { path: "businesses", element: <Resto /> },
+      { path: "businesses/:id", element: <RestaurantProfile /> },
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
       { path: "forgot", element: <ForgotPassword /> },
@@ -174,6 +173,7 @@ const router = createBrowserRouter([
       { path: "reports", element: <Reports /> },
       { path: "strategic-decisions", element: <StrategicDecisions /> },
       { path: "business-operations", element: <BusinessOperations /> },
+      { path: "subscription", element: <SubscriptionManagement /> },
       { path: "settings", element: <OwnerSettings /> },
     ],
   },

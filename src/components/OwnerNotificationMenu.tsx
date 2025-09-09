@@ -93,7 +93,7 @@ const OwnerNotificationMenu: React.FC = () => {
   };
 
   // Handle notification click
-  const handleNotificationClick = (notification: any) => {
+  const handleNotificationClick = (notification: { id: string; actionUrl?: string; isRead: boolean }) => {
     if (!notification.read) {
       markNotificationAsRead(notification.id);
     }

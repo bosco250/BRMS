@@ -16,6 +16,7 @@ import {
   MoreVertical,
   Target,
   Menu,
+  CreditCard,
 } from "lucide-react";
 import OwnerNotificationMenu from "../../../components/OwnerNotificationMenu";
 import {
@@ -47,6 +48,11 @@ function Layout() {
       icon: Building2,
     },
     { to: "/dashboard/owner/financial", label: "Financial", icon: DollarSign },
+    {
+      to: "/dashboard/owner/subscription",
+      label: "Subscription",
+      icon: CreditCard,
+    },
     { to: "/dashboard/owner/staff", label: "Staff Management", icon: Users },
     { to: "/dashboard/owner/reports", label: "Reports", icon: TrendingUp },
     {

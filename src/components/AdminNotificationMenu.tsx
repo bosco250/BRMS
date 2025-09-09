@@ -100,7 +100,11 @@ const AdminNotificationMenu: React.FC = () => {
   };
 
   // Handle notification click
-  const handleNotificationClick = (notification: any) => {
+  const handleNotificationClick = (notification: {
+    id: string;
+    actionUrl?: string;
+    isRead: boolean;
+  }) => {
     if (!notification.isRead) {
       handleMarkAsRead();
     }

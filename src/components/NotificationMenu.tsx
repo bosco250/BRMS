@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { useCustomerDashboard } from "../pages/dashboard/customer/context";
 import { toast } from "react-toastify";
-import type { Notification } from "../types/notification";
 
 const NotificationMenu: React.FC = () => {
   const {
@@ -95,7 +94,11 @@ const NotificationMenu: React.FC = () => {
   };
 
   // Handle notification click
-  const handleNotificationClick = (notification: any) => {
+  const handleNotificationClick = (notification: {
+    id: string;
+    actionUrl?: string;
+    isRead: boolean;
+  }) => {
     if (!notification.isRead) {
       markNotificationAsRead(notification.id);
     }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   Outlet,
   Link,
@@ -15,10 +15,8 @@ import {
   Calendar,
   Settings,
   X,
-  Clock,
   DollarSign,
   Star,
-  Users,
   MapPin,
   LogOut,
   MoreVertical,
@@ -110,7 +108,10 @@ function Layout() {
       {/* Main Content */}
       <div className="flex-1 lg:ml-64">
         <div className="fixed top-0 right-0 left-0 lg:left-64 z-30">
-          <HeaderActions setSidebarOpen={setSidebarOpen} />
+          <HeaderActions
+            setSidebarOpen={setSidebarOpen}
+            currentTitle={currentTitle}
+          />
         </div>
         <main className="p-6 pt-20">
           <Outlet />
@@ -250,14 +251,12 @@ function SidebarFooter() {
 
 function HeaderActions({
   setSidebarOpen,
+  currentTitle,
 }: {
   setSidebarOpen: (open: boolean) => void;
+  currentTitle: string;
 }) {
-  const { waiter, notifications } = useWaiterDashboard();
-  const [showNotifications, setShowNotifications] = useState(false);
-
-  // Calculate unread notifications
-  const unreadCount = notifications.filter((notif) => !notif.read).length;
+  const { waiter } = useWaiterDashboard();
 
   // Calculate shift progress
   const now = new Date();
@@ -278,7 +277,7 @@ function HeaderActions({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-text-primary">
-            Waiter Dashboard
+            {currentTitle}
           </h1>
           <p className="text-sm text-text-secondary">
             Welcome back, {waiter.name}

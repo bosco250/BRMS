@@ -1,5 +1,6 @@
 import { FaCheck, FaMinus } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 type Plan = {
   name: string;
@@ -7,6 +8,7 @@ type Plan = {
   cta: string;
   highlight?: boolean;
   allowances: Array<{ label: string; value: string; available?: boolean }>;
+  link: string;
 };
 
 const plans: Plan[] = [
@@ -14,6 +16,7 @@ const plans: Plan[] = [
     name: "Basic",
     price: "29,000 RWF/mo",
     cta: "Start Basic",
+    link: "/register?type=business",
     allowances: [
       { label: "Locations", value: "1" },
       { label: "Users", value: "Up to 5" },
@@ -29,6 +32,7 @@ const plans: Plan[] = [
     name: "Premium",
     price: "79,000 RWF/mo",
     cta: "Start Premium",
+    link: "/register?type=business",
     highlight: true,
     allowances: [
       { label: "Locations", value: "Up to 3" },
@@ -45,6 +49,7 @@ const plans: Plan[] = [
     name: "Enterprise",
     price: "Custom",
     cta: "Contact Sales",
+    link: "/contact?plan=enterprise",
     allowances: [
       { label: "Locations", value: "Unlimited" },
       { label: "Users", value: "Unlimited" },
@@ -121,15 +126,16 @@ export default function Subscriptions() {
               </ul>
 
               <div className="mt-8">
-                <button
-                  className={`w-full rounded-md px-4 py-2 text-sm font-medium ${
+                <Link
+                  to={plan.link}
+                  className={`w-full rounded-md px-4 py-2 text-sm font-medium inline-block text-center ${
                     plan.highlight
                       ? "bg-accent text-text-inverted hover:bg-accent-hover active:bg-accent-active"
                       : "bg-brand text-text-inverted hover:bg-brand-hover active:bg-brand-active"
                   } focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/20`}
                 >
                   {plan.cta}
-                </button>
+                </Link>
               </div>
             </motion.div>
           ))}

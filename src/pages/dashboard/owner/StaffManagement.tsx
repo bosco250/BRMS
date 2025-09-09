@@ -152,7 +152,9 @@ export default function StaffManagement() {
             Staff Management
           </h1>
           <p className="text-text-secondary">
-            Manage staff across all restaurant locations
+            Manage staff across all restaurant locations. Business staff
+            (waiters, accountants, managers) are added by you as the business
+            owner.
           </p>
         </div>
         <button

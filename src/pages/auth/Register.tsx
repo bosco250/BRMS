@@ -1,18 +1,29 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 import MarketingPanel from "../../components/auth/MarketingPanel";
 
 export default function Register() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     password: "",
     confirmPassword: "",
+    userType: "customer", // "customer" or "business"
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Get user type from URL parameters
+  useEffect(() => {
+    const userType = searchParams.get("type");
+
+    if (userType && ["customer", "business"].includes(userType)) {
+      setFormData((prev) => ({ ...prev, userType }));
+    }
+  }, [searchParams]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -62,11 +73,28 @@ export default function Register() {
 
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // In a real app, you would register the user here
-      // For demo purposes, redirect to login
-      navigate("/login");
+      // Store user data in localStorage (in a real app, this would be handled by the backend)
+      const userData = {
+        id: Date.now().toString(),
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        role: formData.userType === "business" ? "owner" : "customer",
+        userType: formData.userType,
+        createdAt: new Date().toISOString(),
+      };
+
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("isAuthenticated", "true");
+
+      // Redirect based on user type
+      if (formData.userType === "business") {
+        navigate("/dashboard/owner");
+      } else {
+        navigate("/dashboard/customer");
+      }
     } catch (error) {
       setErrors({ general: "Registration failed. Please try again." });
     } finally {
@@ -74,7 +102,9 @@ export default function Register() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
@@ -159,6 +189,67 @@ export default function Register() {
                   />
                   {errors.name && (
                     <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-primary mb-3">
+                    Account Type
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <label className="relative flex cursor-pointer">
+                      <input
+                        type="radio"
+                        name="userType"
+                        value="customer"
+                        checked={formData.userType === "customer"}
+                        onChange={handleInputChange}
+                        className="sr-only"
+                      />
+                      <div
+                        className={`flex-1 rounded-lg border-2 p-4 text-center transition-colors ${
+                          formData.userType === "customer"
+                            ? "border-brand bg-brand/5"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <div className="font-semibold text-text-primary">
+                          Customer
+                        </div>
+                        <div className="text-sm text-text-secondary">
+                          Order food & drinks
+                        </div>
+                      </div>
+                    </label>
+                    <label className="relative flex cursor-pointer">
+                      <input
+                        type="radio"
+                        name="userType"
+                        value="business"
+                        checked={formData.userType === "business"}
+                        onChange={handleInputChange}
+                        className="sr-only"
+                      />
+                      <div
+                        className={`flex-1 rounded-lg border-2 p-4 text-center transition-colors ${
+                          formData.userType === "business"
+                            ? "border-brand bg-brand/5"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <div className="font-semibold text-text-primary">
+                          Business Owner
+                        </div>
+                        <div className="text-sm text-text-secondary">
+                          Manage restaurant
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                  {errors.userType && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.userType}
+                    </p>
                   )}
                 </div>
 

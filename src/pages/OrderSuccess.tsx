@@ -351,7 +351,7 @@ const OrderSuccess: React.FC = () => {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/businesses")}
             className="px-6 py-3 bg-brand text-white rounded-lg font-medium hover:bg-brand-dark transition-colors"
           >
             Continue Shopping

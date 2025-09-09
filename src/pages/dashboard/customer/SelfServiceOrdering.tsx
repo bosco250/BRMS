@@ -30,7 +30,15 @@ import {
 export default function SelfServiceOrdering() {
   const [activeTab, setActiveTab] = useState("menu");
   const [searchQuery, setSearchQuery] = useState("");
-  const [cart, setCart] = useState<any[]>([]);
+  const [cart, setCart] = useState<
+    Array<{
+      id: string;
+      name: string;
+      price: number;
+      quantity: number;
+      image?: string;
+    }>
+  >([]);
   const [showCart, setShowCart] = useState(false);
   const [selectedRestaurant, setSelectedRestaurant] = useState("restaurant-1");
   const [orderType, setOrderType] = useState("dine_in");
@@ -156,7 +164,12 @@ export default function SelfServiceOrdering() {
     }
   };
 
-  const addToCart = (item: any) => {
+  const addToCart = (item: {
+    id: string;
+    name: string;
+    price: number;
+    image?: string;
+  }) => {
     const existingItem = cart.find((cartItem) => cartItem.id === item.id);
     if (existingItem) {
       setCart(
