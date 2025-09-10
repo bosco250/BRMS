@@ -1,27 +1,35 @@
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { useState, useEffect } from "react";
 import MarketingPanel from "../../components/auth/MarketingPanel";
+import api from "../../Api/axios";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import {toast}  from "react-toastify";
+import { UserRoles } from "../../constants/userRoles"; // Adjusted import
 
 export default function Register() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     password: "",
     confirmPassword: "",
-    userType: "customer", // "customer" or "business"
+    userType: "CUSTOMER", // default string value here, will map later
   });
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Get user type from URL parameters
+  // Map the userType string to enum values for convenience
+  const mapUserTypeToEnum = (type: string) => {
+    return type === "business" ? UserRoles.BUSINESS_OWNER : UserRoles.CUSTOMER;
+  };
+
   useEffect(() => {
     const userType = searchParams.get("type");
-
     if (userType && ["customer", "business"].includes(userType)) {
-      setFormData((prev) => ({ ...prev, userType }));
+      setFormData((prev: any) => ({ ...prev, userType }));
     }
   }, [searchParams]);
 
@@ -65,38 +73,40 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Map userType string to enum value
+      const roleName = mapUserTypeToEnum(formData.userType);
 
-      // Store user data in localStorage (in a real app, this would be handled by the backend)
-      const userData = {
-        id: Date.now().toString(),
-        name: formData.name,
+      await api.post("/auth/register", {
+        first_name: formData.name.split(" ")[0],
+        last_name: formData.name.split(" ").slice(1).join(" ") || "",
         email: formData.email,
-        phone: formData.phone,
-        role: formData.userType === "business" ? "owner" : "customer",
-        userType: formData.userType,
-        createdAt: new Date().toISOString(),
-      };
+        phone_num: formData.phone,
+        password: formData.password,
+        roleName,
+      });
 
-      localStorage.setItem("user", JSON.stringify(userData));
+      toast.success("Account created successfully!");
+
       localStorage.setItem("isAuthenticated", "true");
 
-      // Redirect based on user type
-      if (formData.userType === "business") {
+      if (roleName === UserRoles.BUSINESS_OWNER) {
         navigate("/dashboard/owner");
       } else {
         navigate("/dashboard/customer");
       }
-    } catch (error) {
-      setErrors({ general: "Registration failed. Please try again." });
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      const message =
+        error?.response?.data?.message ||
+        "Registration failed. Please try again.";
+
+      toast.error(message);
+      setErrors({ general: message });
     } finally {
       setIsSubmitting(false);
     }
@@ -106,13 +116,14 @@ export default function Register() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Clear error when user starts typing
+    setFormData((prev: any) => ({ ...prev, [name]: value }));
+
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
+      setErrors((prev: any) => ({ ...prev, [name]: "" }));
     }
   };
+
   return (
     <section className="py-12 sm:py-16 bg-surface-secondary">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
