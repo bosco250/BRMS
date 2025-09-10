@@ -1576,11 +1576,23 @@ export default function RestaurantProfile() {
 
               <div className="space-y-3">
                 {[
-                  { day: "Monday - Friday", hours: `${business.opensAt} - ${business.closesAt}` },
-                  { day: "Saturday", hours: `${business.opensAt} - ${business.closesAt}` },
-                  { day: "Sunday", hours: `${business.opensAt} - ${business.closesAt}` },
+                  {
+                    day: "Monday - Friday",
+                    hours: `${business.opensAt} - ${business.closesAt}`,
+                  },
+                  {
+                    day: "Saturday",
+                    hours: `${business.opensAt} - ${business.closesAt}`,
+                  },
+                  {
+                    day: "Sunday",
+                    hours: `${business.opensAt} - ${business.closesAt}`,
+                  },
                 ].map((schedule, index) => (
-                  <div key={index} className="flex justify-between items-center p-4 bg-surface-secondary rounded-xl hover:bg-surface-secondary/80 transition-colors duration-200">
+                  <div
+                    key={index}
+                    className="flex justify-between items-center p-4 bg-surface-secondary rounded-xl hover:bg-surface-secondary/80 transition-colors duration-200"
+                  >
                     <span className="font-semibold text-text-primary">
                       {schedule.day}
                     </span>
@@ -1591,20 +1603,37 @@ export default function RestaurantProfile() {
                 ))}
               </div>
 
-              <div className={`mt-8 p-6 rounded-2xl ${business.openNow ? 'bg-success/10 border border-success/20' : 'bg-error/10 border border-error/20'}`}>
+              <div
+                className={`mt-8 p-6 rounded-2xl ${
+                  business.openNow
+                    ? "bg-success/10 border border-success/20"
+                    : "bg-error/10 border border-error/20"
+                }`}
+              >
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-full ${business.openNow ? 'bg-success/20' : 'bg-error/20'}`}>
-                    <FaCheck className={`w-5 h-5 ${business.openNow ? 'text-success' : 'text-error'}`} />
+                  <div
+                    className={`p-2 rounded-full ${
+                      business.openNow ? "bg-success/20" : "bg-error/20"
+                    }`}
+                  >
+                    <FaCheck
+                      className={`w-5 h-5 ${
+                        business.openNow ? "text-success" : "text-error"
+                      }`}
+                    />
                   </div>
                   <div>
-                    <span className={`font-bold text-lg ${business.openNow ? 'text-success' : 'text-error'}`}>
+                    <span
+                      className={`font-bold text-lg ${
+                        business.openNow ? "text-success" : "text-error"
+                      }`}
+                    >
                       Currently {business.openNow ? "Open" : "Closed"}
                     </span>
                     <p className="text-text-secondary text-sm mt-1">
-                      {business.openNow 
-                        ? "We're ready to serve you!" 
-                        : "We'll be back soon!"
-                      }
+                      {business.openNow
+                        ? "We're ready to serve you!"
+                        : "We'll be back soon!"}
                     </p>
                   </div>
                 </div>
@@ -1670,21 +1699,32 @@ export default function RestaurantProfile() {
                     <div className="p-2 bg-success/20 rounded-full">
                       <FaCheck className="w-5 h-5 text-success" />
                     </div>
-                    <span className="font-bold text-lg text-success">Excellent Availability</span>
+                    <span className="font-bold text-lg text-success">
+                      Excellent Availability
+                    </span>
                   </div>
                   <p className="text-text-secondary">
-                    We have plenty of seating available for your visit. No need to worry about finding a table!
+                    We have plenty of seating available for your visit. No need
+                    to worry about finding a table!
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 bg-surface-secondary rounded-xl text-center">
-                    <div className="text-2xl font-bold text-text-primary mb-1">2-5 min</div>
-                    <div className="text-text-secondary text-sm">Average Wait</div>
+                    <div className="text-2xl font-bold text-text-primary mb-1">
+                      2-5 min
+                    </div>
+                    <div className="text-text-secondary text-sm">
+                      Average Wait
+                    </div>
                   </div>
                   <div className="p-4 bg-surface-secondary rounded-xl text-center">
-                    <div className="text-2xl font-bold text-text-primary mb-1">95%</div>
-                    <div className="text-text-secondary text-sm">Availability</div>
+                    <div className="text-2xl font-bold text-text-primary mb-1">
+                      95%
+                    </div>
+                    <div className="text-text-secondary text-sm">
+                      Availability
+                    </div>
                   </div>
                 </div>
 
@@ -1771,7 +1811,8 @@ export default function RestaurantProfile() {
                       Payment Information
                     </h4>
                     <p className="text-text-secondary text-sm leading-relaxed">
-                      All major payment methods are accepted. We prefer contactless payments for faster and safer transactions. 
+                      All major payment methods are accepted. We prefer
+                      contactless payments for faster and safer transactions.
                       Split bills and group payments are also available.
                     </p>
                   </div>
@@ -1854,7 +1895,11 @@ export default function RestaurantProfile() {
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold text-text-primary">
-                      {business.rating >= 4.5 ? "Excellent" : business.rating >= 4 ? "Very Good" : "Good"}
+                      {business.rating >= 4.5
+                        ? "Excellent"
+                        : business.rating >= 4
+                        ? "Very Good"
+                        : "Good"}
                     </div>
                     <p className="text-text-secondary text-sm">
                       Overall Rating
