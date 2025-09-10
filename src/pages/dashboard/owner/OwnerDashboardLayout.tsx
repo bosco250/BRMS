@@ -38,13 +38,8 @@ function Layout() {
       end: true,
     },
     {
-      to: "/dashboard/owner/business-management",
-      label: "Business Management",
-      icon: Building2,
-    },
-    {
-      to: "/dashboard/owner/restaurants",
-      label: "Restaurants",
+      to: "/dashboard/owner/businesses",
+      label: "Businesses",
       icon: Building2,
     },
     { to: "/dashboard/owner/financial", label: "Financial", icon: DollarSign },

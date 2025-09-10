@@ -39,8 +39,7 @@ import Settings from "./pages/dashboard/manager/Settings.tsx";
 // Owner Dashboard Components
 import OwnerDashboardLayout from "./pages/dashboard/owner/OwnerDashboardLayout.tsx";
 import OwnerDashboardMain from "./pages/dashboard/owner/Dashboard.tsx";
-import BusinessManagement from "./pages/dashboard/owner/BusinessManagement.tsx";
-import Restaurants from "./pages/dashboard/owner/Restaurants.tsx";
+import Businesses from "./pages/dashboard/owner/Businesses.tsx";
 import Financial from "./pages/dashboard/owner/Financial.tsx";
 import OwnerStaffManagement from "./pages/dashboard/owner/StaffManagement.tsx";
 import Reports from "./pages/dashboard/owner/Reports.tsx";
@@ -166,8 +165,7 @@ const router = createBrowserRouter([
     element: <OwnerDashboardLayout />,
     children: [
       { index: true, element: <OwnerDashboardMain /> },
-      { path: "business-management", element: <BusinessManagement /> },
-      { path: "restaurants", element: <Restaurants /> },
+      { path: "businesses", element: <Businesses /> },
       { path: "financial", element: <Financial /> },
       { path: "staff", element: <OwnerStaffManagement /> },
       { path: "reports", element: <Reports /> },
