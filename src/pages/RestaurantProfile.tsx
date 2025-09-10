@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useParams, Navigate } from "react-router-dom";
 import {
   FaStar,
@@ -19,10 +19,16 @@ import {
   FaEnvelope,
   FaCreditCard,
   FaPrint,
+  FaTimes,
+  FaCheck,
+  FaExternalLinkAlt,
+  FaMapPin,
+  FaChevronDown,
 } from "react-icons/fa";
 import { getRestaurantById } from "../data/restaurants";
 import { useCart } from "../contexts/CartContext";
 import type { CartItem } from "../data/checkoutData";
+import { toast } from "react-toastify";
 
 // Mock bar data (same as in Resto.tsx)
 const bars = [
@@ -396,6 +402,26 @@ export default function RestaurantProfile() {
   const [showExplore, setShowExplore] = useState(true);
   const { addItem } = useCart();
 
+  // State for various modals and interactions
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [showReservationModal, setShowReservationModal] = useState(false);
+  const [showHoursModal, setShowHoursModal] = useState(false);
+  const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Reservation form state
+  const [reservationData, setReservationData] = useState({
+    date: "",
+    time: "",
+    guests: 2,
+    name: "",
+    phone: "",
+    email: "",
+    specialRequests: "",
+  });
+
   // Redirect to businesses page if business not found
   if (!business) {
     return <Navigate to="/businesses" replace />;
@@ -411,6 +437,101 @@ export default function RestaurantProfile() {
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Handler functions
+  const handleFavorite = () => {
+    setIsFavorited(!isFavorited);
+    toast.success(
+      isFavorited ? "Removed from favorites" : "Added to favorites"
+    );
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: business.name,
+      text: `Check out ${business.name} - ${business.cuisine}`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        toast.success("Shared successfully!");
+      } catch (err) {
+        console.log("Error sharing:", err);
+      }
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("Link copied to clipboard!");
+    }
+  };
+
+  const handleReservation = () => {
+    setShowReservationModal(true);
+  };
+
+  const handleOrderOnline = () => {
+    const menuSection = document.getElementById("menu-section");
+    if (menuSection) {
+      menuSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const handleGetDirections = () => {
+    const address = encodeURIComponent(business.address);
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${address}`;
+    window.open(mapsUrl, "_blank");
+    toast.success("Opening directions in Google Maps");
+  };
+
+  const handleViewHours = () => {
+    setShowHoursModal(true);
+  };
+
+  const handleCheckAvailability = () => {
+    setShowAvailabilityModal(true);
+  };
+
+  const handleViewPaymentOptions = () => {
+    setShowPaymentModal(true);
+  };
+
+  const handleViewReviews = () => {
+    setShowReviewsModal(true);
+  };
+
+  const handlePrintMenu = () => {
+    window.print();
+    toast.success("Print dialog opened");
+  };
+
+  const handleReservationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      toast.success(
+        "Reservation confirmed! You'll receive a confirmation email shortly."
+      );
+      setShowReservationModal(false);
+      setReservationData({
+        date: "",
+        time: "",
+        guests: 2,
+        name: "",
+        phone: "",
+        email: "",
+        specialRequests: "",
+      });
+    } catch (error) {
+      toast.error("Failed to make reservation. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const categories =
     business.menu && business.menu.length > 0
@@ -469,10 +590,24 @@ export default function RestaurantProfile() {
                         <span className="capitalize">{business.type}</span>
                       </div>
                       <div className="flex gap-2">
-                        <button className="p-3 text-text-muted hover:text-error transition-all duration-300 hover:scale-110 hover:bg-error/10 rounded-full">
-                          <FaHeart className="h-5 w-5" />
+                        <button
+                          onClick={handleFavorite}
+                          className={`p-3 transition-all duration-300 hover:scale-110 rounded-full ${
+                            isFavorited
+                              ? "text-error bg-error/10"
+                              : "text-text-muted hover:text-error hover:bg-error/10"
+                          }`}
+                        >
+                          <FaHeart
+                            className={`h-5 w-5 ${
+                              isFavorited ? "fill-current" : ""
+                            }`}
+                          />
                         </button>
-                        <button className="p-3 text-text-muted hover:text-brand transition-all duration-300 hover:scale-110 hover:bg-brand/10 rounded-full">
+                        <button
+                          onClick={handleShare}
+                          className="p-3 text-text-muted hover:text-brand transition-all duration-300 hover:scale-110 hover:bg-brand/10 rounded-full"
+                        >
                           <FaShare className="h-5 w-5" />
                         </button>
                       </div>
@@ -514,14 +649,23 @@ export default function RestaurantProfile() {
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <button className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-brand to-brand-hover px-8 py-4 text-lg font-semibold text-text-inverted hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                  <button
+                    onClick={handleReservation}
+                    className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-brand to-brand-hover px-8 py-4 text-lg font-semibold text-text-inverted hover:shadow-2xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={!business.acceptsReservations}
+                  >
                     <div className="absolute inset-0 bg-gradient-to-r from-brand-hover to-brand opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div className="relative flex items-center justify-center gap-3">
                       <FaCalendarAlt className="h-5 w-5" />
-                      Reserve Table
+                      {business.acceptsReservations
+                        ? "Reserve Table"
+                        : "Reservations Unavailable"}
                     </div>
                   </button>
-                  <button className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-accent to-accent-hover px-8 py-4 text-lg font-semibold text-text-inverted hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                  <button
+                    onClick={handleOrderOnline}
+                    className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-accent to-accent-hover px-8 py-4 text-lg font-semibold text-text-inverted hover:shadow-2xl transition-all duration-300 hover:scale-105"
+                  >
                     <div className="absolute inset-0 bg-gradient-to-r from-accent-hover to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div className="relative flex items-center justify-center gap-3">
                       {business.type === "restaurant" ? (
@@ -661,8 +805,13 @@ export default function RestaurantProfile() {
                 <p className="text-text-secondary leading-relaxed">
                   {business.address}
                 </p>
-                <button className="mt-3 text-brand hover:text-brand-hover font-medium text-sm transition-colors duration-300">
-                  Get Directions →
+                <button
+                  onClick={handleGetDirections}
+                  className="mt-3 text-brand hover:text-brand-hover font-medium text-sm transition-colors duration-300 flex items-center gap-2 hover:gap-3"
+                >
+                  <FaMapPin className="w-3 h-3" />
+                  Get Directions
+                  <FaExternalLinkAlt className="w-3 h-3" />
                 </button>
               </div>
             </div>
@@ -688,8 +837,13 @@ export default function RestaurantProfile() {
                     Avg. wait: {business.averageWaitTime}
                   </p>
                 </div>
-                <button className="mt-3 text-accent hover:text-accent-hover font-medium text-sm transition-colors duration-300">
-                  View Full Hours →
+                <button
+                  onClick={handleViewHours}
+                  className="mt-3 text-accent hover:text-accent-hover font-medium text-sm transition-colors duration-300 flex items-center gap-2 hover:gap-3"
+                >
+                  <FaClock className="w-3 h-3" />
+                  View Full Hours
+                  <FaChevronDown className="w-3 h-3" />
                 </button>
               </div>
             </div>
@@ -713,8 +867,13 @@ export default function RestaurantProfile() {
                   </p>
                   <p className="text-text-secondary">seats available</p>
                 </div>
-                <button className="mt-3 text-success hover:text-success/80 font-medium text-sm transition-colors duration-300">
-                  Check Availability →
+                <button
+                  onClick={handleCheckAvailability}
+                  className="mt-3 text-success hover:text-success/80 font-medium text-sm transition-colors duration-300 flex items-center gap-2 hover:gap-3"
+                >
+                  <FaUsers className="w-3 h-3" />
+                  Check Availability
+                  <FaChevronDown className="w-3 h-3" />
                 </button>
               </div>
             </div>
@@ -737,8 +896,13 @@ export default function RestaurantProfile() {
                     {business.paymentMethods.join(", ")}
                   </p>
                 </div>
-                <button className="mt-3 text-info hover:text-info/80 font-medium text-sm transition-colors duration-300">
-                  View Options →
+                <button
+                  onClick={handleViewPaymentOptions}
+                  className="mt-3 text-info hover:text-info/80 font-medium text-sm transition-colors duration-300 flex items-center gap-2 hover:gap-3"
+                >
+                  <FaCreditCard className="w-3 h-3" />
+                  View Options
+                  <FaChevronDown className="w-3 h-3" />
                 </button>
               </div>
             </div>
@@ -900,8 +1064,13 @@ export default function RestaurantProfile() {
           </div>
 
           <div className="text-center mt-8">
-            <button className="bg-gradient-to-r from-brand to-brand-hover text-text-inverted px-8 py-3 rounded-2xl font-semibold hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <button
+              onClick={handleViewReviews}
+              className="bg-gradient-to-r from-brand to-brand-hover text-text-inverted px-8 py-3 rounded-2xl font-semibold hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center gap-2 mx-auto"
+            >
+              <FaStar className="w-4 h-4" />
               View All Reviews
+              <FaChevronDown className="w-4 h-4" />
             </button>
           </div>
         </motion.div>
@@ -980,7 +1149,10 @@ export default function RestaurantProfile() {
                 <div className="text-sm text-text-muted">
                   {business.menu.length} items available
                 </div>
-                <button className="group relative overflow-hidden rounded-lg bg-brand hover:bg-brand-hover px-4 py-2 text-sm font-semibold text-text-inverted transition-all duration-200 hover:shadow-lg">
+                <button
+                  onClick={handlePrintMenu}
+                  className="group relative overflow-hidden rounded-lg bg-brand hover:bg-brand-hover px-4 py-2 text-sm font-semibold text-text-inverted transition-all duration-200 hover:shadow-lg"
+                >
                   <div className="relative flex items-center gap-2">
                     <FaPrint className="h-4 w-4" />
                     Print Menu
@@ -1155,6 +1327,648 @@ export default function RestaurantProfile() {
           ))}
         </motion.div>
       </div>
+
+      {/* Modals */}
+      <AnimatePresence>
+        {/* Reservation Modal */}
+        {showReservationModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowReservationModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="bg-surface-primary rounded-3xl p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl border border-border-subtle/20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-brand/10 rounded-full">
+                    <FaCalendarAlt className="w-6 h-6 text-brand" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-text-primary">
+                      Reserve a Table
+                    </h3>
+                    <p className="text-text-secondary text-sm">
+                      Book your perfect dining experience
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowReservationModal(false)}
+                  className="p-3 text-text-muted hover:text-text-primary hover:bg-surface-secondary rounded-full transition-all duration-200"
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleReservationSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-text-primary">
+                      Date
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={reservationData.date}
+                      onChange={(e) =>
+                        setReservationData({
+                          ...reservationData,
+                          date: e.target.value,
+                        })
+                      }
+                      className="w-full rounded-xl border-2 border-border-subtle px-4 py-3 text-text-primary bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-text-primary">
+                      Time
+                    </label>
+                    <input
+                      type="time"
+                      required
+                      value={reservationData.time}
+                      onChange={(e) =>
+                        setReservationData({
+                          ...reservationData,
+                          time: e.target.value,
+                        })
+                      }
+                      className="w-full rounded-xl border-2 border-border-subtle px-4 py-3 text-text-primary bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-text-primary">
+                    Number of Guests
+                  </label>
+                  <select
+                    value={reservationData.guests}
+                    onChange={(e) =>
+                      setReservationData({
+                        ...reservationData,
+                        guests: parseInt(e.target.value),
+                      })
+                    }
+                    className="w-full rounded-xl border-2 border-border-subtle px-4 py-3 text-text-primary bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                      <option key={num} value={num}>
+                        {num} {num === 1 ? "Guest" : "Guests"}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-text-primary">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={reservationData.name}
+                    onChange={(e) =>
+                      setReservationData({
+                        ...reservationData,
+                        name: e.target.value,
+                      })
+                    }
+                    placeholder="Enter your full name"
+                    className="w-full rounded-xl border-2 border-border-subtle px-4 py-3 text-text-primary bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-text-primary">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={reservationData.phone}
+                      onChange={(e) =>
+                        setReservationData({
+                          ...reservationData,
+                          phone: e.target.value,
+                        })
+                      }
+                      placeholder="+250 7xx xxx xxx"
+                      className="w-full rounded-xl border-2 border-border-subtle px-4 py-3 text-text-primary bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-text-primary">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={reservationData.email}
+                      onChange={(e) =>
+                        setReservationData({
+                          ...reservationData,
+                          email: e.target.value,
+                        })
+                      }
+                      placeholder="your@email.com"
+                      className="w-full rounded-xl border-2 border-border-subtle px-4 py-3 text-text-primary bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-text-primary">
+                    Special Requests (Optional)
+                  </label>
+                  <textarea
+                    value={reservationData.specialRequests}
+                    onChange={(e) =>
+                      setReservationData({
+                        ...reservationData,
+                        specialRequests: e.target.value,
+                      })
+                    }
+                    rows={3}
+                    placeholder="Any special dietary requirements, celebrations, or preferences..."
+                    className="w-full rounded-xl border-2 border-border-subtle px-4 py-3 text-text-primary bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200 resize-none"
+                  />
+                </div>
+
+                <div className="flex gap-4 pt-6">
+                  <button
+                    type="button"
+                    onClick={() => setShowReservationModal(false)}
+                    className="flex-1 px-6 py-3 text-text-secondary hover:text-text-primary hover:bg-surface-secondary rounded-xl font-semibold transition-all duration-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="flex-1 bg-gradient-to-r from-brand to-brand-hover hover:from-brand-hover hover:to-brand text-text-inverted px-6 py-3 rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-4 h-4 border-2 border-text-inverted/30 border-t-text-inverted rounded-full animate-spin"></div>
+                        Confirming...
+                      </div>
+                    ) : (
+                      "Confirm Reservation"
+                    )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Hours Modal */}
+        {showHoursModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowHoursModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="bg-surface-primary rounded-3xl p-8 w-full max-w-lg shadow-2xl border border-border-subtle/20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-accent/10 rounded-full">
+                    <FaClock className="w-6 h-6 text-accent" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-text-primary">
+                      Operating Hours
+                    </h3>
+                    <p className="text-text-secondary text-sm">
+                      When we're open for business
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowHoursModal(false)}
+                  className="p-3 text-text-muted hover:text-text-primary hover:bg-surface-secondary rounded-full transition-all duration-200"
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {[
+                  { day: "Monday - Friday", hours: `${business.opensAt} - ${business.closesAt}` },
+                  { day: "Saturday", hours: `${business.opensAt} - ${business.closesAt}` },
+                  { day: "Sunday", hours: `${business.opensAt} - ${business.closesAt}` },
+                ].map((schedule, index) => (
+                  <div key={index} className="flex justify-between items-center p-4 bg-surface-secondary rounded-xl hover:bg-surface-secondary/80 transition-colors duration-200">
+                    <span className="font-semibold text-text-primary">
+                      {schedule.day}
+                    </span>
+                    <span className="text-text-secondary font-medium">
+                      {schedule.hours}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className={`mt-8 p-6 rounded-2xl ${business.openNow ? 'bg-success/10 border border-success/20' : 'bg-error/10 border border-error/20'}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-full ${business.openNow ? 'bg-success/20' : 'bg-error/20'}`}>
+                    <FaCheck className={`w-5 h-5 ${business.openNow ? 'text-success' : 'text-error'}`} />
+                  </div>
+                  <div>
+                    <span className={`font-bold text-lg ${business.openNow ? 'text-success' : 'text-error'}`}>
+                      Currently {business.openNow ? "Open" : "Closed"}
+                    </span>
+                    <p className="text-text-secondary text-sm mt-1">
+                      {business.openNow 
+                        ? "We're ready to serve you!" 
+                        : "We'll be back soon!"
+                      }
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Availability Modal */}
+        {showAvailabilityModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowAvailabilityModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="bg-surface-primary rounded-3xl p-8 w-full max-w-lg shadow-2xl border border-border-subtle/20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-success/10 rounded-full">
+                    <FaUsers className="w-6 h-6 text-success" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-text-primary">
+                      Availability
+                    </h3>
+                    <p className="text-text-secondary text-sm">
+                      Current seating availability
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAvailabilityModal(false)}
+                  className="p-3 text-text-muted hover:text-text-primary hover:bg-surface-secondary rounded-full transition-all duration-200"
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                <div className="text-center p-8 bg-gradient-to-br from-success/5 to-success/10 rounded-2xl border border-success/20">
+                  <div className="text-6xl font-bold text-success mb-4">
+                    {business.capacity}
+                  </div>
+                  <div className="text-text-secondary text-lg font-medium">
+                    Seats Available
+                  </div>
+                  <div className="text-text-muted text-sm mt-2">
+                    Out of {business.capacity} total seats
+                  </div>
+                </div>
+
+                <div className="p-6 bg-success/10 rounded-2xl border border-success/20">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-success/20 rounded-full">
+                      <FaCheck className="w-5 h-5 text-success" />
+                    </div>
+                    <span className="font-bold text-lg text-success">Excellent Availability</span>
+                  </div>
+                  <p className="text-text-secondary">
+                    We have plenty of seating available for your visit. No need to worry about finding a table!
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-surface-secondary rounded-xl text-center">
+                    <div className="text-2xl font-bold text-text-primary mb-1">2-5 min</div>
+                    <div className="text-text-secondary text-sm">Average Wait</div>
+                  </div>
+                  <div className="p-4 bg-surface-secondary rounded-xl text-center">
+                    <div className="text-2xl font-bold text-text-primary mb-1">95%</div>
+                    <div className="text-text-secondary text-sm">Availability</div>
+                  </div>
+                </div>
+
+                <div className="text-center pt-4">
+                  <button
+                    onClick={handleReservation}
+                    className="bg-gradient-to-r from-brand to-brand-hover hover:from-brand-hover hover:to-brand text-text-inverted px-8 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
+                  >
+                    Make a Reservation
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Payment Options Modal */}
+        {showPaymentModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowPaymentModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="bg-surface-primary rounded-3xl p-8 w-full max-w-lg shadow-2xl border border-border-subtle/20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-info/10 rounded-full">
+                    <FaCreditCard className="w-6 h-6 text-info" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-text-primary">
+                      Payment Methods
+                    </h3>
+                    <p className="text-text-secondary text-sm">
+                      Accepted payment options
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowPaymentModal(false)}
+                  className="p-3 text-text-muted hover:text-text-primary hover:bg-surface-secondary rounded-full transition-all duration-200"
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {business.paymentMethods.map(
+                  (method: string, index: number) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-4 p-4 bg-surface-secondary rounded-xl hover:bg-surface-secondary/80 transition-all duration-200 border border-border-subtle/50"
+                    >
+                      <div className="p-2 bg-brand/10 rounded-lg">
+                        <FaCreditCard className="w-5 h-5 text-brand" />
+                      </div>
+                      <span className="text-text-primary font-semibold flex-1">
+                        {method}
+                      </span>
+                      <div className="p-1 bg-success/20 rounded-full">
+                        <FaCheck className="w-4 h-4 text-success" />
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
+
+              <div className="mt-8 p-6 bg-gradient-to-r from-info/5 to-info/10 rounded-2xl border border-info/20">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-info/20 rounded-full mt-1">
+                    <FaCheck className="w-4 h-4 text-info" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-text-primary mb-2">
+                      Payment Information
+                    </h4>
+                    <p className="text-text-secondary text-sm leading-relaxed">
+                      All major payment methods are accepted. We prefer contactless payments for faster and safer transactions. 
+                      Split bills and group payments are also available.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 p-4 bg-success/5 rounded-xl border border-success/20">
+                <div className="flex items-center gap-2 text-success text-sm font-medium">
+                  <FaCheck className="w-4 h-4" />
+                  <span>Secure & Encrypted Payments</span>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Reviews Modal */}
+        {showReviewsModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowReviewsModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="bg-surface-primary rounded-3xl p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl border border-border-subtle/20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-accent/10 rounded-full">
+                    <FaStar className="w-6 h-6 text-accent" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-text-primary">
+                      Customer Reviews
+                    </h3>
+                    <p className="text-text-secondary text-sm">
+                      What our customers are saying
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowReviewsModal(false)}
+                  className="p-3 text-text-muted hover:text-text-primary hover:bg-surface-secondary rounded-full transition-all duration-200"
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Overall Rating Summary */}
+              <div className="mb-8 p-6 bg-gradient-to-r from-accent/5 to-accent/10 rounded-2xl border border-accent/20">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="text-4xl font-bold text-accent">
+                      {business.rating.toFixed(1)}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1 mb-1">
+                        {[...Array(5)].map((_, i) => (
+                          <FaStar
+                            key={i}
+                            className={`w-5 h-5 ${
+                              i < Math.floor(business.rating)
+                                ? "text-accent"
+                                : "text-border-subtle"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-text-secondary text-sm">
+                        Based on 127 reviews
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-text-primary">
+                      {business.rating >= 4.5 ? "Excellent" : business.rating >= 4 ? "Very Good" : "Good"}
+                    </div>
+                    <p className="text-text-secondary text-sm">
+                      Overall Rating
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {/* Mock reviews */}
+                {[
+                  {
+                    name: "Sarah M.",
+                    rating: 5,
+                    comment:
+                      "Amazing food and great service! The staff was incredibly friendly and the atmosphere was perfect for our anniversary dinner. Highly recommend the signature cocktails!",
+                    date: "2 days ago",
+                    verified: true,
+                  },
+                  {
+                    name: "John D.",
+                    rating: 4,
+                    comment:
+                      "Good atmosphere and friendly staff. Food was delicious and came out quickly. The only minor issue was the music was a bit loud, but overall a great experience.",
+                    date: "1 week ago",
+                    verified: true,
+                  },
+                  {
+                    name: "Maria L.",
+                    rating: 5,
+                    comment:
+                      "Perfect for a romantic dinner. The wine selection was excellent and the chef's special was outstanding. Will definitely come back for special occasions!",
+                    date: "2 weeks ago",
+                    verified: false,
+                  },
+                  {
+                    name: "David K.",
+                    rating: 4,
+                    comment:
+                      "Great selection and reasonable prices. Very satisfied with the quality of food and service. The outdoor seating area is beautiful during sunset.",
+                    date: "3 weeks ago",
+                    verified: true,
+                  },
+                  {
+                    name: "Emma R.",
+                    rating: 5,
+                    comment:
+                      "Outstanding experience from start to finish! The reservation process was smooth, the food was exceptional, and the staff went above and beyond. Can't wait to return!",
+                    date: "1 month ago",
+                    verified: true,
+                  },
+                ].map((review, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="p-6 bg-surface-secondary rounded-2xl hover:bg-surface-secondary/80 transition-all duration-200 border border-border-subtle/50"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-brand/20 to-accent/20 rounded-full flex items-center justify-center">
+                          <span className="text-text-primary font-bold text-sm">
+                            {review.name.charAt(0)}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-text-primary">
+                              {review.name}
+                            </span>
+                            {review.verified && (
+                              <span className="px-2 py-1 bg-success/10 text-success text-xs font-medium rounded-full">
+                                Verified
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 mt-1">
+                            {[...Array(5)].map((_, i) => (
+                              <FaStar
+                                key={i}
+                                className={`w-4 h-4 ${
+                                  i < review.rating
+                                    ? "text-accent"
+                                    : "text-border-subtle"
+                                }`}
+                              />
+                            ))}
+                            <span className="text-text-muted text-sm ml-2">
+                              {review.date}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-text-secondary leading-relaxed">
+                      {review.comment}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="mt-8 text-center">
+                <button
+                  onClick={() => setShowReviewsModal(false)}
+                  className="bg-gradient-to-r from-brand to-brand-hover hover:from-brand-hover hover:to-brand text-text-inverted px-8 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
+                >
+                  Close Reviews
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

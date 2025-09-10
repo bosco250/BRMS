@@ -1,5 +1,6 @@
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import MarketingPanel from "../../components/auth/MarketingPanel";
 
 export default function Register() {
@@ -15,6 +16,8 @@ export default function Register() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Get user type from URL parameters
   useEffect(() => {
@@ -24,6 +27,14 @@ export default function Register() {
       setFormData((prev) => ({ ...prev, userType }));
     }
   }, [searchParams]);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -312,20 +323,36 @@ export default function Register() {
                   >
                     Password
                   </label>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete="new-password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className={`mt-1 block w-full rounded-md bg-surface-primary px-3 py-2 text-sm text-text-primary placeholder:text-text-muted ring-1 ${
-                      errors.password
-                        ? "ring-red-300 focus:ring-red-500"
-                        : "ring-border-subtle focus:ring-brand/30"
-                    } focus:outline-none focus:ring-2`}
-                    placeholder="••••••••"
-                  />
+                  <div className="relative mt-1">
+                    <input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      className={`block w-full rounded-md bg-surface-primary px-3 py-2 pr-10 text-sm text-text-primary placeholder:text-text-muted ring-1 ${
+                        errors.password
+                          ? "ring-red-300 focus:ring-red-500"
+                          : "ring-border-subtle focus:ring-brand/30"
+                      } focus:outline-none focus:ring-2`}
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-text-muted hover:text-text-primary focus:outline-none"
+                      onClick={togglePasswordVisibility}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
                   {errors.password && (
                     <p className="mt-1 text-sm text-red-600">
                       {errors.password}
@@ -340,20 +367,38 @@ export default function Register() {
                   >
                     Confirm Password
                   </label>
-                  <input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
-                    autoComplete="new-password"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    className={`mt-1 block w-full rounded-md bg-surface-primary px-3 py-2 text-sm text-text-primary placeholder:text-text-muted ring-1 ${
-                      errors.confirmPassword
-                        ? "ring-red-300 focus:ring-red-500"
-                        : "ring-border-subtle focus:ring-brand/30"
-                    } focus:outline-none focus:ring-2`}
-                    placeholder="••••••••"
-                  />
+                  <div className="relative mt-1">
+                    <input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      className={`block w-full rounded-md bg-surface-primary px-3 py-2 pr-10 text-sm text-text-primary placeholder:text-text-muted ring-1 ${
+                        errors.confirmPassword
+                          ? "ring-red-300 focus:ring-red-500"
+                          : "ring-border-subtle focus:ring-brand/30"
+                      } focus:outline-none focus:ring-2`}
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-text-muted hover:text-text-primary focus:outline-none"
+                      onClick={toggleConfirmPasswordVisibility}
+                      aria-label={
+                        showConfirmPassword
+                          ? "Hide confirm password"
+                          : "Show confirm password"
+                      }
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
                   {errors.confirmPassword && (
                     <p className="mt-1 text-sm text-red-600">
                       {errors.confirmPassword}
