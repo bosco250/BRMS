@@ -1,73 +1,77 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
 import { Eye, EyeOff } from "lucide-react";
-import { authenticate } from "../../data/users";
 import { setSessionUser } from "../../auth/session";
 import { sanitizeInput, validateEmail } from "../../utils/sanitize";
 import MarketingPanel from "../../components/auth/MarketingPanel";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [identifier, setIdentifier] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
 
-    // Sanitize inputs
-    const sanitizedIdentifier = sanitizeInput(identifier);
+    const sanitizedEmail = sanitizeInput(email);
     const sanitizedPassword = sanitizeInput(password);
 
-    // Form validation
-    if (!sanitizedIdentifier.trim()) {
-      setError("Email or phone number is required");
+    if (!sanitizedEmail.trim()) {
+      toast.error("Email is required");
       return;
     }
 
     if (!sanitizedPassword.trim()) {
-      setError("Password is required");
+      toast.error("Password is required");
       return;
     }
 
     if (sanitizedPassword.length < 3) {
-      setError("Password must be at least 3 characters");
+      toast.error("Password must be at least 3 characters");
       return;
     }
 
-    // Validate email format if it looks like an email
-    if (
-      sanitizedIdentifier.includes("@") &&
-      !validateEmail(sanitizedIdentifier)
-    ) {
-      setError("Please enter a valid email address");
+    if (sanitizedEmail.includes("@") && !validateEmail(sanitizedEmail)) {
+      toast.error("Please enter a valid email address");
       return;
     }
 
-    const user = authenticate(sanitizedIdentifier, sanitizedPassword);
-    if (!user) {
-      setError(
-        "Invalid credentials. Try the demo users (e.g., admin@brms.dev / admin123)."
-      );
-      return;
+    try {
+      const res = await axios.post("/auth/login", {
+        email: sanitizedEmail,
+        password: sanitizedPassword,
+      });
+
+      const user = res.data;
+      setSessionUser(user);
+
+      toast.success("Login successful! Redirecting...");
+
+      const role = user.role;
+      const routeByRole: Record<string, string> = {
+        Admin: "/dashboard/admin",
+        Owner: "/dashboard/owner",
+        Manager: "/dashboard/manager",
+        Accountant: "/dashboard/accountant",
+        Waiter: "/dashboard/waiter",
+        Customer: "/dashboard/customer",
+      };
+
+      setTimeout(() => {
+        navigate(routeByRole[role] || "/");
+      }, 1200);
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message || "Login failed. Please try again.";
+      toast.error(message);
     }
-    setSessionUser(user);
-    const role = user.role;
-    const routeByRole: Record<string, string> = {
-      Admin: "/dashboard/admin",
-      Owner: "/dashboard/owner",
-      Manager: "/dashboard/manager",
-      Accountant: "/dashboard/accountant",
-      Waiter: "/dashboard/waiter",
-      Customer: "/dashboard/customer",
-    };
-    navigate(routeByRole[role] || "/");
   }
 
   return (
@@ -122,16 +126,16 @@ export default function Login() {
                     htmlFor="email"
                     className="block text-sm font-medium text-text-primary"
                   >
-                    Email or Phone
+                    Email
                   </label>
                   <input
                     id="email"
-                    type="text"
+                    type="email"
                     autoComplete="username"
                     className="mt-1 block w-full rounded-md bg-surface-primary px-3 py-2 text-sm text-text-primary placeholder:text-text-muted ring-1 ring-border-subtle focus:outline-none focus:ring-2 focus:ring-brand/30"
                     placeholder="you@example.com"
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
                 <div>
@@ -163,9 +167,7 @@ export default function Login() {
                       type="button"
                       className="absolute inset-y-0 right-0 flex items-center pr-3 text-text-muted hover:text-text-primary focus:outline-none"
                       onClick={togglePasswordVisibility}
-                      aria-label={
-                        showPassword ? "Hide password" : "Show password"
-                      }
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                     >
                       {showPassword ? (
                         <EyeOff className="h-4 w-4" />
@@ -175,13 +177,14 @@ export default function Login() {
                     </button>
                   </div>
                 </div>
-                {error && <div className="text-sm text-error">{error}</div>}
+
                 <button
                   type="submit"
                   className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-text-inverted hover:bg-brand-hover shadow-sm"
                 >
                   Sign in
                 </button>
+
                 <div className="text-xs text-text-secondary">
                   Demo users:
                   <ul className="list-disc pl-5 mt-1 space-y-0.5">
@@ -194,6 +197,7 @@ export default function Login() {
                   </ul>
                 </div>
               </div>
+
               <p className="mt-6 text-center text-sm text-text-secondary border-t border-border-subtle pt-4">
                 New here?{" "}
                 <Link to="/register" className="text-brand hover:underline">

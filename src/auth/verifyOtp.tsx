@@ -10,8 +10,8 @@ export default function VerifyOTP() {
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [otp, setOtp] = useState<string[]>(new Array(6).fill(""));
-  const [isSending, setIsSending] = useState(false); // 🔥 RESEND OTP
-
+  const [isSending, setIsSending] = useState(false);
+  
   const handleChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
     const newOtp = [...otp];
