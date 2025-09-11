@@ -85,47 +85,54 @@ export default function Register() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (!validateForm()) return;
+  if (!validateForm()) return;
 
-    setIsSubmitting(true);
+  setIsSubmitting(true);
 
-    try {
-      // Map userType string to enum value
-      const roleName = mapUserTypeToEnum(formData.userType);
+  try {
+    const roleName = mapUserTypeToEnum(formData.userType);
 
-      await api.post("/auth/register", {
-        first_name: formData.name.split(" ")[0],
-        last_name: formData.name.split(" ").slice(1).join(" ") || "",
-        email: formData.email,
-        phone_num: formData.phone,
-        password: formData.password,
-        roleName,
-      });
+    await api.post("/auth/register", {
+      first_name: formData.name.split(" ")[0],
+      last_name: formData.name.split(" ").slice(1).join(" ") || "",
+      email: formData.email,
+      phone_num: formData.phone,
+      password: formData.password,
+      roleName,
+    });
 
-      toast.success("Account created successfully!");
+    toast.success("Account created successfully! Please verify your email.", {
+      autoClose: 7000, 
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "light",
+    });
 
-      localStorage.setItem("isAuthenticated", "true");
+    // Redirect to OTP/email verification page instead of dashboard
+navigate(`/verify-otp?email=${encodeURIComponent(formData.email)}`);
+  } catch (error: any) {
+    console.error("Registration error:", error);
+    const message =
+      error?.response?.data?.message ||
+      "Registration failed. Please try again.";
 
-      if (roleName === UserRoles.BUSINESS_OWNER) {
-        navigate("/dashboard/owner");
-      } else {
-        navigate("/dashboard/customer");
-      }
-    } catch (error: any) {
-      console.error("Registration error:", error);
-      const message =
-        error?.response?.data?.message ||
-        "Registration failed. Please try again.";
+    toast.error(message, {
+      autoClose: 5000,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "light",
+    });
 
-      toast.error(message);
-      setErrors({ general: message });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    setErrors({ general: message });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>

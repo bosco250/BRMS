@@ -82,6 +82,7 @@ import SelfServiceOrdering from "./pages/dashboard/customer/SelfServiceOrdering.
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import VerifyOTP from "./auth/verifyOtp.tsx";
 
 const router = createBrowserRouter([
   // App layout routes (with Navbar/Footer)
@@ -97,6 +98,7 @@ const router = createBrowserRouter([
       { path: "forgot", element: <ForgotPassword /> },
       { path: "checkout", element: <Checkout /> },
       { path: "order-success", element: <OrderSuccess /> },
+      { path:"verify-otp", element:<VerifyOTP/>},
     ],
   },
   // Admin Dashboard with nested routes
