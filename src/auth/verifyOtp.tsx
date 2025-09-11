@@ -56,6 +56,7 @@ export default function VerifyOTP() {
     navigate("/login"); // or dashboard or wherever
   };
 
+  
   return (
     <section className="min-h-screen flex items-center justify-center bg-surface-secondary px-4">
       <div className="max-w-md w-full bg-white p-8 rounded-xl shadow">
