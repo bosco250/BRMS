@@ -1,9 +1,6 @@
 
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
-
-        import MarketingPanel from "../../components/auth/MarketingPanel";
+import MarketingPanel from "../../components/auth/MarketingPanel";
 import api from "../../Api/axios";
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";

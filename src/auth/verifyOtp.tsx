@@ -1,23 +1,23 @@
 import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import api from "../../src/Api/axios";
 
 export default function VerifyOTP() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const email = searchParams.get("email");
+
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [otp, setOtp] = useState<string[]>(new Array(6).fill(""));
+  const [isSending, setIsSending] = useState(false); // 🔥 RESEND OTP
 
   const handleChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return; // Only allow digits
-
+    if (!/^\d*$/.test(value)) return;
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
-
-    // Move to next input if value entered
-    if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus();
-    }
+    if (value && index < 5) inputRefs.current[index + 1]?.focus();
   };
 
   const handleKeyDown = (
@@ -32,15 +32,12 @@ export default function VerifyOTP() {
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     const pasted = e.clipboardData.getData("text").trim();
     if (!/^\d{6}$/.test(pasted)) return;
-
     const newOtp = pasted.split("");
     setOtp(newOtp);
-
-    // Autofill and focus last input
     inputRefs.current[5]?.focus();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const code = otp.join("");
@@ -49,14 +46,46 @@ export default function VerifyOTP() {
       return;
     }
 
-    // Make your API call here (e.g., api.post('/auth/verify-otp', { code }))
-    console.log("Verifying code:", code);
+    if (!email) {
+      toast.error("Missing email.");
+      return;
+    }
 
-    toast.success("OTP verified!");
-    navigate("/login"); // or dashboard or wherever
+    try {
+      await api.post("/auth/verify-otp", {
+        email,
+        otp: code,
+      });
+
+      toast.success("OTP verified! You can now login.");
+      navigate("/login");
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message || "Invalid OTP. Please try again.";
+      toast.error(message);
+    }
   };
 
-  
+  // 🔥 RESEND OTP HANDLER
+  const handleResend = async () => {
+    if (!email) {
+      toast.error("Missing email.");
+      return;
+    }
+
+    setIsSending(true);
+    try {
+      await api.post("/auth/send-otp", { email }); // <- call the same backend method
+      toast.success("A new OTP has been sent to your email.");
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message || "Failed to resend OTP. Try again later.";
+      toast.error(message);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   return (
     <section className="min-h-screen flex items-center justify-center bg-surface-secondary px-4">
       <div className="max-w-md w-full bg-white p-8 rounded-xl shadow">
@@ -70,10 +99,10 @@ export default function VerifyOTP() {
             {otp.map((digit, index) => (
               <input
                 key={index}
-                  ref={(el) => {
-                inputRefs.current[index] = el;
-                              }}
-                    type="text"
+                ref={(el) => {
+                  inputRefs.current[index] = el;
+                }}
+                type="text"
                 inputMode="numeric"
                 maxLength={1}
                 value={digit}
@@ -92,6 +121,17 @@ export default function VerifyOTP() {
             Verify OTP
           </button>
         </form>
+
+        {/* 🔥 RESEND OTP BUTTON */}
+        <div className="mt-4 text-center">
+          <button
+            onClick={handleResend}
+            disabled={isSending}
+            className="text-sm text-brand hover:underline disabled:opacity-50"
+          >
+            {isSending ? "Sending..." : "Resend OTP"}
+          </button>
+        </div>
       </div>
     </section>
   );
