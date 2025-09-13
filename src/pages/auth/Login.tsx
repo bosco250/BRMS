@@ -1,10 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { Eye, EyeOff } from "lucide-react";
 import { setSessionUser } from "../../auth/session";
 import { sanitizeInput, validateEmail } from "../../utils/sanitize";
+import { authenticate } from "../../data/users";
 import MarketingPanel from "../../components/auth/MarketingPanel";
 
 export default function Login() {
@@ -44,14 +44,15 @@ export default function Login() {
     }
 
     try {
-      const res = await axios.post("/auth/login", {
-        email: sanitizedEmail,
-        password: sanitizedPassword,
-      });
+      // Use local authentication instead of API call
+      const user = authenticate(sanitizedEmail, sanitizedPassword);
 
-      const user = res.data;
+      if (!user) {
+        toast.error("Invalid email or password. Please try again.");
+        return;
+      }
+
       setSessionUser(user);
-
       toast.success("Login successful! Redirecting...");
 
       const role = user.role;
@@ -68,9 +69,7 @@ export default function Login() {
         navigate(routeByRole[role] || "/");
       }, 1200);
     } catch (err: any) {
-      const message =
-        err?.response?.data?.message || "Login failed. Please try again.";
-      toast.error(message);
+      toast.error("Login failed. Please try again.");
     }
   }
 
@@ -167,7 +166,9 @@ export default function Login() {
                       type="button"
                       className="absolute inset-y-0 right-0 flex items-center pr-3 text-text-muted hover:text-text-primary focus:outline-none"
                       onClick={togglePasswordVisibility}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
                     >
                       {showPassword ? (
                         <EyeOff className="h-4 w-4" />
@@ -193,7 +194,7 @@ export default function Login() {
                     <li>manager@brms.dev / manager123 (Manager)</li>
                     <li>accountant@brms.dev / account123 (Accountant)</li>
                     <li>waiter@brms.dev / waiter123 (Waiter)</li>
-                    <li>customer@brms.dev / customer123 (Customer)</li>
+                    <li>customer@brms.dev / 123 (Customer)</li>
                   </ul>
                 </div>
               </div>

@@ -10,36 +10,23 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
-import { useAdminDashboard } from "../pages/dashboard/admin/context";
+import { useOwnerDashboard } from "./context";
 import { toast } from "react-toastify";
 
-const AdminNotificationMenu: React.FC = () => {
-  const { auditLogs } = useAdminDashboard();
+const OwnerNotificationMenu: React.FC = () => {
+  const { notifications, markNotificationAsRead } = useOwnerDashboard();
 
   const [isOpen, setIsOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
 
-  // Convert audit logs to notifications
-  const notifications = auditLogs.map((log) => ({
-    id: log.id,
-    type: log.severity,
-    title: log.action,
-    message: log.description,
-    priority: log.severity,
-    timestamp: log.timestamp,
-    isRead: log.severity === "low", // Consider low severity as read
-    actionRequired: log.severity === "high",
-    userId: log.userId,
-    userName: log.userName,
-    ipAddress: log.ipAddress,
-  }));
-
-  // Calculate unread count (high and medium severity)
-  const unreadCount = notifications.filter((notif) => !notif.isRead).length;
+  // Calculate unread count
+  const unreadCount = notifications.filter((notif) => !notif.read).length;
 
   // Get priority color
   const getPriorityColor = (priority: string) => {
     switch (priority) {
+      case "urgent":
+        return "border-l-red-600 bg-red-100";
       case "high":
         return "border-l-red-500 bg-red-50";
       case "medium":
@@ -54,12 +41,14 @@ const AdminNotificationMenu: React.FC = () => {
   // Get type color
   const getTypeColor = (type: string) => {
     switch (type) {
-      case "high":
-        return "bg-red-100 text-red-800";
-      case "medium":
-        return "bg-yellow-100 text-yellow-800";
-      case "low":
-        return "bg-blue-100 text-blue-800";
+      case "financial":
+        return "bg-green-100 text-green-800";
+      case "staff":
+        return "bg-purple-100 text-purple-800";
+      case "restaurant":
+        return "bg-orange-100 text-orange-800";
+      case "system":
+        return "bg-indigo-100 text-indigo-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -80,14 +69,18 @@ const AdminNotificationMenu: React.FC = () => {
   };
 
   // Handle mark as read
-  const handleMarkAsRead = () => {
-    // In a real app, this would mark the audit log as read
+  const handleMarkAsRead = (notificationId: string) => {
+    markNotificationAsRead(notificationId);
     toast.success("Notification marked as read");
   };
 
   // Handle mark all as read
   const handleMarkAllAsRead = () => {
-    // In a real app, this would mark all audit logs as read
+    notifications.forEach((notif) => {
+      if (!notif.read) {
+        markNotificationAsRead(notif.id);
+      }
+    });
     toast.success("All notifications marked as read");
   };
 
@@ -99,19 +92,40 @@ const AdminNotificationMenu: React.FC = () => {
     }
   };
 
-  // Handle notification click
-  const handleNotificationClick = (notification: {
+  // Define a type for notifications that includes optional 'read', 'isRead', 'type', and 'actionUrl'
+  type OwnerNotification = {
     id: string;
     actionUrl?: string;
-    isRead: boolean;
-  }) => {
-    if (!notification.isRead) {
-      handleMarkAsRead();
+    isRead?: boolean;
+    read?: boolean;
+    type?: string;
+  };
+
+  // Handle notification click
+  const handleNotificationClick = (notification: OwnerNotification) => {
+    // Prefer 'isRead', fallback to 'read'
+    const isRead = notification.isRead ?? notification.read;
+    if (!isRead) {
+      markNotificationAsRead(notification.id);
     }
 
     // Navigate to relevant page based on notification type
-    if (notification.actionRequired) {
-      window.location.href = `/dashboard/admin/audit-logs`;
+    switch (notification.type) {
+      case "financial":
+        window.location.href = `/dashboard/owner/financial`;
+        break;
+      case "staff":
+        window.location.href = `/dashboard/owner/staff`;
+        break;
+      case "restaurant":
+        window.location.href = `/dashboard/owner/restaurants`;
+        break;
+      default:
+        // If actionUrl is provided, fallback to it
+        if (notification.actionUrl) {
+          window.location.href = notification.actionUrl;
+        }
+        break;
     }
   };
 
@@ -168,9 +182,7 @@ const AdminNotificationMenu: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <Bell className="w-6 h-6" />
                   <div>
-                    <h3 className="text-lg font-semibold">
-                      System Notifications
-                    </h3>
+                    <h3 className="text-lg font-semibold">Notifications</h3>
                     <p className="text-sm text-brand-light">
                       {unreadCount} unread{" "}
                       {unreadCount === 1 ? "notification" : "notifications"}
@@ -215,14 +227,14 @@ const AdminNotificationMenu: React.FC = () => {
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ duration: 0.2 }}
                         className={`relative p-4 rounded-lg border-l-4 cursor-pointer transition-all hover:shadow-md ${
-                          notification.isRead
+                          notification.read
                             ? "bg-white border-gray-200"
                             : "bg-blue-50 border-blue-300"
                         } ${getPriorityColor(notification.priority)}`}
                         onClick={() => handleNotificationClick(notification)}
                       >
                         {/* Unread Indicator */}
-                        {!notification.isRead && (
+                        {!notification.read && (
                           <div className="absolute top-4 right-4 w-2 h-2 bg-blue-500 rounded-full" />
                         )}
 
@@ -230,11 +242,13 @@ const AdminNotificationMenu: React.FC = () => {
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center gap-3">
                             <span className="text-2xl">
-                              {notification.priority === "high"
-                                ? "⚠️"
-                                : notification.priority === "medium"
-                                ? "🔔"
-                                : "ℹ️"}
+                              {notification.type === "financial"
+                                ? "💰"
+                                : notification.type === "staff"
+                                ? "👥"
+                                : notification.type === "restaurant"
+                                ? "🏪"
+                                : "🔔"}
                             </span>
                             <div className="flex-1">
                               <h4 className="font-medium text-gray-900 text-sm">
@@ -243,17 +257,15 @@ const AdminNotificationMenu: React.FC = () => {
                               <div className="flex items-center gap-2 mt-1">
                                 <span
                                   className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(
-                                    notification.priority
+                                    notification.type
                                   )}`}
                                 >
-                                  {notification.priority
-                                    .charAt(0)
-                                    .toUpperCase() +
-                                    notification.priority.slice(1)}
+                                  {notification.type.charAt(0).toUpperCase() +
+                                    notification.type.slice(1)}
                                 </span>
                                 <span className="text-xs text-gray-500 flex items-center gap-1">
                                   <Clock className="w-3 h-3" />
-                                  {formatTimestamp(notification.timestamp)}
+                                  {formatTimestamp(notification.createdAt)}
                                 </span>
                                 {notification.actionRequired && (
                                   <span className="text-xs text-red-600 font-medium">
@@ -270,20 +282,14 @@ const AdminNotificationMenu: React.FC = () => {
                           {notification.message}
                         </p>
 
-                        {/* Additional Info */}
-                        <div className="text-xs text-gray-500 mb-3">
-                          <p>User: {notification.userName}</p>
-                          <p>IP: {notification.ipAddress}</p>
-                        </div>
-
                         {/* Actions */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            {!notification.isRead && (
+                            {!notification.read && (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleMarkAsRead();
+                                  handleMarkAsRead(notification.id);
                                 }}
                                 className="flex items-center gap-1 px-2 py-1 text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
                               >
@@ -300,7 +306,7 @@ const AdminNotificationMenu: React.FC = () => {
                             className="flex items-center gap-1 px-2 py-1 text-xs text-brand hover:text-brand-dark hover:bg-brand/10 rounded transition-colors"
                           >
                             <ExternalLink className="w-3 h-3" />
-                            View Details
+                            View
                           </button>
                         </div>
                       </motion.div>
@@ -312,7 +318,7 @@ const AdminNotificationMenu: React.FC = () => {
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
                       No Notifications
                     </h3>
-                    <p className="text-gray-500">System is running smoothly!</p>
+                    <p className="text-gray-500">You're all caught up!</p>
                   </div>
                 )}
               </div>
@@ -346,4 +352,4 @@ const AdminNotificationMenu: React.FC = () => {
   );
 };
 
-export default AdminNotificationMenu;
+export default OwnerNotificationMenu;

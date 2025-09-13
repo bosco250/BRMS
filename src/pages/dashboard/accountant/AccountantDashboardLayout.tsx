@@ -15,7 +15,7 @@ import {
   Calculator,
   X,
 } from "lucide-react";
-import AccountantNotificationMenu from "../../../components/AccountantNotificationMenu";
+import AccountantNotificationMenu from "./AccountantNotificationMenu";
 import {
   Menu as MUIMenu,
   MenuItem,

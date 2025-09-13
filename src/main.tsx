@@ -11,6 +11,7 @@ import Register from "./pages/auth/Register.tsx";
 import ForgotPassword from "./pages/auth/ForgotPassword.tsx";
 import Checkout from "./pages/Checkout.tsx";
 import OrderSuccess from "./pages/OrderSuccess.tsx";
+import OrderTracking from "./pages/OrderTracking.tsx";
 // Admin Dashboard Components
 import AdminDashboardLayout from "./pages/dashboard/admin/AdminDashboardLayout.tsx";
 import AdminDashboardMain from "./pages/dashboard/admin/Dashboard.tsx";
@@ -98,7 +99,8 @@ const router = createBrowserRouter([
       { path: "forgot", element: <ForgotPassword /> },
       { path: "checkout", element: <Checkout /> },
       { path: "order-success", element: <OrderSuccess /> },
-      { path:"verify-otp", element:<VerifyOTP/>},
+      { path: "order-tracking", element: <OrderTracking /> },
+      { path: "verify-otp", element: <VerifyOTP /> },
     ],
   },
   // Admin Dashboard with nested routes

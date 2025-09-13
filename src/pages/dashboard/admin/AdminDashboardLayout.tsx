@@ -16,7 +16,7 @@ import {
   ShoppingCart,
   Server,
 } from "lucide-react";
-import AdminNotificationMenu from "../../../components/AdminNotificationMenu";
+import AdminNotificationMenu from "./AdminNotificationMenu";
 import {
   Menu as MUIMenu,
   MenuItem,

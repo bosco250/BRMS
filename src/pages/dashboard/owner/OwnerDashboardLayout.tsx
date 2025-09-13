@@ -18,7 +18,7 @@ import {
   Menu,
   CreditCard,
 } from "lucide-react";
-import OwnerNotificationMenu from "../../../components/OwnerNotificationMenu";
+import OwnerNotificationMenu from "./OwnerNotificationMenu";
 import {
   Menu as MUIMenu,
   MenuItem,
