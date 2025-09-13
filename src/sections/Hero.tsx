@@ -19,6 +19,12 @@ export default function Hero() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
+                to="/businesses"
+                className="rounded-md bg-accent px-6 py-4 text-text-inverted font-semibold hover:bg-accent-hover active:bg-accent-active focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/20 text-lg"
+              >
+                🍽️ Order Food Now
+              </Link>
+              <Link
                 to="/register"
                 className="rounded-md bg-brand px-5 py-3 text-text-inverted font-medium hover:bg-brand-hover active:bg-brand-active focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/20"
               >

@@ -24,10 +24,11 @@ import {
   FaExternalLinkAlt,
   FaMapPin,
   FaChevronDown,
+  FaChevronRight,
 } from "react-icons/fa";
 import { getRestaurantById } from "../data/restaurants";
 import { useCart } from "../contexts/CartContext";
-import type { CartItem } from "../data/checkoutData";
+import type { CartItem } from "../data/checkoutTypes";
 import { toast } from "react-toastify";
 
 // Mock bar data (same as in Resto.tsx)
@@ -408,8 +409,11 @@ export default function RestaurantProfile() {
   const [showHoursModal, setShowHoursModal] = useState(false);
   const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showReviewsModal, setShowReviewsModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // New state for user-friendly features
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [activeTab, setActiveTab] = useState("menu");
 
   // Reservation form state
   const [reservationData, setReservationData] = useState({
@@ -497,10 +501,6 @@ export default function RestaurantProfile() {
     setShowPaymentModal(true);
   };
 
-  const handleViewReviews = () => {
-    setShowReviewsModal(true);
-  };
-
   const handlePrintMenu = () => {
     window.print();
     toast.success("Print dialog opened");
@@ -537,6 +537,17 @@ export default function RestaurantProfile() {
     business.menu && business.menu.length > 0
       ? [...new Set(business.menu.map((item: any) => item.category))]
       : [];
+
+  // Filter menu items based on category
+  const filteredMenuItems =
+    business.menu?.filter((item: any) => {
+      const matchesCategory =
+        selectedCategory === "all" || item.category === selectedCategory;
+      return matchesCategory;
+    }) || [];
+
+  // Get popular items for quick order
+  const popularItems = business.menu?.filter((item: any) => item.popular) || [];
 
   return (
     <section className="min-h-screen bg-gradient-to-br from-surface-secondary via-surface-primary to-surface-secondary relative overflow-hidden">
@@ -664,7 +675,7 @@ export default function RestaurantProfile() {
                   </button>
                   <button
                     onClick={handleOrderOnline}
-                    className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-accent to-accent-hover px-8 py-4 text-lg font-semibold text-text-inverted hover:shadow-2xl transition-all duration-300 hover:scale-105"
+                    className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-accent to-accent-hover px-8 py-4 text-lg font-semibold text-text-inverted hover:shadow-2xl transition-all duration-300 hover:scale-105 ring-2 ring-accent/30 hover:ring-accent/50"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-accent-hover to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <div className="relative flex items-center justify-center gap-3">
@@ -674,8 +685,8 @@ export default function RestaurantProfile() {
                         <FaWineGlassAlt className="h-5 w-5" />
                       )}
                       {business.type === "restaurant"
-                        ? "Order Online"
-                        : "View Menu"}
+                        ? "🍽️ View Menu & Order"
+                        : "🍷 View Menu"}
                     </div>
                   </button>
                 </div>
@@ -785,11 +796,37 @@ export default function RestaurantProfile() {
 
         {/* Enhanced Info Grid */}
         <motion.div
-          className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16"
+          className="grid sm:grid-cols-2 lg:grid-cols-5 gap-8 mb-16"
           initial="hidden"
           animate="visible"
           variants={containerVariants}
         >
+          <motion.div variants={itemVariants}>
+            <div
+              className="group relative bg-gradient-to-br from-brand/10 to-brand/5 rounded-2xl p-6 border border-brand/30 hover:border-brand/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer"
+              onClick={handleOrderOnline}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-brand/10 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-brand/20 to-brand/10 group-hover:scale-110 transition-transform duration-300">
+                    <FaUtensils className="text-brand h-6 w-6" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-brand">
+                    Quick Menu
+                  </h3>
+                </div>
+                <p className="text-text-secondary leading-relaxed mb-3">
+                  Browse our delicious menu and start ordering
+                </p>
+                <div className="flex items-center gap-2 text-brand font-medium text-sm">
+                  <span>View Menu</span>
+                  <FaChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
           <motion.div variants={itemVariants}>
             <div className="group relative bg-gradient-to-br from-surface-primary to-surface-secondary rounded-2xl p-6 border border-border-subtle/50 hover:border-brand/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
               <div className="absolute inset-0 bg-gradient-to-br from-brand/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -987,94 +1024,6 @@ export default function RestaurantProfile() {
           )}
         </motion.div>
 
-        {/* Customer Reviews Section */}
-        <motion.div
-          className="mb-16"
-          initial="hidden"
-          animate="visible"
-          variants={containerVariants}
-        >
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-text-primary mb-4">
-              Customer Reviews
-            </h2>
-            <p className="text-text-secondary text-lg">
-              What our customers are saying
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Sarah Johnson",
-                rating: 5,
-                comment:
-                  "Amazing food and excellent service! The atmosphere is perfect for a romantic dinner.",
-                date: "2 days ago",
-              },
-              {
-                name: "Michael Chen",
-                rating: 4,
-                comment:
-                  "Great variety of dishes and reasonable prices. Will definitely come back again.",
-                date: "1 week ago",
-              },
-              {
-                name: "Emily Rodriguez",
-                rating: 5,
-                comment:
-                  "The staff was incredibly friendly and the food was absolutely delicious. Highly recommended!",
-                date: "2 weeks ago",
-              },
-            ].map((review, index) => (
-              <motion.div
-                key={index}
-                variants={itemVariants}
-                className="group relative bg-gradient-to-br from-surface-primary to-surface-secondary rounded-2xl p-6 border border-border-subtle/50 hover:border-brand/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-brand/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="relative">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-brand/20 to-brand/10 rounded-full flex items-center justify-center">
-                      <span className="text-brand font-bold text-lg">
-                        {review.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </span>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-text-primary">
-                        {review.name}
-                      </h4>
-                      <div className="flex items-center gap-2">
-                        <Rating value={review.rating} />
-                        <span className="text-sm text-text-muted">
-                          {review.date}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-text-secondary leading-relaxed">
-                    "{review.comment}"
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          <div className="text-center mt-8">
-            <button
-              onClick={handleViewReviews}
-              className="bg-gradient-to-r from-brand to-brand-hover text-text-inverted px-8 py-3 rounded-2xl font-semibold hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center gap-2 mx-auto"
-            >
-              <FaStar className="w-4 h-4" />
-              View All Reviews
-              <FaChevronDown className="w-4 h-4" />
-            </button>
-          </div>
-        </motion.div>
-
         {/* Floating Explore Button */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -1122,177 +1071,181 @@ export default function RestaurantProfile() {
           )}
         </motion.div>
 
-        {/* Enhanced Menu */}
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={containerVariants}
-        >
-          <div
-            id="menu-section"
-            className="sticky top-16 z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-8 bg-surface-primary/95 backdrop-blur-xl border-b border-border-secondary/50 mb-12 shadow-sm"
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-3xl font-bold text-text-primary mb-2">
-                  {business.type === "restaurant"
-                    ? "Our Menu"
-                    : "Our Drinks & Menu"}
-                </h2>
-                <p className="text-text-secondary">
-                  {business.type === "restaurant"
-                    ? "Discover our delicious food offerings"
-                    : "Explore our curated selection of drinks and bites"}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="text-sm text-text-muted">
-                  {business.menu.length} items available
-                </div>
-                <button
-                  onClick={handlePrintMenu}
-                  className="group relative overflow-hidden rounded-lg bg-brand hover:bg-brand-hover px-4 py-2 text-sm font-semibold text-text-inverted transition-all duration-200 hover:shadow-lg"
-                >
-                  <div className="relative flex items-center gap-2">
-                    <FaPrint className="h-4 w-4" />
-                    Print Menu
-                  </div>
-                </button>
-              </div>
+        {/* Sticky Navigation Tabs */}
+        <div className="sticky top-16 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex overflow-x-auto">
+              <button
+                onClick={() => setActiveTab("menu")}
+                className={`px-6 py-4 font-semibold text-sm whitespace-nowrap border-b-2 transition-colors ${
+                  activeTab === "menu"
+                    ? "border-brand text-brand"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                🍽️ Menu
+              </button>
+              <button
+                onClick={() => setActiveTab("info")}
+                className={`px-6 py-4 font-semibold text-sm whitespace-nowrap border-b-2 transition-colors ${
+                  activeTab === "info"
+                    ? "border-brand text-brand"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                ℹ️ Info
+              </button>
+              <button
+                onClick={() => setActiveTab("reserve")}
+                className={`px-6 py-4 font-semibold text-sm whitespace-nowrap border-b-2 transition-colors ${
+                  activeTab === "reserve"
+                    ? "border-brand text-brand"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                📅 Reserve
+              </button>
             </div>
           </div>
+        </div>
 
-          {categories.map((category: string) => (
-            <motion.div
-              key={category}
-              className="mb-16"
-              variants={itemVariants}
+        {/* Tab Content */}
+        {activeTab === "menu" && (
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+          >
+            <div
+              id="menu-section"
+              className="sticky top-32 z-40 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-8 bg-surface-primary/95 backdrop-blur-xl border-b border-border-secondary/50 mb-12 shadow-sm"
             >
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-1 h-8 bg-brand rounded-full"></div>
-                <h3 className="text-2xl font-bold text-text-primary">
-                  {category}
-                </h3>
-                <div className="flex-1 h-px bg-gradient-to-r from-border-subtle to-transparent"></div>
-                <div className="text-sm text-text-muted bg-surface-secondary px-3 py-1 rounded-full">
-                  {
-                    business.menu.filter(
-                      (item: any) => item.category === category
-                    ).length
-                  }{" "}
-                  items
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-3xl font-bold text-text-primary mb-2">
+                    {business.type === "restaurant"
+                      ? "Our Menu"
+                      : "Our Drinks & Menu"}
+                  </h2>
+                  <p className="text-text-secondary">
+                    {business.type === "restaurant"
+                      ? "Discover our delicious food offerings"
+                      : "Explore our curated selection of drinks and bites"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-sm text-text-muted">
+                    {business.menu.length} items available
+                  </div>
+                  <button
+                    onClick={handlePrintMenu}
+                    className="group relative overflow-hidden rounded-lg bg-brand hover:bg-brand-hover px-4 py-2 text-sm font-semibold text-text-inverted transition-all duration-200 hover:shadow-lg"
+                  >
+                    <div className="relative flex items-center gap-2">
+                      <FaPrint className="h-4 w-4" />
+                      Print Menu
+                    </div>
+                  </button>
                 </div>
               </div>
 
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {business.menu
-                  .filter((item: any) => item.category === category)
-                  .map((item: any) => (
-                    <motion.div
-                      key={item.id}
-                      className="group relative bg-surface-primary rounded-2xl border border-border-subtle overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
-                      whileHover={{ scale: 1.02 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 20,
-                      }}
+              {/* Category Filter */}
+              <div className="mt-6">
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  <button
+                    onClick={() => setSelectedCategory("all")}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                      selectedCategory === "all"
+                        ? "bg-brand text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    All Items
+                  </button>
+                  {categories.map((category: string) => (
+                    <button
+                      key={category}
+                      onClick={() => setSelectedCategory(category)}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                        selectedCategory === category
+                          ? "bg-brand text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
                     >
-                      {/* Image Section */}
-                      <div className="relative h-48 bg-border-subtle/40 overflow-hidden">
+                      {category}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Popular Items Section */}
+            {popularItems.length > 0 && (
+              <motion.div className="mb-12" variants={itemVariants}>
+                <div className="flex items-center gap-3 mb-6">
+                  <h3 className="text-xl font-bold text-text-primary">
+                    ⭐ Popular Items
+                  </h3>
+                  <div className="text-sm text-text-muted bg-orange-100 px-2 py-1 rounded-full">
+                    {popularItems.length} popular
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {popularItems.map((item: any) => (
+                    <motion.div
+                      key={`popular_${item.id}`}
+                      className="group bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
+                      whileHover={{ scale: 1.02 }}
+                    >
+                      {/* Image */}
+                      <div className="relative h-40 bg-gray-100 overflow-hidden">
                         {item.image ? (
                           <img
                             src={item.image}
                             alt={item.name}
-                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                             loading="lazy"
                             onError={(e) => {
-                              // Fallback to a placeholder if image fails to load
                               e.currentTarget.src = `https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&h=300&fit=crop&q=80`;
                             }}
                           />
                         ) : (
-                          <div className="h-full w-full bg-gradient-to-br from-border-subtle/40 to-border-subtle/20 flex items-center justify-center">
-                            <div className="text-center">
-                              <div className="w-16 h-16 mx-auto mb-2 bg-border-subtle rounded-full flex items-center justify-center">
-                                {business.type === "restaurant" ? (
-                                  <FaUtensils className="w-8 h-8 text-text-muted" />
-                                ) : (
-                                  <FaWineGlassAlt className="w-8 h-8 text-text-muted" />
-                                )}
-                              </div>
-                              <p className="text-sm text-text-muted">
-                                No Image
-                              </p>
-                            </div>
+                          <div className="h-full w-full bg-gray-200 flex items-center justify-center">
+                            <FaUtensils className="w-8 h-8 text-gray-400" />
                           </div>
                         )}
 
-                        {/* Gradient overlay for better text readability */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
-
-                        {/* Badges */}
-                        <div className="absolute top-3 left-3 flex flex-col gap-2">
-                          {item.popular && (
-                            <span className="bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-md">
-                              ⭐ Popular
-                            </span>
-                          )}
-                          {item.spicy && (
-                            <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-md">
-                              🌶️ Spicy
-                            </span>
-                          )}
-                          {item.vegetarian && (
-                            <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-md">
-                              🌱 Vegetarian
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Price badge */}
-                        <div className="absolute top-3 right-3 bg-surface-primary/95 backdrop-blur-sm text-text-primary px-3 py-1 rounded-full shadow-md">
-                          <span className="font-bold text-sm">
-                            {item.price === 0
-                              ? "Ask Price"
-                              : `RWF ${item.price.toLocaleString()}`}
+                        {/* Popular Badge */}
+                        <div className="absolute top-2 left-2">
+                          <span className="bg-orange-500 text-white px-2 py-1 rounded text-xs font-bold">
+                            ⭐ POPULAR
                           </span>
                         </div>
 
-                        {/* Availability indicator */}
-                        <div className="absolute bottom-3 right-3">
-                          {item.available ? (
-                            <div className="w-3 h-3 bg-success rounded-full shadow-md"></div>
-                          ) : (
-                            <div className="w-3 h-3 bg-error rounded-full shadow-md"></div>
-                          )}
+                        {/* Price */}
+                        <div className="absolute top-2 right-2 bg-white px-2 py-1 rounded shadow-sm">
+                          <span className="font-bold text-sm text-green-600">
+                            RWF {item.price.toLocaleString()}
+                          </span>
                         </div>
                       </div>
 
-                      {/* Content Section */}
-                      <div className="p-4">
-                        <div className="mb-3">
-                          <h4 className="font-bold text-text-primary text-lg mb-2 group-hover:text-brand transition-colors duration-300 line-clamp-1">
-                            {item.name}
-                          </h4>
-                          <p className="text-text-secondary text-sm leading-relaxed line-clamp-2">
-                            {item.description}
-                          </p>
-                        </div>
+                      {/* Content */}
+                      <div className="p-3">
+                        <h4 className="font-bold text-gray-900 text-sm mb-1 line-clamp-1">
+                          {item.name}
+                        </h4>
+                        <p className="text-gray-600 text-xs mb-3 line-clamp-2">
+                          {item.description}
+                        </p>
 
-                        {/* Category tag */}
-                        <div className="mb-4">
-                          <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-brand/10 text-brand">
-                            {item.category}
-                          </span>
-                        </div>
-
-                        {/* Action Button */}
+                        {/* Add to Cart Button */}
                         {item.available ? (
                           <button
                             onClick={() => {
                               const cartItem: CartItem = {
-                                id: `item_${Date.now()}`,
+                                id: `popular_${Date.now()}`,
                                 productId: item.id,
                                 name: item.name,
                                 description: item.description,
@@ -1305,27 +1258,471 @@ export default function RestaurantProfile() {
                               };
                               addItem(cartItem);
                             }}
-                            className="w-full bg-brand hover:bg-brand-hover text-text-inverted py-2 px-4 rounded-lg font-semibold text-sm transition-colors duration-200 flex items-center justify-center gap-2"
+                            className="w-full bg-brand hover:bg-brand-hover text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-200"
                           >
-                            <FaUtensils className="w-4 h-4" />
                             Add to Cart
                           </button>
                         ) : (
                           <button
                             disabled
-                            className="w-full bg-border-subtle text-text-muted py-2 px-4 rounded-lg font-semibold text-sm cursor-not-allowed flex items-center justify-center gap-2"
+                            className="w-full bg-gray-300 text-gray-500 py-2 px-3 rounded-lg text-sm font-medium cursor-not-allowed"
                           >
-                            <span className="w-4 h-4">❌</span>
                             Out of Stock
                           </button>
                         )}
                       </div>
                     </motion.div>
                   ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Menu Categories */}
+            {categories.map((category: string) => {
+              const categoryItems = filteredMenuItems.filter(
+                (item: any) => item.category === category
+              );
+              if (categoryItems.length === 0) return null;
+
+              return (
+                <motion.div
+                  key={category}
+                  className="mb-12"
+                  variants={itemVariants}
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <h3 className="text-xl font-bold text-text-primary">
+                      {category}
+                    </h3>
+                    <div className="text-sm text-text-muted bg-gray-100 px-2 py-1 rounded-full">
+                      {categoryItems.length} items
+                    </div>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {categoryItems.map((item: any) => (
+                      <motion.div
+                        key={item.id}
+                        className="group bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
+                        whileHover={{ scale: 1.02 }}
+                      >
+                        {/* Image */}
+                        <div className="relative h-40 bg-gray-100 overflow-hidden">
+                          {item.image ? (
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              loading="lazy"
+                              onError={(e) => {
+                                e.currentTarget.src = `https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&h=300&fit=crop&q=80`;
+                              }}
+                            />
+                          ) : (
+                            <div className="h-full w-full bg-gray-200 flex items-center justify-center">
+                              <FaUtensils className="w-8 h-8 text-gray-400" />
+                            </div>
+                          )}
+
+                          {/* Badges */}
+                          <div className="absolute top-2 left-2 flex flex-col gap-1">
+                            {item.popular && (
+                              <span className="bg-orange-500 text-white px-2 py-1 rounded text-xs font-bold">
+                                ⭐ Popular
+                              </span>
+                            )}
+                            {item.spicy && (
+                              <span className="bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
+                                🌶️ Spicy
+                              </span>
+                            )}
+                            {item.vegetarian && (
+                              <span className="bg-green-500 text-white px-2 py-1 rounded text-xs font-bold">
+                                🌱 Veg
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Price */}
+                          <div className="absolute top-2 right-2 bg-white px-2 py-1 rounded shadow-sm">
+                            <span className="font-bold text-sm text-green-600">
+                              RWF {item.price.toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-3">
+                          <h4 className="font-bold text-gray-900 text-sm mb-1 line-clamp-1">
+                            {item.name}
+                          </h4>
+                          <p className="text-gray-600 text-xs mb-3 line-clamp-2">
+                            {item.description}
+                          </p>
+
+                          {/* Add to Cart Button */}
+                          {item.available ? (
+                            <button
+                              onClick={() => {
+                                const cartItem: CartItem = {
+                                  id: `item_${Date.now()}`,
+                                  productId: item.id,
+                                  name: item.name,
+                                  description: item.description,
+                                  price: item.price,
+                                  quantity: 1,
+                                  totalPrice: item.price,
+                                  image: item.image,
+                                  category: item.category,
+                                  modifiers: [],
+                                };
+                                addItem(cartItem);
+                              }}
+                              className="w-full bg-brand hover:bg-brand-hover text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-200"
+                            >
+                              Add to Cart
+                            </button>
+                          ) : (
+                            <button
+                              disabled
+                              className="w-full bg-gray-300 text-gray-500 py-2 px-3 rounded-lg text-sm font-medium cursor-not-allowed"
+                            >
+                              Out of Stock
+                            </button>
+                          )}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )}
+
+        {/* Info Tab */}
+        {activeTab === "info" && (
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+            className="mb-16"
+          >
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              <motion.div variants={itemVariants}>
+                <div className="group relative bg-gradient-to-br from-surface-primary to-surface-secondary rounded-2xl p-6 border border-border-subtle/50 hover:border-brand/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                  <div className="absolute inset-0 bg-gradient-to-br from-brand/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="p-3 rounded-xl bg-gradient-to-br from-brand/10 to-brand/5 group-hover:scale-110 transition-transform duration-300">
+                        <FaMapMarkerAlt className="text-brand h-6 w-6" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-text-primary">
+                        Location
+                      </h3>
+                    </div>
+                    <p className="text-text-secondary leading-relaxed">
+                      {business.address}
+                    </p>
+                    <button
+                      onClick={handleGetDirections}
+                      className="mt-3 text-brand hover:text-brand-hover font-medium text-sm transition-colors duration-300 flex items-center gap-2 hover:gap-3"
+                    >
+                      <FaMapPin className="w-3 h-3" />
+                      Get Directions
+                      <FaExternalLinkAlt className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div variants={itemVariants}>
+                <div className="group relative bg-gradient-to-br from-surface-primary to-surface-secondary rounded-2xl p-6 border border-border-subtle/50 hover:border-accent/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                  <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="p-3 rounded-xl bg-gradient-to-br from-accent/10 to-accent/5 group-hover:scale-110 transition-transform duration-300">
+                        <FaClock className="text-accent h-6 w-6" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-text-primary">
+                        Hours
+                      </h3>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-text-secondary font-medium">
+                        {business.opensAt} - {business.closesAt}
+                      </p>
+                      <p className="text-sm text-text-muted">
+                        Avg. wait: {business.averageWaitTime}
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleViewHours}
+                      className="mt-3 text-accent hover:text-accent-hover font-medium text-sm transition-colors duration-300 flex items-center gap-2 hover:gap-3"
+                    >
+                      <FaClock className="w-3 h-3" />
+                      View Full Hours
+                      <FaChevronDown className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div variants={itemVariants}>
+                <div className="group relative bg-gradient-to-br from-surface-primary to-surface-secondary rounded-2xl p-6 border border-border-subtle/50 hover:border-success/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                  <div className="absolute inset-0 bg-gradient-to-br from-success/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="p-3 rounded-xl bg-gradient-to-br from-success/10 to-success/5 group-hover:scale-110 transition-transform duration-300">
+                        <FaUsers className="text-success h-6 w-6" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-text-primary">
+                        Availability
+                      </h3>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-text-secondary font-medium">
+                        {business.capacity} seats available
+                      </p>
+                      <p className="text-sm text-text-muted">
+                        Currently {business.openNow ? "Open" : "Closed"}
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleCheckAvailability}
+                      className="mt-3 text-success hover:text-success-hover font-medium text-sm transition-colors duration-300 flex items-center gap-2 hover:gap-3"
+                    >
+                      <FaUsers className="w-3 h-3" />
+                      Check Availability
+                      <FaChevronDown className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div variants={itemVariants}>
+                <div className="group relative bg-gradient-to-br from-surface-primary to-surface-secondary rounded-2xl p-6 border border-border-subtle/50 hover:border-info/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                  <div className="absolute inset-0 bg-gradient-to-br from-info/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="p-3 rounded-xl bg-gradient-to-br from-info/10 to-info/5 group-hover:scale-110 transition-transform duration-300">
+                        <FaCreditCard className="text-info h-6 w-6" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-text-primary">
+                        Payment
+                      </h3>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-text-secondary font-medium">
+                        {business.paymentMethods.length} methods accepted
+                      </p>
+                      <p className="text-sm text-text-muted">Secure payments</p>
+                    </div>
+                    <button
+                      onClick={handleViewPaymentOptions}
+                      className="mt-3 text-info hover:text-info-hover font-medium text-sm transition-colors duration-300 flex items-center gap-2 hover:gap-3"
+                    >
+                      <FaCreditCard className="w-3 h-3" />
+                      View Payment Options
+                      <FaChevronDown className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Reserve Tab */}
+        {activeTab === "reserve" && (
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+            className="mb-16"
+          >
+            <div className="max-w-2xl mx-auto">
+              <div className="bg-surface-primary rounded-3xl p-8 shadow-2xl border border-border-subtle/20">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="p-3 bg-brand/10 rounded-full">
+                    <FaCalendarAlt className="w-6 h-6 text-brand" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-text-primary">
+                      Reserve a Table
+                    </h3>
+                    <p className="text-text-secondary text-sm">
+                      Book your perfect dining experience
+                    </p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleReservationSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="block text-sm font-semibold text-text-primary">
+                        Date
+                      </label>
+                      <input
+                        type="date"
+                        required
+                        value={reservationData.date}
+                        onChange={(e) =>
+                          setReservationData({
+                            ...reservationData,
+                            date: e.target.value,
+                          })
+                        }
+                        className="w-full rounded-xl border-2 border-border-subtle px-4 py-3 text-text-primary bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-semibold text-text-primary">
+                        Time
+                      </label>
+                      <input
+                        type="time"
+                        required
+                        value={reservationData.time}
+                        onChange={(e) =>
+                          setReservationData({
+                            ...reservationData,
+                            time: e.target.value,
+                          })
+                        }
+                        className="w-full rounded-xl border-2 border-border-subtle px-4 py-3 text-text-primary bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-text-primary">
+                      Number of Guests
+                    </label>
+                    <select
+                      value={reservationData.guests}
+                      onChange={(e) =>
+                        setReservationData({
+                          ...reservationData,
+                          guests: parseInt(e.target.value),
+                        })
+                      }
+                      className="w-full rounded-xl border-2 border-border-subtle px-4 py-3 text-text-primary bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
+                    >
+                      {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                        <option key={num} value={num}>
+                          {num} {num === 1 ? "Guest" : "Guests"}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-text-primary">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={reservationData.name}
+                      onChange={(e) =>
+                        setReservationData({
+                          ...reservationData,
+                          name: e.target.value,
+                        })
+                      }
+                      placeholder="Enter your full name"
+                      className="w-full rounded-xl border-2 border-border-subtle px-4 py-3 text-text-primary bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="block text-sm font-semibold text-text-primary">
+                        Phone Number
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        value={reservationData.phone}
+                        onChange={(e) =>
+                          setReservationData({
+                            ...reservationData,
+                            phone: e.target.value,
+                          })
+                        }
+                        placeholder="+250 7xx xxx xxx"
+                        className="w-full rounded-xl border-2 border-border-subtle px-4 py-3 text-text-primary bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-semibold text-text-primary">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={reservationData.email}
+                        onChange={(e) =>
+                          setReservationData({
+                            ...reservationData,
+                            email: e.target.value,
+                          })
+                        }
+                        placeholder="your@email.com"
+                        className="w-full rounded-xl border-2 border-border-subtle px-4 py-3 text-text-primary bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-text-primary">
+                      Special Requests (Optional)
+                    </label>
+                    <textarea
+                      value={reservationData.specialRequests}
+                      onChange={(e) =>
+                        setReservationData({
+                          ...reservationData,
+                          specialRequests: e.target.value,
+                        })
+                      }
+                      rows={3}
+                      placeholder="Any special dietary requirements, celebrations, or preferences..."
+                      className="w-full rounded-xl border-2 border-border-subtle px-4 py-3 text-text-primary bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200 resize-none"
+                    />
+                  </div>
+
+                  <div className="flex gap-4 pt-6">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("menu")}
+                      className="flex-1 px-6 py-3 text-text-secondary hover:text-text-primary hover:bg-surface-secondary rounded-xl font-semibold transition-all duration-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="flex-1 bg-gradient-to-r from-brand to-brand-hover hover:from-brand-hover hover:to-brand text-text-inverted px-6 py-3 rounded-xl font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                    >
+                      {isLoading ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="w-4 h-4 border-2 border-text-inverted/30 border-t-text-inverted rounded-full animate-spin"></div>
+                          Confirming...
+                        </div>
+                      ) : (
+                        "Confirm Reservation"
+                      )}
+                    </button>
+                  </div>
+                </form>
               </div>
-            </motion.div>
-          ))}
-        </motion.div>
+            </div>
+          </motion.div>
+        )}
       </div>
 
       {/* Modals */}
@@ -1656,86 +2053,146 @@ export default function RestaurantProfile() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-surface-primary rounded-3xl p-8 w-full max-w-lg shadow-2xl border border-border-subtle/20"
+              className="bg-white rounded-3xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200"
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Header */}
               <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-success/10 rounded-full">
-                    <FaUsers className="w-6 h-6 text-success" />
+                <div className="flex items-center gap-4">
+                  <div className="p-4 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg">
+                    <FaUsers className="w-8 h-8 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-text-primary">
-                      Availability
+                    <h3 className="text-3xl font-bold text-gray-900">
+                      Seating Availability
                     </h3>
-                    <p className="text-text-secondary text-sm">
-                      Current seating availability
+                    <p className="text-gray-600 text-lg">
+                      Current table availability status
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowAvailabilityModal(false)}
-                  className="p-3 text-text-muted hover:text-text-primary hover:bg-surface-secondary rounded-full transition-all duration-200"
+                  className="p-3 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-200"
                 >
-                  <FaTimes className="w-5 h-5" />
+                  <FaTimes className="w-6 h-6" />
                 </button>
               </div>
 
-              <div className="space-y-6">
-                <div className="text-center p-8 bg-gradient-to-br from-success/5 to-success/10 rounded-2xl border border-success/20">
-                  <div className="text-6xl font-bold text-success mb-4">
+              {/* Main Capacity Display */}
+              <div className="text-center p-8 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200 mb-8">
+                <div className="relative">
+                  <div className="text-8xl font-bold text-green-600 mb-4">
                     {business.capacity}
                   </div>
-                  <div className="text-text-secondary text-lg font-medium">
+                  <div className="text-2xl font-bold text-gray-900 mb-2">
                     Seats Available
                   </div>
-                  <div className="text-text-muted text-sm mt-2">
-                    Out of {business.capacity} total seats
+                  <div className="text-gray-600 text-lg">
+                    Out of {business.capacity} total capacity
                   </div>
-                </div>
 
-                <div className="p-6 bg-success/10 rounded-2xl border border-success/20">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="p-2 bg-success/20 rounded-full">
-                      <FaCheck className="w-5 h-5 text-success" />
-                    </div>
-                    <span className="font-bold text-lg text-success">
-                      Excellent Availability
-                    </span>
+                  {/* Availability Status Badge */}
+                  <div className="mt-4 inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-semibold">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    Excellent Availability
                   </div>
-                  <p className="text-text-secondary">
-                    We have plenty of seating available for your visit. No need
-                    to worry about finding a table!
-                  </p>
                 </div>
+              </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-surface-secondary rounded-xl text-center">
-                    <div className="text-2xl font-bold text-text-primary mb-1">
-                      2-5 min
-                    </div>
-                    <div className="text-text-secondary text-sm">
-                      Average Wait
-                    </div>
+              {/* Status Information */}
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200 mb-6">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-green-100 rounded-xl">
+                    <FaCheck className="w-6 h-6 text-green-600" />
                   </div>
-                  <div className="p-4 bg-surface-secondary rounded-xl text-center">
-                    <div className="text-2xl font-bold text-text-primary mb-1">
-                      95%
-                    </div>
-                    <div className="text-text-secondary text-sm">
-                      Availability
+                  <div>
+                    <h4 className="text-xl font-bold text-gray-900 mb-3">
+                      Great News! 🎉
+                    </h4>
+                    <div className="space-y-2 text-gray-700">
+                      <p className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                        Plenty of seating available for your visit
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                        No need to worry about finding a table
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                        Walk-ins welcome at any time
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                        Group seating available
+                      </p>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="text-center pt-4">
-                  <button
-                    onClick={handleReservation}
-                    className="bg-gradient-to-r from-brand to-brand-hover hover:from-brand-hover hover:to-brand text-text-inverted px-8 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
-                  >
-                    Make a Reservation
-                  </button>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 text-center border border-blue-200"
+                >
+                  <div className="text-3xl font-bold text-blue-600 mb-2">
+                    2-5 min
+                  </div>
+                  <div className="text-gray-700 font-semibold">
+                    Average Wait Time
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    Quick seating guaranteed
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 text-center border border-purple-200"
+                >
+                  <div className="text-3xl font-bold text-purple-600 mb-2">
+                    95%
+                  </div>
+                  <div className="text-gray-700 font-semibold">
+                    Availability Rate
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    Consistently high availability
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button
+                  onClick={handleReservation}
+                  className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+                >
+                  📅 Make a Reservation
+                </button>
+                <button
+                  onClick={() => setShowAvailabilityModal(false)}
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200"
+                >
+                  Close
+                </button>
+              </div>
+
+              {/* Trust Badge */}
+              <div className="mt-6 flex items-center justify-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="p-2 bg-green-100 rounded-full">
+                  <FaCheck className="w-4 h-4 text-green-600" />
                 </div>
+                <span className="text-gray-700 font-medium">
+                  ✅ Real-time availability updates
+                </span>
               </div>
             </motion.div>
           </motion.div>
@@ -1755,259 +2212,116 @@ export default function RestaurantProfile() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-surface-primary rounded-3xl p-8 w-full max-w-lg shadow-2xl border border-border-subtle/20"
+              className="bg-white rounded-3xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200"
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Header */}
               <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-info/10 rounded-full">
-                    <FaCreditCard className="w-6 h-6 text-info" />
+                <div className="flex items-center gap-4">
+                  <div className="p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg">
+                    <FaCreditCard className="w-8 h-8 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-text-primary">
+                    <h3 className="text-3xl font-bold text-gray-900">
                       Payment Methods
                     </h3>
-                    <p className="text-text-secondary text-sm">
-                      Accepted payment options
+                    <p className="text-gray-600 text-lg">
+                      Choose your preferred payment option
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowPaymentModal(false)}
-                  className="p-3 text-text-muted hover:text-text-primary hover:bg-surface-secondary rounded-full transition-all duration-200"
+                  className="p-3 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-200"
                 >
-                  <FaTimes className="w-5 h-5" />
+                  <FaTimes className="w-6 h-6" />
                 </button>
               </div>
 
-              <div className="space-y-3">
+              {/* Payment Methods Grid */}
+              <div className="grid md:grid-cols-2 gap-4 mb-8">
                 {business.paymentMethods.map(
                   (method: string, index: number) => (
-                    <div
+                    <motion.div
                       key={index}
-                      className="flex items-center gap-4 p-4 bg-surface-secondary rounded-xl hover:bg-surface-secondary/80 transition-all duration-200 border border-border-subtle/50"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="group relative bg-gradient-to-br from-gray-50 to-white rounded-2xl p-6 border-2 border-gray-200 hover:border-blue-300 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer"
                     >
-                      <div className="p-2 bg-brand/10 rounded-lg">
-                        <FaCreditCard className="w-5 h-5 text-brand" />
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                          <FaCreditCard className="w-6 h-6 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-lg font-bold text-gray-900 mb-1">
+                            {method}
+                          </h4>
+                          <p className="text-gray-600 text-sm">
+                            Secure & instant payment
+                          </p>
+                        </div>
+                        <div className="p-2 bg-green-100 rounded-full">
+                          <FaCheck className="w-5 h-5 text-green-600" />
+                        </div>
                       </div>
-                      <span className="text-text-primary font-semibold flex-1">
-                        {method}
-                      </span>
-                      <div className="p-1 bg-success/20 rounded-full">
-                        <FaCheck className="w-4 h-4 text-success" />
-                      </div>
-                    </div>
+
+                      {/* Hover effect overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </motion.div>
                   )
                 )}
               </div>
 
-              <div className="mt-8 p-6 bg-gradient-to-r from-info/5 to-info/10 rounded-2xl border border-info/20">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-info/20 rounded-full mt-1">
-                    <FaCheck className="w-4 h-4 text-info" />
+              {/* Payment Info Section */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200 mb-6">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-blue-100 rounded-xl">
+                    <FaCheck className="w-6 h-6 text-blue-600" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-text-primary mb-2">
+                    <h4 className="text-xl font-bold text-gray-900 mb-3">
                       Payment Information
                     </h4>
-                    <p className="text-text-secondary text-sm leading-relaxed">
-                      All major payment methods are accepted. We prefer
-                      contactless payments for faster and safer transactions.
-                      Split bills and group payments are also available.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 p-4 bg-success/5 rounded-xl border border-success/20">
-                <div className="flex items-center gap-2 text-success text-sm font-medium">
-                  <FaCheck className="w-4 h-4" />
-                  <span>Secure & Encrypted Payments</span>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-
-        {/* Reviews Modal */}
-        {showReviewsModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-            onClick={() => setShowReviewsModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.8, opacity: 0, y: 20 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-surface-primary rounded-3xl p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl border border-border-subtle/20"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-accent/10 rounded-full">
-                    <FaStar className="w-6 h-6 text-accent" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-text-primary">
-                      Customer Reviews
-                    </h3>
-                    <p className="text-text-secondary text-sm">
-                      What our customers are saying
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowReviewsModal(false)}
-                  className="p-3 text-text-muted hover:text-text-primary hover:bg-surface-secondary rounded-full transition-all duration-200"
-                >
-                  <FaTimes className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Overall Rating Summary */}
-              <div className="mb-8 p-6 bg-gradient-to-r from-accent/5 to-accent/10 rounded-2xl border border-accent/20">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl font-bold text-accent">
-                      {business.rating.toFixed(1)}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1 mb-1">
-                        {[...Array(5)].map((_, i) => (
-                          <FaStar
-                            key={i}
-                            className={`w-5 h-5 ${
-                              i < Math.floor(business.rating)
-                                ? "text-accent"
-                                : "text-border-subtle"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <p className="text-text-secondary text-sm">
-                        Based on 127 reviews
+                    <div className="space-y-2 text-gray-700">
+                      <p className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                        All major payment methods accepted
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                        Contactless payments preferred for safety
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                        Split bills and group payments available
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                        Instant payment confirmation
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-text-primary">
-                      {business.rating >= 4.5
-                        ? "Excellent"
-                        : business.rating >= 4
-                        ? "Very Good"
-                        : "Good"}
-                    </div>
-                    <p className="text-text-secondary text-sm">
-                      Overall Rating
-                    </p>
-                  </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                {/* Mock reviews */}
-                {[
-                  {
-                    name: "Sarah M.",
-                    rating: 5,
-                    comment:
-                      "Amazing food and great service! The staff was incredibly friendly and the atmosphere was perfect for our anniversary dinner. Highly recommend the signature cocktails!",
-                    date: "2 days ago",
-                    verified: true,
-                  },
-                  {
-                    name: "John D.",
-                    rating: 4,
-                    comment:
-                      "Good atmosphere and friendly staff. Food was delicious and came out quickly. The only minor issue was the music was a bit loud, but overall a great experience.",
-                    date: "1 week ago",
-                    verified: true,
-                  },
-                  {
-                    name: "Maria L.",
-                    rating: 5,
-                    comment:
-                      "Perfect for a romantic dinner. The wine selection was excellent and the chef's special was outstanding. Will definitely come back for special occasions!",
-                    date: "2 weeks ago",
-                    verified: false,
-                  },
-                  {
-                    name: "David K.",
-                    rating: 4,
-                    comment:
-                      "Great selection and reasonable prices. Very satisfied with the quality of food and service. The outdoor seating area is beautiful during sunset.",
-                    date: "3 weeks ago",
-                    verified: true,
-                  },
-                  {
-                    name: "Emma R.",
-                    rating: 5,
-                    comment:
-                      "Outstanding experience from start to finish! The reservation process was smooth, the food was exceptional, and the staff went above and beyond. Can't wait to return!",
-                    date: "1 month ago",
-                    verified: true,
-                  },
-                ].map((review, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="p-6 bg-surface-secondary rounded-2xl hover:bg-surface-secondary/80 transition-all duration-200 border border-border-subtle/50"
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-brand/20 to-accent/20 rounded-full flex items-center justify-center">
-                          <span className="text-text-primary font-bold text-sm">
-                            {review.name.charAt(0)}
-                          </span>
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-text-primary">
-                              {review.name}
-                            </span>
-                            {review.verified && (
-                              <span className="px-2 py-1 bg-success/10 text-success text-xs font-medium rounded-full">
-                                Verified
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1 mt-1">
-                            {[...Array(5)].map((_, i) => (
-                              <FaStar
-                                key={i}
-                                className={`w-4 h-4 ${
-                                  i < review.rating
-                                    ? "text-accent"
-                                    : "text-border-subtle"
-                                }`}
-                              />
-                            ))}
-                            <span className="text-text-muted text-sm ml-2">
-                              {review.date}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-text-secondary leading-relaxed">
-                      {review.comment}
-                    </p>
-                  </motion.div>
-                ))}
+              {/* Security Badge */}
+              <div className="flex items-center justify-center gap-3 p-4 bg-green-50 rounded-xl border border-green-200">
+                <div className="p-2 bg-green-100 rounded-full">
+                  <FaCheck className="w-5 h-5 text-green-600" />
+                </div>
+                <span className="text-green-800 font-semibold text-lg">
+                  🔒 Secure & Encrypted Payments
+                </span>
               </div>
 
+              {/* Close Button */}
               <div className="mt-8 text-center">
                 <button
-                  onClick={() => setShowReviewsModal(false)}
-                  className="bg-gradient-to-r from-brand to-brand-hover hover:from-brand-hover hover:to-brand text-text-inverted px-8 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
+                  onClick={() => setShowPaymentModal(false)}
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
-                  Close Reviews
+                  Got it!
                 </button>
               </div>
             </motion.div>

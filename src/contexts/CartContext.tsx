@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer } from "react";
 import type { ReactNode } from "react";
-import type { CartItem, Cart } from "../data/checkoutData";
-import { calculateCartTotals } from "../data/checkoutData";
+import type { CartItem } from "../data/checkoutTypes";
+import { calculateOrderTotals } from "../data/checkoutTypes";
 import { toast } from "react-toastify";
 
 interface CartState {
@@ -197,7 +197,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const getCart = (): Cart => {
-    const totals = calculateCartTotals(state.items);
+    const totals = calculateOrderTotals(state.items, 0);
     return {
       id: "cart_" + Date.now(),
       customerId: "customer_001", // This would come from auth context
@@ -216,7 +216,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
 
   const getTotalPrice = (): number => {
     if (state.items.length === 0) return 0;
-    const totals = calculateCartTotals(state.items);
+    const totals = calculateOrderTotals(state.items, 0);
     return totals.total;
   };
 

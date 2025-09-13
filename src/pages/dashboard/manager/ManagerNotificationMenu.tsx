@@ -10,7 +10,7 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
-import { useManagerDashboard } from "../pages/dashboard/manager/context";
+import { useManagerDashboard } from "./context";
 import { toast } from "react-toastify";
 
 const ManagerNotificationMenu: React.FC = () => {
@@ -93,18 +93,39 @@ const ManagerNotificationMenu: React.FC = () => {
   };
 
   // Handle notification click
-  const handleNotificationClick = (notification: { id: string; actionUrl?: string; isRead: boolean }) => {
-    if (!notification.read) {
+  // DEBUG: Fix notification type and property access
+  type ManagerNotification = {
+    id: string;
+    actionUrl?: string;
+    isRead?: boolean;
+    read?: boolean;
+    type?: string;
+  };
+
+  const handleNotificationClick = (notification: ManagerNotification) => {
+    // Prefer 'isRead', fallback to 'read'
+    const isRead = notification.isRead ?? notification.read;
+    if (!isRead) {
       markNotificationAsRead(notification.id);
     }
 
     // Navigate to relevant page based on notification type
-    if (notification.type === "inventory") {
-      window.location.href = `/dashboard/manager/inventory`;
-    } else if (notification.type === "order") {
-      window.location.href = `/dashboard/manager/orders`;
-    } else if (notification.type === "staff") {
-      window.location.href = `/dashboard/manager/staff`;
+    switch (notification.type) {
+      case "inventory":
+        window.location.href = `/dashboard/manager/inventory`;
+        break;
+      case "order":
+        window.location.href = `/dashboard/manager/orders`;
+        break;
+      case "staff":
+        window.location.href = `/dashboard/manager/staff`;
+        break;
+      default:
+        // If actionUrl is provided, fallback to it
+        if (notification.actionUrl) {
+          window.location.href = notification.actionUrl;
+        }
+        break;
     }
   };
 

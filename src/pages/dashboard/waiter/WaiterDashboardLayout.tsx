@@ -22,7 +22,7 @@ import {
   MoreVertical,
   ShoppingCart,
 } from "lucide-react";
-import WaiterNotificationMenu from "../../../components/WaiterNotificationMenu";
+import WaiterNotificationMenu from "./WaiterNotificationMenu";
 import {
   Menu as MUIMenu,
   MenuItem,

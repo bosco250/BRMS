@@ -18,7 +18,7 @@ import {
   Activity,
   DollarSign,
 } from "lucide-react";
-import ManagerNotificationMenu from "../../../components/ManagerNotificationMenu";
+import ManagerNotificationMenu from "./ManagerNotificationMenu";
 import {
   Menu as MUIMenu,
   MenuItem,
