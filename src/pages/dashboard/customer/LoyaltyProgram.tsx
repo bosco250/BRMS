@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 export default function LoyaltyProgram() {
   const { customer, rewards } = useCustomerDashboard();
 
-  return (
+  return ( 
     <div className="space-y-6">
       <div className="p-6 rounded-lg border border-border-primary bg-dashboard">
         <h3 className="text-lg font-semibold text-text-primary mb-4">

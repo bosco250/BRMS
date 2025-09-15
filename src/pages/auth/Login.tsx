@@ -63,6 +63,7 @@ export default function Login() {
         Accountant: "/dashboard/accountant",
         Waiter: "/dashboard/waiter",
         Customer: "/dashboard/customer",
+        Kitchen: "/dashboard/kitchen",
       };
 
       setTimeout(() => {
@@ -96,7 +97,7 @@ export default function Login() {
                 {
                   title: "All roles supported",
                   description:
-                    "Admin, Owner, Manager, Accountant, Waiter, Customer.",
+                    "Admin, Owner, Manager, Accountant, Waiter, Customer, Kitchen.",
                   badgeClass: "bg-accent/15 text-accent",
                 },
               ]}
@@ -189,12 +190,15 @@ export default function Login() {
                 <div className="text-xs text-text-secondary">
                   Demo users:
                   <ul className="list-disc pl-5 mt-1 space-y-0.5">
-                    <li>admin@brms.dev / admin123 (Admin)</li>
-                    <li>owner@brms.dev / owner123 (Owner)</li>
-                    <li>manager@brms.dev / manager123 (Manager)</li>
-                    <li>accountant@brms.dev / account123 (Accountant)</li>
-                    <li>waiter@brms.dev / waiter123 (Waiter)</li>
-                    <li>customer@brms.dev / 123 (Customer)</li>
+                    <li>admin@brms.dev / 123 - Admin</li>
+                    <li>owner@brms.dev / 123 - Owner</li>
+                    <li>manager@brms.dev / manager123 - Manager</li>
+                    <li>accountant@brms.dev / account123 - Accountant</li>
+                    <li>waiter@brms.dev / waiter123 - Waiter</li>
+                    <li>customer@brms.dev / 123 - Customer</li>
+                    <li>chef@brms.dev / 123 - Kitchen</li>
+                    <li>james@brms.dev / 123 - Kitchen</li>
+                    <li>sarah@brms.dev / 123 - Kitchen</li>
                   </ul>
                 </div>
               </div>

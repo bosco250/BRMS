@@ -30,12 +30,6 @@ export default function Hero() {
               >
                 Start free trial
               </Link>
-              <a
-                href="#features"
-                className="rounded-md px-5 py-3 font-medium text-brand ring-1 ring-inset ring-brand/30 hover:bg-brand/5"
-              >
-                See features
-              </a>
             </div>
             <dl className="mt-8 grid grid-cols-3 gap-4 text-sm text-gray-600 max-w-md">
               <div>

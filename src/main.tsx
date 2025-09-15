@@ -79,11 +79,18 @@ import Communication from "./pages/dashboard/customer/Communication.tsx";
 import CustomerOrders from "./pages/dashboard/customer/Orders.tsx";
 import HelpSupport from "./pages/dashboard/customer/HelpSupport.tsx";
 import CustomerSettings from "./pages/dashboard/customer/Settings.tsx";
-import SelfServiceOrdering from "./pages/dashboard/customer/SelfServiceOrdering.tsx";
+
+// Kitchen Dashboard imports (Order-focused)
+import KitchenDashboardLayout from "./pages/dashboard/kitchen/KitchenDashboardLayout.tsx";
+import KitchenQueue from "./pages/dashboard/kitchen/KitchenQueue.tsx";
+import KitchenOrders from "./pages/dashboard/kitchen/Orders.tsx";
+import KitchenMetrics from "./pages/dashboard/kitchen/KitchenMetrics.tsx";
+import KitchenAlerts from "./pages/dashboard/kitchen/Alerts.tsx";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import VerifyOTP from "./auth/verifyOtp.tsx";
+import { CartProvider } from "./contexts/CartContext";
 
 const router = createBrowserRouter([
   // App layout routes (with Navbar/Footer)
@@ -201,7 +208,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Dashboard /> },
       { path: "menu", element: <BrowseMenu /> },
-      { path: "self-service", element: <SelfServiceOrdering /> },
+
       { path: "profile", element: <AccountProfile /> },
       { path: "loyalty", element: <LoyaltyProgram /> },
       { path: "reservations", element: <Reservations /> },
@@ -211,16 +218,29 @@ const router = createBrowserRouter([
       { path: "settings", element: <CustomerSettings /> },
     ],
   },
+  // Kitchen Dashboard with nested routes (Order-focused)
+  {
+    path: "/dashboard/kitchen",
+    element: <KitchenDashboardLayout />,
+    children: [
+      { index: true, element: <KitchenQueue /> },
+      { path: "orders", element: <KitchenOrders /> },
+      { path: "metrics", element: <KitchenMetrics /> },
+      { path: "alerts", element: <KitchenAlerts /> },
+    ],
+  },
 ]);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
-    <ToastContainer
-      position="top-right"
-      autoClose={2000}
-      hideProgressBar
-      theme="colored"
-    />
+    <CartProvider>
+      <RouterProvider router={router} />
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar
+        theme="colored"
+      />
+    </CartProvider>
   </StrictMode>
 );

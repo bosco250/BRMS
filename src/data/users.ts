@@ -4,7 +4,8 @@ export type Role =
   | "Manager"
   | "Accountant"
   | "Waiter"
-  | "Customer";
+  | "Customer"
+  | "Kitchen";
 
 export type FakeUser = {
   id: string;
@@ -78,6 +79,31 @@ export const fakeUsers: FakeUser[] = [
     joinDate: "2024-01-15",
     preferences: ["Vegetarian", "No Nuts", "Spicy Food"],
     avatar: null,
+  },
+  // Kitchen Staff
+  {
+    id: "u7",
+    name: "Chef Maria Rodriguez",
+    email: "chef@brms.dev",
+    phone: "+250700000007",
+    role: "Kitchen",
+    password: "123",
+  },
+  {
+    id: "u8",
+    name: "Chef James Wilson",
+    email: "james@brms.dev",
+    phone: "+250700000008",
+    role: "Kitchen",
+    password: "123",
+  },
+  {
+    id: "u9",
+    name: "Pastry Chef Sarah Chen",
+    email: "sarah@brms.dev",
+    phone: "+250700000009",
+    role: "Kitchen",
+    password: "123",
   },
 ];
 

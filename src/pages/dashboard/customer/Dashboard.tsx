@@ -3,20 +3,20 @@ import {
   CheckCircle,
   TrendingUp,
   Star,
-  Calendar,
   ShoppingBag,
-  Gift,
   Receipt,
   MapPin,
   Heart,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCustomerDashboard } from "./context";
-// import NotificationDemo from "../../../components/NotificationDemo";
-import { formatCurrency } from "../../../data/customerOrderData";
+import {
+  formatCurrency,
+  getOrderTypeIcon,
+} from "../../../data/customerOrderData";
 
 export default function Dashboard() {
-  const { customer, orders, reservations } = useCustomerDashboard();
+  const { customer, orders } = useCustomerDashboard();
 
   // Calculate dashboard statistics
   const totalOrders = orders.length;
@@ -33,27 +33,23 @@ export default function Dashboard() {
   // Calculate total spent from orders
   const totalSpent = orders.reduce((sum, order) => sum + order.total, 0);
 
-  // Get upcoming reservations
-  const upcomingReservations = reservations
-    .filter((res) => new Date(res.date) > new Date())
-    .slice(0, 2);
+  // Note: reservations panel removed for a simplified dashboard
 
   return (
     <div className="space-y-6">
       {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-brand to-brand-dark rounded-lg p-6 text-white">
+      <div className="bg-surface-card border border-border-primary rounded-lg p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold mb-2">
+            <h1 className="text-2xl font-bold mb-2 text-text-primary">
               Welcome back, {customer.name || "Customer"}! 👋
             </h1>
-            <p className="text-brand-light">
+            <p className="text-text-secondary">
               Track your orders, manage reservations, and explore rewards
             </p>
           </div>
           <div className="text-right">
-            <div className="text-3xl font-bold">{customer.tier}</div>
-            <div className="text-brand-light">Member</div>
+           
           </div>
         </div>
       </div>
@@ -142,11 +138,7 @@ export default function Dashboard() {
                 >
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-surface-primary rounded-lg flex items-center justify-center">
-                      {order.orderType === "dine_in"
-                        ? "🍽️"
-                        : order.orderType === "take_away"
-                        ? "🛍️"
-                        : "🚚"}
+                      {getOrderTypeIcon(order.deliveryMethod)}
                     </div>
                     <div>
                       <p className="font-medium text-text-primary">
@@ -193,9 +185,8 @@ export default function Dashboard() {
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Quick Actions & Info */}
+        {/* Quick Actions */}
         <div className="space-y-6">
-          {/* Quick Actions */}
           <div className="bg-dashboard border border-border-primary rounded-lg p-4">
             <h3 className="text-lg font-semibold text-text-primary mb-4">
               Quick Actions
@@ -209,95 +200,12 @@ export default function Dashboard() {
                 <span className="text-text-primary">Browse Menu</span>
               </Link>
               <Link
-                to="/dashboard/customer/reservations"
-                className="flex items-center space-x-3 p-3 bg-surface-secondary rounded-lg hover:bg-surface-card transition-colors border border-border-secondary"
-              >
-                <Calendar className="w-5 h-5 text-brand" />
-                <span className="text-text-primary">Make Reservation</span>
-              </Link>
-              <Link
-                to="/dashboard/customer/loyalty"
-                className="flex items-center space-x-3 p-3 bg-surface-secondary rounded-lg hover:bg-surface-card transition-colors border border-border-secondary"
-              >
-                <Gift className="w-5 h-5 text-brand" />
-                <span className="text-text-primary">View Rewards</span>
-              </Link>
-              <Link
                 to="/dashboard/customer/profile"
                 className="flex items-center space-x-3 p-3 bg-surface-secondary rounded-lg hover:bg-surface-card transition-colors border border-border-secondary"
               >
                 <Heart className="w-5 h-5 text-brand" />
                 <span className="text-text-primary">Edit Profile</span>
               </Link>
-            </div>
-          </div>
-
-          {/* Upcoming Reservations */}
-          <div className="bg-dashboard border border-border-primary rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-text-primary mb-4">
-              Upcoming Reservations
-            </h3>
-            {upcomingReservations.length > 0 ? (
-              <div className="space-y-3">
-                {upcomingReservations.map((reservation) => (
-                  <div
-                    key={reservation.id}
-                    className="p-3 bg-surface-secondary rounded-lg border border-border-secondary"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-text-primary">
-                        {reservation.date}
-                      </span>
-                      <span className="text-sm text-text-secondary">
-                        {reservation.time}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-text-secondary">
-                        {reservation.guests} guests
-                      </span>
-                      <span className="text-brand">{reservation.table}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-4">
-                <Calendar className="w-12 h-12 text-text-secondary mx-auto mb-2" />
-                <p className="text-text-secondary text-sm">
-                  No upcoming reservations
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Loyalty Status */}
-          <div className="bg-dashboard border border-border-primary rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-text-primary mb-4">
-              Loyalty Status
-            </h3>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center mx-auto mb-3 border border-yellow-300">
-                <Star className="w-8 h-8 text-white" />
-              </div>
-              <h4 className="text-xl font-bold text-text-primary mb-1">
-                {customer.tier}
-              </h4>
-              <p className="text-text-secondary text-sm mb-3">Member</p>
-              <div className="bg-surface-secondary rounded-full h-2 mb-2 border border-border-secondary">
-                <div
-                  className="bg-gradient-to-r from-yellow-400 to-yellow-600 h-2 rounded-full"
-                  style={{
-                    width: `${Math.min(
-                      (customer.loyaltyPoints / 1000) * 100,
-                      100
-                    )}%`,
-                  }}
-                ></div>
-              </div>
-              <p className="text-xs text-text-secondary">
-                {customer.loyaltyPoints} / 1000 points to next tier
-              </p>
             </div>
           </div>
         </div>
@@ -309,22 +217,22 @@ export default function Dashboard() {
               Order Status Overview
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="text-center p-4 bg-warning/10 border border-warning rounded-lg">
                 <Clock className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
                 <h3 className="font-medium text-text-primary">
                   {pendingOrders}
                 </h3>
                 <p className="text-sm text-text-secondary">Active Orders</p>
               </div>
-              <div className="text-center p-4 bg-green-50 border border-green-200 rounded-lg">
-                <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
+              <div className="text-center p-4 bg-success/10 border border-success rounded-lg">
+                <CheckCircle className="w-8 h-8 text-success mx-auto mb-2" />
                 <h3 className="font-medium text-text-primary">
                   {completedOrders}
                 </h3>
                 <p className="text-sm text-text-secondary">Completed</p>
               </div>
-              <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <TrendingUp className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+              <div className="text-center p-4 bg-info/10 border border-info rounded-lg">
+                <TrendingUp className="w-8 h-8 text-info mx-auto mb-2" />
                 <h3 className="font-medium text-text-primary">{totalOrders}</h3>
                 <p className="text-sm text-text-secondary">Total Orders</p>
               </div>
@@ -332,9 +240,6 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-
-      {/* Notification System Demo */}
-      <div className="mt-8">{/* <NotificationDemo /> */}</div>
     </div>
   );
 }

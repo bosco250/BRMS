@@ -51,7 +51,7 @@ export default function AccountProfile() {
               >
                 Sign In to Continue
               </button>
-            </div>
+            </div> 
           </div>
         </div>
       </div>
