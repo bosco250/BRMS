@@ -21,7 +21,10 @@ import {
   CheckCircle,
   XCircle,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useCustomerDashboard } from "./context";
+import { useCart } from "../../../contexts/CartContext";
+import type { CartItem } from "../../../data/checkoutTypes";
 import { toast } from "react-toastify";
 
 // Utility function to format RWF currency
@@ -35,18 +38,22 @@ const formatCurrency = (amount: number): string => {
 };
 
 export default function BrowseMenu() {
+  const navigate = useNavigate();
   const {
     products,
-    addToCart,
-    removeFromCart,
-    updateCartItemQuantity,
-    cartItems,
-    cartTotal,
     searchQuery,
     setSearchQuery,
     selectedCategory,
     setSelectedCategory,
   } = useCustomerDashboard();
+  const {
+    state: cartState,
+    addItem,
+    removeItem,
+    updateQuantity,
+    getItemCount,
+    getTotalPrice,
+  } = useCart();
 
   const [showCart, setShowCart] = useState(false);
   const [favorites, setFavorites] = useState<number[]>([]);
@@ -257,7 +264,9 @@ export default function BrowseMenu() {
 
   // Get cart quantity for a product
   const getCartQuantity = (productId: number) => {
-    const cartItem = cartItems.find((item) => item.id === productId);
+    const cartItem = cartState.items.find(
+      (ci) => ci.productId === String(productId)
+    );
     return cartItem?.quantity || 0;
   };
 
@@ -308,27 +317,27 @@ export default function BrowseMenu() {
 
   // Handle add to cart
   const handleAddToCart = (product: any) => {
-    addToCart(product);
-    toast.success(`${product.name} added to cart!`);
-
-    // Generate a notification for adding to cart
-    const { addNotification } = useCustomerDashboard();
-    if (addNotification) {
-      addNotification({
-        type: "order",
-        title: "Item Added to Cart",
-        description: `${product.name} has been added to your cart`,
-        priority: "low",
-        isRead: false,
-        icon: "🛒",
-      });
-    }
+    const item: CartItem = {
+      id: `ci_${product.id}_${Date.now()}`,
+      productId: String(product.id),
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      quantity: 1,
+      totalPrice: product.price,
+      image: product.image || undefined,
+      category: product.category,
+      modifiers: [],
+    };
+    addItem(item);
   };
 
   // Handle remove from cart
   const handleRemoveFromCart = (productId: number) => {
-    removeFromCart(productId);
-    toast.info("Item removed from cart");
+    const existing = cartState.items.find(
+      (ci) => ci.productId === String(productId)
+    );
+    if (existing) removeItem(existing.id);
   };
 
   // Handle quantity update
@@ -336,7 +345,10 @@ export default function BrowseMenu() {
     if (newQuantity <= 0) {
       handleRemoveFromCart(productId);
     } else {
-      updateCartItemQuantity(productId, newQuantity);
+      const existing = cartState.items.find(
+        (ci) => ci.productId === String(productId)
+      );
+      if (existing) updateQuantity(existing.id, newQuantity);
     }
   };
 
@@ -447,10 +459,10 @@ export default function BrowseMenu() {
               className="relative bg-brand text-white px-6 py-3 rounded-xl hover:bg-brand-dark transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl"
             >
               <ShoppingCart className="w-5 h-5" />
-              <span>Cart ({cartItems.length})</span>
-              {cartTotal > 0 && (
+              <span>Cart ({getItemCount()})</span>
+              {getTotalPrice() > 0 && (
                 <span className="absolute -top-2 -right-2 bg-white text-brand text-xs px-2 py-1 rounded-full font-bold">
-                  {formatCurrency(cartTotal)}
+                  {formatCurrency(getTotalPrice())}
                 </span>
               )}
             </button>
@@ -474,14 +486,14 @@ export default function BrowseMenu() {
               </div>
             </div>
             <div className="p-4">
-              {cartItems.length === 0 ? (
+              {cartState.items.length === 0 ? (
                 <div className="text-center py-8">
                   <ShoppingCart className="w-16 h-16 text-text-secondary mx-auto mb-4" />
                   <p className="text-text-secondary">Your cart is empty</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {cartItems.map((item) => (
+                  {cartState.items.map((item) => (
                     <div
                       key={item.id}
                       className="flex items-center space-x-3 p-3 bg-surface-secondary rounded-lg border border-border-secondary"
@@ -498,7 +510,7 @@ export default function BrowseMenu() {
                         <button
                           onClick={() =>
                             handleQuantityUpdate(
-                              item.id,
+                              Number(item.productId),
                               (item.quantity || 1) - 1
                             )
                           }
@@ -512,7 +524,7 @@ export default function BrowseMenu() {
                         <button
                           onClick={() =>
                             handleQuantityUpdate(
-                              item.id,
+                              Number(item.productId),
                               (item.quantity || 1) + 1
                             )
                           }
@@ -529,13 +541,13 @@ export default function BrowseMenu() {
                         Total:
                       </span>
                       <span className="font-bold text-lg text-text-primary">
-                        {formatCurrency(cartTotal)}
+                        {formatCurrency(getTotalPrice())}
                       </span>
                     </div>
                     <button
                       onClick={() => {
                         setShowCart(false);
-                        window.location.href = "/checkout";
+                        navigate("/checkout");
                       }}
                       className="w-full bg-brand text-white py-3 rounded-lg font-medium hover:bg-brand-dark transition-colors"
                     >
@@ -602,38 +614,6 @@ export default function BrowseMenu() {
               <option value="asc">Ascending</option>
               <option value="desc">Descending</option>
             </select>
-          </div>
-        </div>
-
-        {/* Price Range Filter */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-text-primary mb-2">
-            Price Range: {formatCurrency(priceRange[0])} -{" "}
-            {formatCurrency(priceRange[1])}
-          </label>
-          <div className="flex items-center space-x-4">
-            <input
-              type="range"
-              min="0"
-              max="50000"
-              step="1000"
-              value={priceRange[0]}
-              onChange={(e) =>
-                setPriceRange([parseInt(e.target.value), priceRange[1]])
-              }
-              className="flex-1"
-            />
-            <input
-              type="range"
-              min="0"
-              max="50000"
-              step="1000"
-              value={priceRange[1]}
-              onChange={(e) =>
-                setPriceRange([priceRange[0], parseInt(e.target.value)])
-              }
-              className="flex-1"
-            />
           </div>
         </div>
 
@@ -834,11 +814,11 @@ export default function BrowseMenu() {
           return (
             <div
               key={product.id}
-              className="bg-white rounded-2xl shadow-lg border-2 border-border-primary overflow-hidden hover:shadow-xl hover:border-brand/30 transition-all duration-200 group"
+              className="bg-white rounded-xl shadow-md border border-border-primary overflow-hidden hover:shadow-lg hover:border-brand/30 transition-all duration-200 group hover:-translate-y-0.5"
             >
               {/* Product Image with Overlays */}
               <div className="relative">
-                <div className="w-full h-48 bg-surface-primary flex items-center justify-center border-b border-border-secondary">
+                <div className="w-full h-36 bg-surface-primary flex items-center justify-center border-b border-border-secondary relative">
                   {product.image ? (
                     <img
                       src={product.image}
@@ -856,6 +836,17 @@ export default function BrowseMenu() {
                         : "🍰"}
                     </span>
                   )}
+                  {/* Category pill */}
+                  <span
+                    className={`absolute top-3 left-3 px-2 py-1 rounded-full text-xs font-medium border ${
+                      categories.find((c) => c.id === product.category)
+                        ?.color || "bg-surface-secondary text-text-secondary"
+                    } border-border-secondary`}
+                  >
+                    {" "}
+                    {categories.find((c) => c.id === product.category)?.label ||
+                      "Item"}{" "}
+                  </span>
                 </div>
 
                 {/* Status Badges */}
@@ -890,24 +881,32 @@ export default function BrowseMenu() {
               </div>
 
               {/* Product Info */}
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-3">
+              <div className="p-4">
+                <div className="flex items-start justify-between mb-2">
                   <div className="flex-1">
-                    <h4 className="text-lg font-bold text-text-primary mb-1 line-clamp-2">
+                    <h4 className="text-base font-semibold text-text-primary mb-1 line-clamp-1">
                       {product.name}
                     </h4>
-                    <p className="text-text-secondary text-sm mb-3 line-clamp-2">
+                    <p className="text-text-secondary text-xs mb-2 line-clamp-1">
                       {product.description}
                     </p>
                   </div>
                 </div>
 
-                {/* Rating */}
-                <div className="flex items-center space-x-1 mb-4">
-                  <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                  <span className="text-sm font-medium text-text-primary">
-                    {product.rating}
-                  </span>
+                {/* Meta */}
+                <div className="flex items-center justify-between mb-3 text-xs text-text-secondary">
+                  <div className="flex items-center gap-2">
+                    <Star className="w-3.5 h-3.5 text-warning" />
+                    <span className="font-medium text-text-primary text-sm">
+                      {product.rating}
+                    </span>
+                  </div>
+                  {product.availability?.preparationTime && (
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>{product.availability.preparationTime} min</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Dietary Tags - Only show most important ones */}
@@ -929,41 +928,41 @@ export default function BrowseMenu() {
                 {/* Price and Add to Cart */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <span className="text-xl font-bold text-text-primary">
+                    <span className="text-lg font-bold text-text-primary">
                       {formatCurrency(currentPrice)}
                     </span>
                     {product.pricing.discount > 0 && (
-                      <span className="text-sm text-text-muted line-through">
+                      <span className="text-xs text-text-muted line-through">
                         {formatCurrency(product.price)}
                       </span>
                     )}
                   </div>
                   {cartQuantity > 0 ? (
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-1.5">
                       <button
                         onClick={() =>
                           handleQuantityUpdate(product.id, cartQuantity - 1)
                         }
-                        className="w-8 h-8 bg-surface-secondary rounded-full flex items-center justify-center hover:bg-surface-card border-2 border-border-secondary hover:border-brand/30"
+                        className="w-7 h-7 bg-surface-secondary rounded-full flex items-center justify-center hover:bg-surface-card border border-border-secondary hover:border-brand/30"
                       >
-                        <Minus className="w-4 h-4" />
+                        <Minus className="w-3.5 h-3.5" />
                       </button>
-                      <span className="w-8 text-center font-medium text-sm">
+                      <span className="w-7 text-center font-medium text-xs">
                         {cartQuantity}
                       </span>
                       <button
                         onClick={() =>
                           handleQuantityUpdate(product.id, cartQuantity + 1)
                         }
-                        className="w-8 h-8 bg-surface-secondary rounded-full flex items-center justify-center hover:bg-surface-card border-2 border-border-secondary hover:border-brand/30"
+                        className="w-7 h-7 bg-surface-secondary rounded-full flex items-center justify-center hover:bg-surface-card border border-border-secondary hover:border-brand/30"
                       >
-                        <Plus className="w-4 h-4" />
+                        <Plus className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   ) : (
                     <button
                       onClick={() => handleAddToCart(product)}
-                      className="bg-brand text-white px-4 py-2 rounded-xl hover:bg-brand-dark transition-all duration-200 flex items-center space-x-2 text-sm font-medium border-2 border-brand-dark hover:border-brand/80"
+                      className="bg-brand text-white px-3.5 py-2 rounded-lg hover:bg-brand-dark transition-all duration-200 flex items-center justify-center gap-2 text-sm font-medium border border-brand-dark hover:border-brand/80 w-full sm:w-auto"
                     >
                       <ShoppingCart className="w-4 h-4" />
                       <span>Add</span>

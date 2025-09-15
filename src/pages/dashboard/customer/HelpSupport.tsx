@@ -5,7 +5,7 @@ import {
   Mail,
   MessageSquare,
   Search,
-  X,
+  X, 
 } from "lucide-react";
 import { toast } from "react-toastify";
 

@@ -9,6 +9,7 @@ const routeByRole: Record<string, string> = {
   Accountant: "/dashboard/accountant",
   Waiter: "/dashboard/waiter",
   Customer: "/dashboard/customer",
+  Kitchen: "/dashboard/kitchen",
 };
 
 export function withRoleGuard<TProps extends Record<string, any>>(

@@ -11,7 +11,7 @@ export default function Communication() {
     promotionalOffers: false,
     loyaltyUpdates: true,
     newMenuItems: true,
-    specialEvents: false,
+    specialEvents: false, 
   });
 
   const [communicationChannels, setCommunicationChannels] = useState({

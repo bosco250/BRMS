@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   Eye,
@@ -6,7 +7,6 @@ import {
   UtensilsCrossed,
   Receipt,
   Package,
-  Truck,
   CheckCircle,
   XCircle,
   AlertCircle,
@@ -14,14 +14,18 @@ import {
 import {
   customerOrders,
   getStatusColor,
-  getPaymentStatusColor,
   getOrderTypeIcon,
   formatCurrency,
   formatDate,
   type CustomerOrder,
+  getDeliveryMethodText,
+  getPaymentMethodText,
 } from "../../../data/customerOrderData";
+import { useCustomerDashboard } from "./context";
 
 export default function OrderHistory() {
+  const navigate = useNavigate();
+  const { addToCart, products } = useCustomerDashboard();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [orderTypeFilter, setOrderTypeFilter] = useState<string>("all");
@@ -44,7 +48,7 @@ export default function OrderHistory() {
       const matchesStatus =
         statusFilter === "all" || order.status === statusFilter;
       const matchesOrderType =
-        orderTypeFilter === "all" || order.orderType === orderTypeFilter;
+        orderTypeFilter === "all" || order.deliveryMethod === orderTypeFilter;
 
       return matchesSearch && matchesStatus && matchesOrderType;
     });
@@ -60,8 +64,6 @@ export default function OrderHistory() {
         return <UtensilsCrossed className="w-4 h-4" />;
       case "ready":
         return <Package className="w-4 h-4" />;
-      case "out_for_delivery":
-        return <Truck className="w-4 h-4" />;
       case "delivered":
         return <CheckCircle className="w-4 h-4" />;
       case "cancelled":
@@ -81,8 +83,7 @@ export default function OrderHistory() {
         return "Preparing";
       case "ready":
         return "Ready";
-      case "out_for_delivery":
-        return "Out for Delivery";
+
       case "delivered":
         return "Delivered";
       case "cancelled":
@@ -90,6 +91,29 @@ export default function OrderHistory() {
       default:
         return status;
     }
+  };
+
+  const handleReorder = (order: CustomerOrder) => {
+    order.items.forEach((it) => {
+      const product = products.find((p) => p.name === it.name);
+      const unitPrice = it.totalPrice / it.quantity;
+      const base =
+        product ||
+        ({
+          id: Math.floor(Math.random() * 1_000_000),
+          name: it.name,
+          category: "food",
+          price: unitPrice,
+          image: null,
+          favorite: false,
+          rating: 4.5,
+          description: "",
+        } as any);
+      for (let i = 0; i < it.quantity; i++) {
+        addToCart(base as any);
+      }
+    });
+    navigate("/checkout");
   };
 
   return (
@@ -136,9 +160,7 @@ export default function OrderHistory() {
               <option value="confirmed">Confirmed</option>
               <option value="preparing">Preparing</option>
               <option value="ready">Ready</option>
-              <option value="out_for_delivery">Out for Delivery</option>
               <option value="delivered">Delivered</option>
-              <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
             </select>
           </div>
@@ -153,7 +175,7 @@ export default function OrderHistory() {
               <option value="all">All Types</option>
               <option value="dine_in">Dine In</option>
               <option value="take_away">Take Away</option>
-              <option value="delivery">Delivery</option>
+              <option value="delivery_1hour">Fast Delivery</option>
             </select>
           </div>
 
@@ -210,7 +232,7 @@ export default function OrderHistory() {
                     <div className="flex items-start space-x-3">
                       <div className="flex-shrink-0">
                         <div className="w-12 h-12 bg-surface-primary rounded-lg flex items-center justify-center border border-border-secondary">
-                          {getOrderTypeIcon(order.orderType)}
+                          {getOrderTypeIcon(order.deliveryMethod)}
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
@@ -224,11 +246,6 @@ export default function OrderHistory() {
                           <span className="text-xs text-text-secondary">
                             {order.items.length} items
                           </span>
-                          {order.tableNumber && (
-                            <span className="text-xs text-brand bg-brand/10 px-2 py-1 rounded border border-brand/20">
-                              {order.tableNumber}
-                            </span>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -239,10 +256,10 @@ export default function OrderHistory() {
                     <div className="space-y-2">
                       <div className="flex items-center space-x-2">
                         <span className="text-lg">
-                          {getOrderTypeIcon(order.orderType)}
+                          {getOrderTypeIcon(order.deliveryMethod)}
                         </span>
                         <span className="text-sm text-text-secondary capitalize">
-                          {order.orderType.replace("_", " ")}
+                          {getDeliveryMethodText(order.deliveryMethod)}
                         </span>
                       </div>
                       <div
@@ -256,20 +273,11 @@ export default function OrderHistory() {
                     </div>
                   </td>
 
-                  {/* Payment Status */}
+                  {/* Payment Method */}
                   <td className="px-6 py-4">
-                    <div
-                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getPaymentStatusColor(
-                        order.paymentStatus
-                      )}`}
-                    >
-                      {order.paymentStatus === "paid" ? (
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                      ) : (
-                        <Clock className="w-3 h-3 mr-1" />
-                      )}
-                      {order.paymentStatus.charAt(0).toUpperCase() +
-                        order.paymentStatus.slice(1)}
+                    <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border border-border-secondary text-text-primary">
+                      <Receipt className="w-3 h-3 mr-1" />
+                      {getPaymentMethodText(order.paymentMethod)}
                     </div>
                   </td>
 
@@ -279,18 +287,13 @@ export default function OrderHistory() {
                       <p className="font-medium text-text-primary">
                         {formatCurrency(order.total)}
                       </p>
-                      {order.deliveryFee > 0 && (
-                        <p className="text-xs text-text-secondary">
-                          +{formatCurrency(order.deliveryFee)} delivery
-                        </p>
-                      )}
                     </div>
                   </td>
 
                   {/* Date */}
                   <td className="px-6 py-4">
                     <div className="text-sm text-text-secondary">
-                      <p>{formatDate(order.orderDate)}</p>
+                      <p>{formatDate(order.createdAt)}</p>
                       {order.estimatedDeliveryTime && (
                         <p className="text-xs text-brand">
                           Est: {formatDate(order.estimatedDeliveryTime)}
@@ -301,13 +304,21 @@ export default function OrderHistory() {
 
                   {/* Actions */}
                   <td className="px-6 py-4">
-                    <button
-                      onClick={() => setSelectedOrder(order)}
-                      className="inline-flex items-center px-3 py-1 border border-border-primary rounded-md text-sm text-text-primary hover:bg-surface-secondary transition-colors"
-                    >
-                      <Eye className="w-4 h-4 mr-1" />
-                      View
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setSelectedOrder(order)}
+                        className="inline-flex items-center px-3 py-1 border border-border-primary rounded-md text-sm text-text-primary hover:bg-surface-secondary transition-colors"
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        View
+                      </button>
+                      <button
+                        onClick={() => handleReorder(order)}
+                        className="inline-flex items-center px-3 py-1 border border-brand rounded-md text-sm text-brand hover:bg-brand/10 transition-colors"
+                      >
+                        Reorder
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -372,7 +383,7 @@ export default function OrderHistory() {
                     <div className="flex justify-between">
                       <span className="text-text-secondary">Type:</span>
                       <span className="text-text-primary capitalize">
-                        {selectedOrder.orderType.replace("_", " ")}
+                        {getDeliveryMethodText(selectedOrder.deliveryMethod)}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -387,13 +398,8 @@ export default function OrderHistory() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-text-secondary">Payment:</span>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium border ${getPaymentStatusColor(
-                          selectedOrder.paymentStatus
-                        )}`}
-                      >
-                        {selectedOrder.paymentStatus.charAt(0).toUpperCase() +
-                          selectedOrder.paymentStatus.slice(1)}
+                      <span className="px-2 py-1 rounded-full text-xs font-medium border border-border-secondary">
+                        {getPaymentMethodText(selectedOrder.paymentMethod)}
                       </span>
                     </div>
                   </div>
@@ -407,7 +413,7 @@ export default function OrderHistory() {
                     <div className="flex justify-between">
                       <span className="text-text-secondary">Order Date:</span>
                       <span className="text-text-primary">
-                        {formatDate(selectedOrder.orderDate)}
+                        {formatDate(selectedOrder.createdAt)}
                       </span>
                     </div>
                     {selectedOrder.estimatedDeliveryTime && (
@@ -417,32 +423,6 @@ export default function OrderHistory() {
                         </span>
                         <span className="text-text-primary">
                           {formatDate(selectedOrder.estimatedDeliveryTime)}
-                        </span>
-                      </div>
-                    )}
-                    {selectedOrder.actualDeliveryTime && (
-                      <div className="flex justify-between">
-                        <span className="text-text-secondary">
-                          Actual Delivery:
-                        </span>
-                        <span className="text-text-primary">
-                          {formatDate(selectedOrder.actualDeliveryTime)}
-                        </span>
-                      </div>
-                    )}
-                    {selectedOrder.tableNumber && (
-                      <div className="flex justify-between">
-                        <span className="text-text-secondary">Table:</span>
-                        <span className="text-text-primary">
-                          {selectedOrder.tableNumber}
-                        </span>
-                      </div>
-                    )}
-                    {selectedOrder.deliveryAddress && (
-                      <div className="flex justify-between">
-                        <span className="text-text-secondary">Address:</span>
-                        <span className="text-text-primary text-right">
-                          {selectedOrder.deliveryAddress}
                         </span>
                       </div>
                     )}
@@ -476,17 +456,14 @@ export default function OrderHistory() {
                         <p className="font-medium text-text-primary">
                           {item.name}
                         </p>
-                        <p className="text-sm text-text-secondary">
-                          {item.description}
-                        </p>
-                        {item.modifiers.length > 0 && (
+                        {item.modifiers && item.modifiers.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1">
                             {item.modifiers.map((mod) => (
                               <span
-                                key={mod.id}
+                                key={mod}
                                 className="text-xs bg-brand/10 text-brand px-2 py-1 rounded border border-brand/20"
                               >
-                                +{mod.name} ({formatCurrency(mod.price)})
+                                +{mod}
                               </span>
                             ))}
                           </div>
@@ -505,50 +482,11 @@ export default function OrderHistory() {
                 </div>
               </div>
 
-              {/* Special Instructions */}
-              {selectedOrder.specialInstructions && (
-                <div className="mb-6">
-                  <h4 className="font-medium text-text-primary mb-2">
-                    Special Instructions
-                  </h4>
-                  <p className="text-sm text-text-secondary bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                    {selectedOrder.specialInstructions}
-                  </p>
-                </div>
-              )}
-
-              {/* Order Summary */}
+              {/* Order Total */}
               <div className="bg-surface-secondary p-4 rounded-lg">
-                <h4 className="font-medium text-text-primary mb-3">
-                  Order Summary
-                </h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-text-secondary">Subtotal:</span>
-                    <span className="text-text-primary">
-                      {formatCurrency(selectedOrder.subtotal)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-text-secondary">Tax:</span>
-                    <span className="text-text-primary">
-                      {formatCurrency(selectedOrder.tax)}
-                    </span>
-                  </div>
-                  {selectedOrder.deliveryFee > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-text-secondary">Delivery Fee:</span>
-                      <span className="text-text-primary">
-                        {formatCurrency(selectedOrder.deliveryFee)}
-                      </span>
-                    </div>
-                  )}
-                  <div className="border-t border-border-primary pt-2 mt-2">
-                    <div className="flex justify-between font-medium text-text-primary">
-                      <span>Total:</span>
-                      <span>{formatCurrency(selectedOrder.total)}</span>
-                    </div>
-                  </div>
+                <div className="flex justify-between font-medium text-text-primary">
+                  <span>Total:</span>
+                  <span>{formatCurrency(selectedOrder.total)}</span>
                 </div>
               </div>
             </div>
