@@ -524,22 +524,30 @@ export default function Tables() {
           return (
             <div
               key={table.id}
-              className={`bg-white rounded-lg border border-border-primary p-6 hover:shadow-lg transition-shadow ${
-                isAssigned ? "ring-2 ring-brand/20" : ""
+              className={`bg-white rounded-xl border border-border-primary p-6 hover:shadow-lg transition-all duration-200 hover:border-app-brand/30 ${
+                isAssigned ? "ring-2 ring-app-brand/20 shadow-lg" : ""
               }`}
             >
               <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-text-primary">
-                    Table {table.number}
-                  </h3>
-                  <p className="text-sm text-text-secondary">
-                    Capacity: {table.capacity} people
-                  </p>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-app-brand/10 rounded-lg border border-app-brand/20">
+                    <Table className="w-5 h-5 text-app-brand" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-text-primary">
+                      Table {table.number}
+                    </h3>
+                    <p className="text-sm text-text-secondary">
+                      Capacity:{" "}
+                      <span className="font-medium text-text-primary">
+                        {table.capacity} people
+                      </span>
+                    </p>
+                  </div>
                 </div>
                 <div className="flex flex-col items-end gap-2">
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                    className={`px-4 py-2 rounded-full text-xs font-semibold border shadow-sm ${getStatusColor(
                       table.status
                     )}`}
                   >
@@ -554,53 +562,55 @@ export default function Tables() {
                 </div>
               </div>
 
-              <div className="space-y-3 mb-4">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-text-secondary">Status:</span>
-                  <span className="font-medium text-text-primary">
-                    {table.status.charAt(0).toUpperCase() +
-                      table.status.slice(1)}
-                  </span>
-                </div>
-
-                {table.customerCount && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-text-secondary">Customers:</span>
-                    <span className="font-medium text-text-primary">
-                      {table.customerCount}
-                    </span>
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                <div className="p-3 bg-surface-secondary rounded-lg border border-border-primary">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Users className="w-4 h-4 text-text-secondary" />
+                    <span className="text-xs text-text-muted">Customers</span>
                   </div>
-                )}
-
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-text-secondary">Services:</span>
-                  <span className="font-medium text-text-primary">
-                    {tableServicesCount} total
-                  </span>
+                  <p className="text-sm font-bold text-text-primary">
+                    {table.customerCount || 0}
+                  </p>
                 </div>
 
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-text-secondary">Orders:</span>
-                  <span className="font-medium text-text-primary">
+                <div className="p-3 bg-surface-secondary rounded-lg border border-border-primary">
+                  <div className="flex items-center gap-2 mb-1">
+                    <ShoppingCart className="w-4 h-4 text-text-secondary" />
+                    <span className="text-xs text-text-muted">Orders</span>
+                  </div>
+                  <p className="text-sm font-bold text-text-primary">
                     {tableOrdersCount}
-                  </span>
+                  </p>
                 </div>
 
-                {table.lastActivity && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-text-secondary">Last Activity:</span>
-                    <span className="font-medium text-text-primary">
-                      {getTimeAgo(table.lastActivity)}
-                    </span>
+                <div className="p-3 bg-surface-secondary rounded-lg border border-border-primary">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Bell className="w-4 h-4 text-text-secondary" />
+                    <span className="text-xs text-text-muted">Services</span>
                   </div>
-                )}
+                  <p className="text-sm font-bold text-text-primary">
+                    {tableServicesCount}
+                  </p>
+                </div>
+
+                <div className="p-3 bg-app-brand/5 rounded-lg border border-app-brand/20">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Clock className="w-4 h-4 text-app-brand" />
+                    <span className="text-xs text-app-brand">Activity</span>
+                  </div>
+                  <p className="text-sm font-bold text-app-brand">
+                    {table.lastActivity
+                      ? getTimeAgo(table.lastActivity)
+                      : "None"}
+                  </p>
+                </div>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 {table.status === "available" && !isAssigned && (
                   <button
                     onClick={() => handleAssignTable(table.id)}
-                    className="flex-1 bg-brand text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-dark transition-colors border border-brand-dark"
+                    className="flex-1 bg-app-brand text-white px-4 py-3 rounded-lg text-sm font-semibold hover:bg-app-brand-dark transition-all duration-200 border border-app-brand shadow-sm hover:shadow"
                   >
                     Assign to Me
                   </button>
@@ -609,7 +619,7 @@ export default function Tables() {
                 {isAssigned && table.status === "occupied" && (
                   <button
                     onClick={() => handleReleaseTable(table.id)}
-                    className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors border border-red-700"
+                    className="flex-1 bg-error text-white px-4 py-3 rounded-lg text-sm font-semibold hover:bg-error/90 transition-all duration-200 border border-error shadow-sm hover:shadow"
                   >
                     Release Table
                   </button>
@@ -619,13 +629,13 @@ export default function Tables() {
                   <>
                     <button
                       onClick={() => handleViewDetails(table)}
-                      className="flex-1 bg-surface-secondary text-text-primary px-4 py-2 rounded-lg text-sm font-medium hover:bg-surface-primary transition-colors border border-border-secondary"
+                      className="flex-1 bg-surface-secondary text-text-primary px-4 py-3 rounded-lg text-sm font-semibold hover:bg-surface-primary transition-all duration-200 border border-border-secondary shadow-sm hover:shadow"
                     >
                       View Details
                     </button>
                     <button
                       onClick={() => handleAddService(table.id)}
-                      className="px-3 py-2 bg-green-100 text-green-800 rounded-lg text-sm font-medium hover:bg-green-200 transition-colors border border-green-200"
+                      className="px-4 py-3 bg-success/10 text-success rounded-lg text-sm font-semibold hover:bg-success/20 transition-all duration-200 border border-success/20 shadow-sm hover:shadow"
                     >
                       <Plus className="w-4 h-4" />
                     </button>

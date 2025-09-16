@@ -26,9 +26,10 @@ interface CartContextType {
   clearCart: () => void;
   toggleCart: () => void;
   closeCart: () => void;
-  getCart: () => Cart;
+  getCart: () => CartItem[]; // Fixed: Cart is not defined, should return CartItem[]
   getItemCount: () => number;
   getTotalPrice: () => number;
+  setCart: (items: CartItem[]) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -188,6 +189,10 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
     );
   };
 
+  const setCart = (items: CartItem[]) => {
+    dispatch({ type: "SET_CART", payload: items });
+  };
+
   const toggleCart = () => {
     dispatch({ type: "TOGGLE_CART" });
   };
@@ -196,18 +201,10 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
     dispatch({ type: "CLOSE_CART" });
   };
 
-  const getCart = (): Cart => {
-    const totals = calculateOrderTotals(state.items, 0);
-    return {
-      id: "cart_" + Date.now(),
-      customerId: "customer_001", // This would come from auth context
-      restaurantId: "r1", // This would come from current restaurant context
-      items: state.items,
-      ...totals,
-      discount: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+  const getCart = (): CartItem[] => {
+    // The function is supposed to return CartItem[], not an order object.
+    // So just return the items array from state.
+    return state.items;
   };
 
   const getItemCount = (): number => {
@@ -231,6 +228,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
     getCart,
     getItemCount,
     getTotalPrice,
+    setCart,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

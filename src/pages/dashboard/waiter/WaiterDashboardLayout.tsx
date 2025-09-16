@@ -16,7 +16,6 @@ import {
   Settings,
   X,
   DollarSign,
-  Star,
   MapPin,
   LogOut,
   MoreVertical,
@@ -44,18 +43,18 @@ function Layout() {
     },
     {
       to: "/dashboard/waiter/order-taking",
-      label: "Take Orders",
+      label: "New Orders",
       icon: Utensils,
-    },
-    {
-      to: "/dashboard/waiter/payment-processing",
-      label: "Payment Processing",
-      icon: DollarSign,
     },
     {
       to: "/dashboard/waiter/orders",
       label: "Order Management",
       icon: ShoppingCart,
+    },
+    {
+      to: "/dashboard/waiter/payment-processing",
+      label: "Payment Processing",
+      icon: DollarSign,
     },
     { to: "/dashboard/waiter/tables", label: "Table Management", icon: Table },
     {
@@ -129,7 +128,7 @@ function SidebarNav({
   onNavigate: () => void;
 }) {
   return (
-    <nav className="flex-1 px-4 py-6">
+    <nav className="flex-1 px-4 py-3">
       <ul className="space-y-2">
         {nav.map((item) => (
           <li key={item.to}>
@@ -138,15 +137,23 @@ function SidebarNav({
               onClick={onNavigate}
               end={item.end}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                `flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
                   isActive
-                    ? "bg-brand text-white shadow-lg"
-                    : "text-text-secondary hover:text-text-primary hover:bg-surface-secondary"
+                    ? "bg-app-brand text-white shadow-lg border border-app-brand"
+                    : "text-text-secondary hover:text-text-primary hover:bg-surface-secondary hover:shadow-sm border border-transparent"
                 }`
               }
             >
-              <item.icon className="w-4 h-4" />
-              {item.label}
+              {({ isActive }) => (
+                <>
+                  <item.icon
+                    className={`w-5 h-5 ${
+                      isActive ? "text-white" : "text-text-secondary"
+                    }`}
+                  />
+                  {item.label}
+                </>
+              )}
             </NavLink>
           </li>
         ))}
@@ -176,24 +183,28 @@ function SidebarFooter() {
   };
 
   return (
-    <div className="px-4 py-4 border-t border-border-primary">
-      <div className="text-center space-y-3">
+    <div className="px-4 py-6 border-t border-border-primary">
+      <div className="text-center space-y-4">
         <div className="flex items-center justify-between">
-          <div className="w-10 h-10 mx-auto bg-brand/10 rounded-full flex items-center justify-center">
-            <Utensils className="w-5 h-5 text-brand" />
+          <div className="w-12 h-12 mx-auto bg-app-brand/10 rounded-full flex items-center justify-center border border-app-brand/20 shadow-sm">
+            <Utensils className="w-6 h-6 text-app-brand" />
           </div>
           <button
             onClick={handleClick}
-            className="p-1 text-text-secondary hover:text-text-primary hover:bg-surface-primary rounded-full transition-colors"
+            className="p-2 text-text-secondary hover:text-text-primary hover:bg-surface-secondary rounded-lg transition-all duration-200 border border-transparent hover:border-border-primary"
             aria-label="Account options"
           >
             <MoreVertical className="w-4 h-4" />
           </button>
         </div>
-        <div>
-          <p className="text-sm font-medium text-text-primary">{waiter.name}</p>
+        <div className="space-y-1">
+          <p className="text-sm font-semibold text-text-primary">
+            {waiter.name}
+          </p>
           <p className="text-xs text-text-secondary">{waiter.role}</p>
-          <p className="text-xs text-text-muted mt-1">Waiter Dashboard</p>
+          <p className="text-xs text-text-muted mt-2 px-2 py-1 bg-surface-secondary rounded-lg">
+            Waiter Dashboard
+          </p>
         </div>
 
         <MUIMenu
@@ -258,91 +269,36 @@ function HeaderActions({
 }) {
   const { waiter } = useWaiterDashboard();
 
-  // Calculate shift progress
-  const now = new Date();
-  const shiftStart = new Date(waiter.shiftStart);
-  const shiftEnd = new Date(waiter.shiftEnd);
-  const shiftProgress = Math.min(
-    100,
-    Math.max(
-      0,
-      ((now.getTime() - shiftStart.getTime()) /
-        (shiftEnd.getTime() - shiftStart.getTime())) *
-        100
-    )
-  );
-
   return (
-    <header className="bg-surface-card border-b border-border-primary px-6 py-4">
+    <header className="bg-surface-card border-b border-border-primary px-6 py-5 shadow-sm">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-text-primary">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold text-text-primary">
             {currentTitle}
           </h1>
           <p className="text-sm text-text-secondary">
-            Welcome back, {waiter.name}
+            Welcome back,{" "}
+            <span className="font-semibold text-app-brand">{waiter.name}</span>
           </p>
         </div>
-        <div className="flex items-center gap-4">
-          {/* Shift Progress */}
-          <div className="hidden md:flex items-center gap-3">
-            <div className="text-right">
-              <p className="text-xs text-text-secondary">Shift Progress</p>
-              <p className="text-sm font-medium text-text-primary">
-                {shiftProgress.toFixed(0)}%
-              </p>
-            </div>
-            <div className="w-20 bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-brand h-2 rounded-full transition-all duration-300"
-                style={{ width: `${shiftProgress}%` }}
-              ></div>
-            </div>
-          </div>
-
+        <div className="flex items-center gap-6">
           {/* Notifications */}
-          <WaiterNotificationMenu />
+          <div className="relative">
+            <WaiterNotificationMenu />
+          </div>
 
           {/* Waiter Info */}
           <div className="flex items-center gap-3">
-            <div className="hidden md:flex flex-col items-end">
-              <p className="text-sm font-medium text-text-primary">
+            <div className="w-10 h-10 bg-app-brand/10 rounded-full flex items-center justify-center border border-app-brand/20">
+              <Utensils className="w-5 h-5 text-app-brand" />
+            </div>
+            <div className="flex flex-col items-end">
+              <p className="text-sm font-semibold text-text-primary">
                 {waiter.name}
               </p>
               <p className="text-xs text-text-secondary">{waiter.role}</p>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-brand/10 rounded-full flex items-center justify-center">
-                <Coffee className="w-4 h-4 text-brand" />
-              </div>
-              <div className="hidden lg:flex items-center gap-1">
-                <Star className="w-3 h-3 text-yellow-500 fill-current" />
-                <span className="text-xs text-text-primary">
-                  {waiter.rating}
-                </span>
-              </div>
-            </div>
           </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 text-text-secondary hover:text-text-primary hover:bg-surface-secondary rounded-lg transition-colors"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </button>
         </div>
       </div>
     </header>

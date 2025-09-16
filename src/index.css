@@ -4,9 +4,10 @@
 
 /* Custom CSS variables */
 :root {
-  --color-brand: #3b82f6;
-  --color-brand-dark: #1d4ed8;
-  --color-brand-light: #93c5fd;
+  /* Brand / Accent */
+  --color-brand: #ff6b3d; /* primary accent */
+  --color-brand-dark: #e85a2e; /* hover/active */
+  --color-brand-light: #ffb79f; /* subtle tints */
 }
 
 /* Line clamp utilities */
@@ -37,16 +38,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #f3f4f6; /* neutral surface */
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #9ca3af; /* muted border */
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #6b7280; /* secondary text */
 }
 
 /* App shell sizing */
@@ -58,8 +59,27 @@ body,
 
 /* Custom utility classes for dashboard background */
 @layer utilities {
+  /* App brand utilities using CSS variables */
+  .bg-app-brand {
+    background-color: var(--color-brand);
+  }
+  .hover\:bg-app-brand-dark:hover {
+    background-color: var(--color-brand-dark);
+  }
+  .text-app-brand {
+    color: var(--color-brand);
+  }
+  .bg-app-brand-light {
+    background-color: var(--color-brand-light);
+  }
+  .ring-app-brand {
+    --tw-ring-color: color-mix(in oklab, var(--color-brand), transparent 50%);
+  }
+  .border-app-brand {
+    border-color: var(--color-brand);
+  }
   .bg-dashboard {
-    background-color: #eaeeef;
+    background-color: #f5f7fb; /* page background */
   }
 
   /* Responsive design utilities */
