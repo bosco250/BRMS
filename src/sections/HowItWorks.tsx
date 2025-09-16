@@ -1,23 +1,18 @@
 const steps = [
   {
     step: "1",
-    title: "Set up your business",
-    desc: "Create locations, add users and configure taxes & currencies.",
+    title: "Browse restaurants",
+    desc: "Find nearby places, see menus, reviews, and estimated times.",
   },
   {
     step: "2",
-    title: "Load menu & inventory",
-    desc: "Import products, set pricing, and configure stock thresholds.",
+    title: "Place your order",
+    desc: "Customize items, apply promos, and pay securely—no account needed.",
   },
   {
     step: "3",
-    title: "Start selling",
-    desc: "Process orders, print invoices, take payments and track stock.",
-  },
-  {
-    step: "4",
-    title: "Analyze & optimize",
-    desc: "Use reports and dashboards to improve performance.",
+    title: "Track in real time",
+    desc: "Watch prep and delivery status from kitchen to your table or door.",
   },
 ];
 
@@ -26,7 +21,7 @@ export default function HowItWorks() {
     <section id="how-it-works" className="py-16 sm:py-20 bg-surface-secondary">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <h2 className="text-center text-3xl sm:text-4xl font-bold tracking-tight text-text-primary">
-          How it works
+          How ordering works
         </h2>
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((s) => (
@@ -44,6 +39,9 @@ export default function HowItWorks() {
             </div>
           ))}
         </div>
+        <p className="mt-6 text-center text-sm text-text-secondary">
+          Secure payments. Easy refunds. Live updates. Support when you need it.
+        </p>
       </div>
     </section>
   );

@@ -6,7 +6,7 @@ import {
   Bell,
   Shield,
   Coffee,
-  Clock,
+  Clock, 
   Star,
   DollarSign,
   Save,

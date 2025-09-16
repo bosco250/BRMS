@@ -51,6 +51,35 @@ export type Notification = {
   tableId?: string;
 };
 
+export type OrderItem = {
+  name: string;
+  quantity: number;
+  price: number;
+  notes?: string;
+};
+
+export type Order = {
+  id: string;
+  orderNumber: string;
+  tableNumber?: number;
+  customerName: string;
+  customerPhone?: string;
+  customerEmail?: string;
+  orderType: "dine-in" | "takeaway" | "delivery";
+  status: "preparing" | "ready" | "served";
+  items: OrderItem[];
+  subtotal: number;
+  tax: number;
+  tip: number;
+  total: number;
+  specialRequests?: string;
+  createdAt: string;
+  estimatedTime?: string;
+  waiterId: number;
+  waiterName: string;
+  notes?: string;
+};
+
 // Mock data
 const mockWaiter: Waiter = {
   id: 1,
@@ -175,16 +204,69 @@ const mockNotifications: Notification[] = [
   },
 ];
 
+const mockOrders: Order[] = [
+  {
+    id: "order-1",
+    orderNumber: "ORD-001",
+    tableNumber: 1,
+    customerName: "John Smith",
+    customerPhone: "+1-555-0123",
+    orderType: "dine-in",
+    status: "preparing",
+    items: [
+      { name: "Grilled Chicken", quantity: 1, price: 15000 },
+      { name: "Caesar Salad", quantity: 1, price: 8000 },
+    ],
+    subtotal: 23000,
+    tax: 4140,
+    tip: 2300,
+    total: 29440,
+    createdAt: "2024-01-15T14:00:00Z",
+    estimatedTime: "2024-01-15T14:30:00Z",
+    waiterId: 1,
+    waiterName: "Sarah Johnson",
+    notes: "Customer prefers well-done chicken",
+  },
+  {
+    id: "order-2",
+    orderNumber: "ORD-002",
+    tableNumber: 4,
+    customerName: "Emily Davis",
+    customerPhone: "+1-555-0456",
+    orderType: "dine-in",
+    status: "ready",
+    items: [
+      { name: "Fish & Chips", quantity: 1, price: 18000 },
+      { name: "Coffee", quantity: 2, price: 1500 },
+    ],
+    subtotal: 21000,
+    tax: 3780,
+    tip: 2100,
+    total: 26880,
+    createdAt: "2024-01-15T13:45:00Z",
+    estimatedTime: "2024-01-15T14:15:00Z",
+    waiterId: 1,
+    waiterName: "Sarah Johnson",
+  },
+];
+
 interface WaiterDashboardContextType {
   waiter: Waiter;
   tables: Table[];
   reservations: Reservation[];
   notifications: Notification[];
+  orders: Order[];
   updateTableStatus: (tableId: string, status: Table["status"]) => void;
+  updateReservationStatus: (
+    reservationId: string,
+    status: Reservation["status"]
+  ) => void;
   addNotification: (
     notification: Omit<Notification, "id" | "createdAt" | "read">
   ) => void;
   markNotificationAsRead: (notificationId: string) => void;
+  addOrder: (order: Order) => void;
+  updateOrderStatus: (orderId: string, status: Order["status"]) => void;
 }
 
 const WaiterDashboardContext = createContext<
@@ -201,6 +283,7 @@ export function WaiterDashboardProvider({
     useState<Reservation[]>(mockReservations);
   const [notifications, setNotifications] =
     useState<Notification[]>(mockNotifications);
+  const [orders, setOrders] = useState<Order[]>(mockOrders);
 
   const updateTableStatus = (tableId: string, status: Table["status"]) => {
     setTables((prev) =>
@@ -241,17 +324,31 @@ export function WaiterDashboardProvider({
     );
   };
 
+  const addOrder = (order: Order) => {
+    setOrders((prev) => [order, ...prev]);
+  };
+
+  const updateOrderStatus = (orderId: string, status: Order["status"]) => {
+    setOrders((prev) =>
+      prev.map((order) => (order.id === orderId ? { ...order, status } : order))
+    );
+  };
+
   const value = useMemo(
     () => ({
       waiter: mockWaiter,
       tables,
       reservations,
       notifications,
+      orders,
       updateTableStatus,
+      updateReservationStatus,
       addNotification,
       markNotificationAsRead,
+      addOrder,
+      updateOrderStatus,
     }),
-    [tables, reservations, notifications]
+    [tables, reservations, notifications, orders]
   );
 
   return (

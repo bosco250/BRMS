@@ -89,7 +89,7 @@ const WaiterNotificationMenu: React.FC = () => {
     isRead?: boolean;
     read?: boolean;
     type?: string;
-    tableId?: string;
+    tableId?: string; 
   };
 
   const handleNotificationClick = (notification: WaiterNotification) => {

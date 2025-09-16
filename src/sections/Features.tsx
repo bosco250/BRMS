@@ -10,29 +10,34 @@ import {
 import { motion } from "framer-motion";
 
 const features = [
+  // Customer-first
   {
-    title: "Multi-tenant & Subscriptions",
+    title: "Live order tracking",
+    description: "See prep and delivery status in real time on any device.",
+    icon: FaBell,
+  },
+  {
+    title: "Fast re-order",
+    description: "Reorder your favorites in two taps. Save time every visit.",
+    icon: FaClipboardList,
+  },
+  {
+    title: "Secure payments",
+    description: "Pay with mobile money or card. Your data stays protected.",
+    icon: FaReceipt,
+  },
+  // Team benefits
+  {
+    title: "Orders & Tables",
     description:
-      "Manage multiple businesses with tiered plans and automated renewals.",
-    icon: FaUserShield,
+      "Dine-in, takeaway, delivery with table management and kitchen queues.",
+    icon: FaClipboardList,
   },
   {
     title: "Inventory & Stock",
     description:
       "Real-time stock tracking, supplier management, alerts, and adjustments.",
     icon: FaBoxes,
-  },
-  {
-    title: "Orders & Tables",
-    description:
-      "Dine-in, takeaway, delivery with table management and kitchen/bar queues.",
-    icon: FaClipboardList,
-  },
-  {
-    title: "Payments, Invoices & Receipts",
-    description:
-      "Cash, mobile money, split payments with printable invoices and receipts.",
-    icon: FaReceipt,
   },
   {
     title: "CRM & Loyalty",
@@ -47,15 +52,9 @@ const features = [
     icon: FaChartBar,
   },
   {
-    title: "Notifications",
+    title: "Secure RBAC & Subscriptions",
     description:
-      "Email, SMS and in-app alerts for orders, stock and subscriptions.",
-    icon: FaBell,
-  },
-  {
-    title: "Secure RBAC",
-    description:
-      "Role-based access control, MFA for admins, and audit logging.",
+      "Role-based access control, MFA, and flexible multi-tenant plans.",
     icon: FaUserShield,
   },
 ];
@@ -66,11 +65,11 @@ export default function Features() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-text-primary">
-            Everything you need to run your business
+            Made for customers. Built for your team.
           </h2>
           <p className="mt-3 text-text-secondary">
-            Built from the FRD to cover inventory, orders, payments, CRM,
-            reporting, and more.
+            Delight guests with simple ordering and live updates, while your
+            team gets powerful tools for smooth operations.
           </p>
         </div>
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

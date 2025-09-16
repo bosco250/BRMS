@@ -1,19 +1,23 @@
 const faqs = [
   {
-    q: "Can I use BRMS across multiple locations?",
-    a: "Yes. Premium supports up to 3, and Enterprise supports unlimited locations.",
+    q: "Do I need an account to browse menus?",
+    a: "No. You can explore restaurants and menus without signing up.",
   },
   {
-    q: "Do you support thermal printing?",
-    a: "Yes. We support ESC/POS-compatible printers for invoices and receipts.",
+    q: "Is payment secure?",
+    a: "Yes. We use trusted processors and never store full card details.",
   },
   {
-    q: "What payment types are supported?",
-    a: "Cash, mobile money, and other processors depending on your region.",
+    q: "Can I pick up instead of delivery?",
+    a: "Absolutely. Choose pickup at checkout and we’ll notify you when it’s ready.",
   },
   {
-    q: "Is there an API?",
-    a: "Premium and Enterprise include OAuth2 APIs with rate limiting and webhooks.",
+    q: "How do I track my order?",
+    a: "You’ll see real-time status from the kitchen to your table or door.",
+  },
+  {
+    q: "What if something goes wrong?",
+    a: "Our support can help with order issues, refunds, or adjustments.",
   },
 ];
 

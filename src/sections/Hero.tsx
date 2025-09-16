@@ -7,30 +7,36 @@ export default function Hero() {
         <div className="grid lg:grid-cols-2 gap-10 items-center">
           <div>
             <span className="inline-flex items-center rounded-full bg-brand/10 text-brand px-3 py-1 text-xs font-semibold ring-1 ring-brand/20">
-              Multi-tenant SaaS for Bars & Restaurants
+              Hungry? Order from nearby restaurants in minutes
             </span>
             <h1 className="mt-6 text-4xl sm:text-5xl font-bold tracking-tight">
               Run your bar and restaurant on one powerful platform
             </h1>
             <p className="mt-4 text-base sm:text-lg text-text-secondary max-w-xl">
-              Inventory, orders, payments, CRM, and analytics—designed for
-              managers, servers, and accountants. Secure, fast, and ready to
-              scale.
+              For customers: quick, friendly ordering with live tracking. For
+              teams: inventory, orders, payments, CRM, and analytics—secure,
+              fast, and ready to scale.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 to="/businesses"
-                className="rounded-md bg-accent px-6 py-4 text-text-inverted font-semibold hover:bg-accent-hover active:bg-accent-active focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/20 text-lg"
+                aria-label="Browse restaurants and order food"
+                className="rounded-md bg-accent px-6 py-4 text-text-inverted font-semibold hover:bg-accent-hover active:bg-accent-active focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/20 text-lg w-full sm:w-auto"
               >
                 🍽️ Order Food Now
               </Link>
               <Link
                 to="/register"
-                className="rounded-md bg-brand px-5 py-3 text-text-inverted font-medium hover:bg-brand-hover active:bg-brand-active focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/20"
+                aria-label="Start your free trial for restaurant teams"
+                className="rounded-md bg-brand px-5 py-3 text-text-inverted font-medium hover:bg-brand-hover active:bg-brand-active focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/20 w-full sm:w-auto"
               >
                 Start free trial
               </Link>
             </div>
+            <p className="mt-2 text-sm text-text-secondary">
+              No account needed to browse. Real-time order updates and secure
+              payments.
+            </p>
             <dl className="mt-8 grid grid-cols-3 gap-4 text-sm text-gray-600 max-w-md">
               <div>
                 <dt className="font-semibold text-gray-900">99.9% uptime</dt>
