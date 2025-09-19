@@ -1,11 +1,10 @@
-
 import { Eye, EyeOff } from "lucide-react";
 import MarketingPanel from "../../components/auth/MarketingPanel";
-import api from "../../Api/axios";
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
-import {toast}  from "react-toastify";
-import { UserRoles } from "../../constants/userRoles"; // Adjusted import
+import { toast } from "react-toastify";
+import { registerUser } from "./apiService";
+import { sanitizeInput, validateEmail } from "../../utils/sanitize";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -17,18 +16,13 @@ export default function Register() {
     phone: "",
     password: "",
     confirmPassword: "",
-    userType: "CUSTOMER", // default string value here, will map later
+    userType: "customer", // default to customer
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  // Map the userType string to enum values for convenience
-  const mapUserTypeToEnum = (type: string) => {
-    return type === "business" ? UserRoles.BUSINESS_OWNER : UserRoles.CUSTOMER;
-  };
 
   useEffect(() => {
     const userType = searchParams.get("type");
@@ -48,21 +42,26 @@ export default function Register() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) {
+    // Sanitize inputs
+    const sanitizedName = sanitizeInput(formData.name);
+    const sanitizedEmail = sanitizeInput(formData.email);
+    const sanitizedPhone = sanitizeInput(formData.phone);
+
+    if (!sanitizedName.trim()) {
       newErrors.name = "Full name is required";
-    } else if (formData.name.trim().length < 2) {
+    } else if (sanitizedName.trim().length < 2) {
       newErrors.name = "Name must be at least 2 characters";
     }
 
-    if (!formData.email.trim()) {
+    if (!sanitizedEmail.trim()) {
       newErrors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    } else if (!validateEmail(sanitizedEmail)) {
       newErrors.email = "Please enter a valid email address";
     }
 
-    if (!formData.phone.trim()) {
+    if (!sanitizedPhone.trim()) {
       newErrors.phone = "Phone number is required";
-    } else if (!/^\+?[\d\s-()]+$/.test(formData.phone)) {
+    } else if (!/^\+?[\d\s-()]+$/.test(sanitizedPhone)) {
       newErrors.phone = "Please enter a valid phone number";
     }
 
@@ -82,54 +81,58 @@ export default function Register() {
     return Object.keys(newErrors).length === 0;
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  if (!validateForm()) return;
+    if (!validateForm()) return;
 
-  setIsSubmitting(true);
+    setIsSubmitting(true);
 
-  try {
-    const roleName = mapUserTypeToEnum(formData.userType);
+    try {
+      // Sanitize form data before sending
+      const sanitizedData = {
+        name: sanitizeInput(formData.name),
+        email: sanitizeInput(formData.email),
+        phone: sanitizeInput(formData.phone),
+        password: formData.password,
+        userType: formData.userType,
+      };
 
-    await api.post("/auth/register", {
-      first_name: formData.name.split(" ")[0],
-      last_name: formData.name.split(" ").slice(1).join(" ") || "",
-      email: formData.email,
-      phone_num: formData.phone,
-      password: formData.password,
-      roleName,
-    });
+      console.log("Registering user with data:", sanitizedData);
 
-    toast.success("Account created successfully! Please verify your email.", {
-      autoClose: 7000, 
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      theme: "light",
-    });
+      // Call the registration API
+      const response = await registerUser(sanitizedData);
 
-    // Redirect to OTP/email verification page instead of dashboard
-navigate(`/verify-otp?email=${encodeURIComponent(formData.email)}`);
-  } catch (error: any) {
-    console.error("Registration error:", error);
-    const message =
-      error?.response?.data?.message ||
-      "Registration failed. Please try again.";
+      console.log("Registration response:", response);
 
-    toast.error(message, {
-      autoClose: 5000,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      theme: "light",
-    });
+      toast.success("Account created successfully! Please verify your email.", {
+        autoClose: 7000,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "light",
+      });
 
-    setErrors({ general: message });
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+      // Redirect to OTP/email verification page instead of dashboard
+      navigate(`/verify-otp?email=${encodeURIComponent(sanitizedData.email)}`);
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      const message =
+        error?.message || "Registration failed. Please try again.";
+
+      toast.error(message, {
+        autoClose: 5000,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "light",
+      });
+
+      setErrors({ general: message });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>

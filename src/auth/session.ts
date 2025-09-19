@@ -1,8 +1,23 @@
-import type { FakeUser } from "../data/users";
+// Define User type for session management
+export type User = {
+  id: string;
+  role: string;
+  name: string;
+  email: string;
+  phone: string;
+  // Customer-specific fields
+  loyaltyPoints?: number;
+  totalVisits?: number;
+  totalSpent?: number;
+  tier?: string;
+  joinDate?: string;
+  preferences?: string[];
+  avatar?: string | null;
+};
 
 const KEY = "brms_user";
 
-export function setSessionUser(user: FakeUser) {
+export function setSessionUser(user: User) {
   try {
     const sessionData = {
       id: user.id,
@@ -66,5 +81,6 @@ export function getSessionUser(): {
 export function clearSessionUser() {
   try {
     localStorage.removeItem(KEY);
+    localStorage.removeItem("access_token"); // Also clear the access token
   } catch {}
 }
