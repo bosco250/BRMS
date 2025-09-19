@@ -3,13 +3,13 @@ import { Navigate } from "react-router-dom";
 import type { ReactElement } from "react";
 
 const routeByRole: Record<string, string> = {
-  Admin: "/dashboard/admin",
-  Owner: "/dashboard/owner",
-  Manager: "/dashboard/manager",
-  Accountant: "/dashboard/accountant",
-  Waiter: "/dashboard/waiter",
-  Customer: "/dashboard/customer",
-  Kitchen: "/dashboard/kitchen",
+  admin: "/dashboard/admin",
+  business_owner: "/dashboard/owner",
+  manager: "/dashboard/manager",
+  accountant: "/dashboard/accountant",
+  waiter: "/dashboard/waiter",
+  customer: "/dashboard/customer",
+  kitchen: "/dashboard/kitchen",
 };
 
 export function withRoleGuard<TProps extends Record<string, any>>(
@@ -19,8 +19,25 @@ export function withRoleGuard<TProps extends Record<string, any>>(
   return function Guarded(props: TProps) {
     const user = getSessionUser();
     if (!user) return <Navigate to="/login" replace />;
-    if (user.role !== role)
-      return <Navigate to={routeByRole[user.role] || "/"} replace />;
+
+    // Normalize role to lowercase for comparison
+    const userRole = user.role?.toLowerCase();
+    const requiredRole = role.toLowerCase();
+
+    console.log("Role Guard Debug:", {
+      userRole,
+      requiredRole,
+      user,
+      routeByRole: routeByRole[userRole],
+    });
+
+    if (userRole !== requiredRole) {
+      console.log(
+        "Role mismatch - redirecting to:",
+        routeByRole[userRole] || "/"
+      );
+      return <Navigate to={routeByRole[userRole] || "/"} replace />;
+    }
     return <Component {...props} />;
   };
 }

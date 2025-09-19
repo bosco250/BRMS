@@ -1,7 +1,3 @@
-/**
- * XSS Protection utilities
- * Sanitizes user input to prevent XSS attacks
- */
 
 export function sanitizeInput(input: string): string {
   if (typeof input !== "string") {

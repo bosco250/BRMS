@@ -268,7 +268,7 @@ function HeaderActions() {
   );
 }
 
-const GuardedLayout = withRoleGuard(Layout, "Owner");
+const GuardedLayout = withRoleGuard(Layout, "business_owner");
 
 export default function OwnerDashboardLayout() {
   return (

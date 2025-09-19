@@ -2,16 +2,16 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { Eye, EyeOff } from "lucide-react";
-import { setSessionUser } from "../../auth/session";
 import { sanitizeInput, validateEmail } from "../../utils/sanitize";
-import { authenticate } from "../../data/users";
 import MarketingPanel from "../../components/auth/MarketingPanel";
+import { loginUser } from "./apiService";
 
 export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -43,34 +43,112 @@ export default function Login() {
       return;
     }
 
+    setLoading(true);
     try {
-      // Use local authentication instead of API call
-      const user = authenticate(sanitizedEmail, sanitizedPassword);
+      // Use API call for authentication
+      const user = await loginUser(sanitizedEmail, sanitizedPassword);
 
-      if (!user) {
+      // Show response in console
+      console.log("Login response:", user);
+
+      if (!user || !user.access_token) {
         toast.error("Invalid email or password. Please try again.");
+        setLoading(false);
         return;
       }
 
-      setSessionUser(user);
-      toast.success("Login successful! Redirecting...");
+      // Store access token
+      localStorage.setItem("access_token", user.access_token);
 
-      const role = user.role;
+      let role = "";
+      if (user.role) {
+        // Handle role as object with role_name property
+        if (typeof user.role === "object" && user.role.role_name) {
+          role = String(user.role.role_name || "")
+            .toLowerCase()
+            .trim();
+        } else {
+          role = String(user.role || "")
+            .toLowerCase()
+            .trim();
+        }
+        console.log(
+          "Role from user object:",
+          user.role,
+          "-> converted to:",
+          role
+        );
+      } else {
+        // Try to decode JWT to get role
+        try {
+          const payload = JSON.parse(atob(user.access_token.split(".")[1]));
+          role = String(payload.role || "")
+            .toLowerCase()
+            .trim();
+          console.log(
+            "Role from JWT payload:",
+            payload.role,
+            "-> converted to:",
+            role
+          );
+          console.log("Full JWT payload:", payload);
+        } catch (e) {
+          role = "";
+          console.log("Failed to decode JWT:", e);
+        }
+      }
+
+      // Set up session user data for role-based routing
+      const sessionUser = {
+        id: user.user_id || user.userId || "1",
+        role: role, // Use the extracted role
+        name: user.name || "Admin User",
+        email: sanitizedEmail,
+        phone: user.phone || "",
+        expiresAt: Date.now() + 12 * 60 * 60 * 1000, // 12 hours
+      };
+      localStorage.setItem("brms_user", JSON.stringify(sessionUser));
+      console.log("Session user set:", sessionUser);
+
       const routeByRole: Record<string, string> = {
-        Admin: "/dashboard/admin",
-        Owner: "/dashboard/owner",
-        Manager: "/dashboard/manager",
-        Accountant: "/dashboard/accountant",
-        Waiter: "/dashboard/waiter",
-        Customer: "/dashboard/customer",
-        Kitchen: "/dashboard/kitchen",
+        admin: "/dashboard/admin",
+        business_owner: "/dashboard/owner",
+        manager: "/dashboard/manager",
+        accountant: "/dashboard/accountant",
+        waiter: "/dashboard/waiter",
+        customer: "/dashboard/customer",
+        kitchen: "/dashboard/kitchen",
+        cook: "/dashboard/kitchen",
+        chef: "/dashboard/kitchen", // Added chef mapping
       };
 
-      setTimeout(() => {
-        navigate(routeByRole[role] || "/");
-      }, 1200);
+      const targetRoute = routeByRole[role] || "/dashboard";
+
+      // Validate that we have a role before proceeding
+      if (!role) {
+        console.error("No role found for user");
+        toast.error("Unable to determine user role. Please contact support.");
+        setLoading(false);
+        return;
+      }
+
+      // Show success message
+      toast.success("Login successful! Redirecting...");
+
+
+      // Navigate immediately without delay
+      try {
+        navigate(targetRoute, { replace: true });
+      } catch (navError) {
+        console.error("Navigation failed:", navError);
+        // Fallback navigation
+        window.location.href = targetRoute;
+      }
     } catch (err: any) {
-      toast.error("Login failed. Please try again.");
+      console.error("Login error:", err);
+      toast.error(err?.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -136,6 +214,7 @@ export default function Login() {
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    disabled={loading}
                   />
                 </div>
                 <div>
@@ -162,6 +241,7 @@ export default function Login() {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      disabled={loading}
                     />
                     <button
                       type="button"
@@ -170,6 +250,7 @@ export default function Login() {
                       aria-label={
                         showPassword ? "Hide password" : "Show password"
                       }
+                      tabIndex={-1}
                     >
                       {showPassword ? (
                         <EyeOff className="h-4 w-4" />
@@ -183,24 +264,10 @@ export default function Login() {
                 <button
                   type="submit"
                   className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-text-inverted hover:bg-brand-hover shadow-sm"
+                  disabled={loading}
                 >
-                  Sign in
+                  {loading ? "Signing in..." : "Sign in"}
                 </button>
-
-                <div className="text-xs text-text-secondary">
-                  Demo users:
-                  <ul className="list-disc pl-5 mt-1 space-y-0.5">
-                    <li>admin@brms.dev / 123 - Admin</li>
-                    <li>owner@brms.dev / 123 - Owner</li>
-                    <li>manager@brms.dev / manager123 - Manager</li>
-                    <li>accountant@brms.dev / account123 - Accountant</li>
-                    <li>waiter@brms.dev / waiter123 - Waiter</li>
-                    <li>customer@brms.dev / 123 - Customer</li>
-                    <li>chef@brms.dev / 123 - Kitchen</li>
-                    <li>james@brms.dev / 123 - Kitchen</li>
-                    <li>sarah@brms.dev / 123 - Kitchen</li>
-                  </ul>
-                </div>
               </div>
 
               <p className="mt-6 text-center text-sm text-text-secondary border-t border-border-subtle pt-4">
