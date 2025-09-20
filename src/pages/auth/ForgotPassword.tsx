@@ -1,11 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 export default function ForgotPassword() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -28,11 +28,13 @@ export default function ForgotPassword() {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
+      // Simulate API call - in real app, this would send OTP to email
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setIsSubmitted(true);
+
+      // Navigate to OTP verification with email parameter
+      navigate(`/verify-forgot-otp?email=${encodeURIComponent(email)}`);
     } catch (error) {
-      setError("Failed to send reset link. Please try again.");
+      setError("Failed to send reset code. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -44,88 +46,54 @@ export default function ForgotPassword() {
           Reset password
         </h1>
         <p className="mt-2 text-center text-text-secondary">
-          Enter your email to receive a reset link.
+          Enter your email to receive a verification code.
         </p>
 
-        {isSubmitted ? (
-          <div className="mt-8 rounded-2xl bg-surface-card p-6 ring-1 ring-border-secondary shadow-md text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg
-                className="w-8 h-8 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
-            <h2 className="text-xl font-semibold text-text-primary mb-2">
-              Check your email
-            </h2>
-            <p className="text-text-secondary mb-4">
-              We've sent a password reset link to <strong>{email}</strong>
-            </p>
-            <p className="text-sm text-text-secondary">
-              Didn't receive the email? Check your spam folder or{" "}
-              <button
-                onClick={() => {
-                  setIsSubmitted(false);
-                  setEmail("");
-                }}
-                className="text-brand hover:underline"
-              >
-                try again
-              </button>
-            </p>
-          </div>
-        ) : (
-          <form
-            onSubmit={handleSubmit}
-            className="mt-8 rounded-2xl bg-surface-card p-6 ring-1 ring-border-secondary shadow-md"
-          >
+        <div className="mt-8 rounded-2xl bg-surface-card p-6 ring-1 ring-border-secondary shadow-md">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
                 <p className="text-sm text-red-600">{error}</p>
               </div>
             )}
 
-            <div className="grid gap-5">
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-text-primary"
-                >
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={`mt-1 block w-full rounded-md bg-surface-primary px-3 py-2 text-sm text-text-primary placeholder:text-text-muted ring-1 ${
-                    error
-                      ? "ring-red-300 focus:ring-red-500"
-                      : "ring-border-subtle focus:ring-brand/30"
-                  } focus:outline-none focus:ring-2`}
-                  placeholder="you@example.com"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-text-inverted hover:bg-brand-hover shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-text-primary"
               >
-                {isSubmitting ? "Sending..." : "Send reset link"}
-              </button>
+                Email Address
+              </label>
+              <input
+                id="email"
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={`mt-1 block w-full rounded-md bg-surface-primary px-3 py-2 text-sm text-text-primary placeholder:text-text-muted ring-1 ${
+                  error
+                    ? "ring-red-300 focus:ring-red-500"
+                    : "ring-border-subtle focus:ring-brand/30"
+                } focus:outline-none focus:ring-2`}
+                placeholder="you@example.com"
+              />
             </div>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full rounded-md bg-brand px-4 py-2 text-sm font-semibold text-text-inverted hover:bg-brand-hover shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isSubmitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Sending Code...
+                </span>
+              ) : (
+                "Send Verification Code"
+              )}
+            </button>
           </form>
-        )}
+        </div>
 
         <p className="mt-6 text-center text-sm text-text-secondary border-t border-border-subtle pt-4">
           Remembered your password?{" "}
