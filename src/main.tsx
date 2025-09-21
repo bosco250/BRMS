@@ -9,7 +9,7 @@ import RestaurantProfile from "./pages/RestaurantProfile.tsx";
 import Login from "./pages/auth/Login.tsx";
 import Register from "./pages/auth/Register.tsx";
 import ForgotPassword from "./pages/auth/ForgotPassword.tsx";
-import ForgotPasswordOTP from "./pages/auth/ForgotPasswordOTP.tsx";
+import VerifyResetToken from "./pages/auth/VerifyResetToken.tsx";
 import ResetPassword from "./pages/auth/ResetPassword.tsx";
 import Checkout from "./pages/Checkout.tsx";
 import OrderSuccess from "./pages/OrderSuccess.tsx";
@@ -106,7 +106,7 @@ const router = createBrowserRouter([
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
       { path: "forgot", element: <ForgotPassword /> },
-      { path: "verify-forgot-otp", element: <ForgotPasswordOTP /> },
+      { path: "verify-reset-token", element: <VerifyResetToken /> },
       { path: "reset-password", element: <ResetPassword /> },
       { path: "checkout", element: <Checkout /> },
       { path: "order-success", element: <OrderSuccess /> },

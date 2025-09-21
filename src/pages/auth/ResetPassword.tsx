@@ -69,7 +69,7 @@ export default function ResetPassword() {
     e.preventDefault();
 
     if (!email || !token) {
-      toast.error("Invalid reset link. Please try again.");
+      toast.error("Invalid reset link. Please request a new one.");
       navigate("/forgot");
       return;
     }
@@ -87,13 +87,15 @@ export default function ResetPassword() {
 
     setIsSubmitting(true);
     try {
-      // Simulate API call - in real app, this would reset the password
+      // Simulate API call - in real app, this would reset the password using the token
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       toast.success("Password reset successfully! You can now sign in.");
       navigate("/login");
     } catch (error) {
-      toast.error("Failed to reset password. Please try again.");
+      toast.error(
+        "Failed to reset password. The link may have expired. Please request a new one."
+      );
     } finally {
       setIsSubmitting(false);
     }
