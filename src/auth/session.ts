@@ -72,7 +72,6 @@ export function getSessionUser(): {
 
     return sessionData;
   } catch (error) {
-    // Failed to parse session data
     clearSessionUser();
     return null;
   }
@@ -81,6 +80,6 @@ export function getSessionUser(): {
 export function clearSessionUser() {
   try {
     localStorage.removeItem(KEY);
-    localStorage.removeItem("access_token"); // Also clear the access token
+    localStorage.removeItem("access_token"); 
   } catch {}
 }

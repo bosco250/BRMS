@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useMemo, useState } from "react";
+import { getSessionUser } from "../../../auth/session";
 
 export type Owner = {
   id: number;
@@ -58,7 +59,14 @@ export type Order = {
   tableNumber?: number;
   items: OrderItem[];
   total: number;
-  status: "pending" | "confirmed" | "preparing" | "ready" | "served" | "paid" | "cancelled";
+  status:
+    | "pending"
+    | "confirmed"
+    | "preparing"
+    | "ready"
+    | "served"
+    | "paid"
+    | "cancelled";
   priority: "normal" | "rush" | "urgent";
   type: "dine_in" | "takeaway" | "delivery";
   createdAt: string;
@@ -88,18 +96,7 @@ export type Notification = {
   actionRequired: boolean;
 };
 
-const mockOwner: Owner = {
-  id: 1,
-  name: "Michael Rodriguez",
-  email: "michael.rodriguez@brms.com",
-  phone: "+250 788 999 999",
-  role: "Owner",
-  avatar: null,
-  joinDate: "2020-01-15",
-  permissions: ["all"],
-  restaurantsOwned: 3,
-  totalRevenue: 1250000,
-};
+// Owner is derived from logged-in session user
 
 const mockRestaurants: Restaurant[] = [
   {
@@ -224,8 +221,20 @@ const mockOrders: Order[] = [
     customerName: "John Doe",
     tableNumber: 5,
     items: [
-      { id: "1", productName: "Grilled Chicken", quantity: 2, unitPrice: 18.99, totalPrice: 37.98 },
-      { id: "2", productName: "Caesar Salad", quantity: 1, unitPrice: 12.99, totalPrice: 12.99 },
+      {
+        id: "1",
+        productName: "Grilled Chicken",
+        quantity: 2,
+        unitPrice: 18.99,
+        totalPrice: 37.98,
+      },
+      {
+        id: "2",
+        productName: "Caesar Salad",
+        quantity: 1,
+        unitPrice: 12.99,
+        totalPrice: 12.99,
+      },
     ],
     total: 50.97,
     status: "paid",
@@ -242,8 +251,20 @@ const mockOrders: Order[] = [
     customerName: "Jane Smith",
     tableNumber: 3,
     items: [
-      { id: "3", productName: "Fish & Chips", quantity: 1, unitPrice: 16.99, totalPrice: 16.99 },
-      { id: "4", productName: "Coffee", quantity: 2, unitPrice: 3.99, totalPrice: 7.98 },
+      {
+        id: "3",
+        productName: "Fish & Chips",
+        quantity: 1,
+        unitPrice: 16.99,
+        totalPrice: 16.99,
+      },
+      {
+        id: "4",
+        productName: "Coffee",
+        quantity: 2,
+        unitPrice: 3.99,
+        totalPrice: 7.98,
+      },
     ],
     total: 24.97,
     status: "paid",
@@ -297,59 +318,103 @@ interface OwnerDashboardContextType {
   staff: StaffMember[];
   orders: Order[];
   notifications: Notification[];
-  updateRestaurantStatus: (restaurantId: string, status: Restaurant["status"]) => void;
+  updateRestaurantStatus: (
+    restaurantId: string,
+    status: Restaurant["status"]
+  ) => void;
   updateStaffStatus: (staffId: number, status: StaffMember["status"]) => void;
-  addNotification: (notification: Omit<Notification, "id" | "createdAt" | "read">) => void;
+  addNotification: (
+    notification: Omit<Notification, "id" | "createdAt" | "read">
+  ) => void;
   markNotificationAsRead: (notificationId: string) => void;
 }
 
-const OwnerDashboardContext = createContext<OwnerDashboardContextType | undefined>(undefined);
+const OwnerDashboardContext = createContext<
+  OwnerDashboardContextType | undefined
+>(undefined);
 
-export function OwnerDashboardProvider({ children }: { children: React.ReactNode }) {
+export function OwnerDashboardProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const sessionUser = getSessionUser();
+
+  const ownerFromSession: Owner = {
+    id: Number(sessionUser?.id || 0),
+    name: sessionUser?.name || "",
+    email: sessionUser?.email || "",
+    phone: sessionUser?.phone || "",
+    role: sessionUser?.role || "Owner",
+    avatar: sessionUser?.avatar ?? null,
+    joinDate: sessionUser?.joinDate || new Date().toISOString().slice(0, 10),
+    permissions: ["all"],
+    restaurantsOwned: 0,
+    totalRevenue: 0,
+  };
+
   const [restaurants, setRestaurants] = useState<Restaurant[]>(mockRestaurants);
   const [staff, setStaff] = useState<StaffMember[]>(mockStaff);
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+  const [notifications, setNotifications] =
+    useState<Notification[]>(mockNotifications);
 
-  const updateRestaurantStatus = (restaurantId: string, status: Restaurant["status"]) => {
-    setRestaurants(prev => prev.map(restaurant => 
-      restaurant.id === restaurantId ? { ...restaurant, status } : restaurant
-    ));
+  const updateRestaurantStatus = (
+    restaurantId: string,
+    status: Restaurant["status"]
+  ) => {
+    setRestaurants((prev) =>
+      prev.map((restaurant) =>
+        restaurant.id === restaurantId ? { ...restaurant, status } : restaurant
+      )
+    );
   };
 
-  const updateStaffStatus = (staffId: number, status: StaffMember["status"]) => {
-    setStaff(prev => prev.map(staffMember => 
-      staffMember.id === staffId ? { ...staffMember, status } : staffMember
-    ));
+  const updateStaffStatus = (
+    staffId: number,
+    status: StaffMember["status"]
+  ) => {
+    setStaff((prev) =>
+      prev.map((staffMember) =>
+        staffMember.id === staffId ? { ...staffMember, status } : staffMember
+      )
+    );
   };
 
-  const addNotification = (notification: Omit<Notification, "id" | "createdAt" | "read">) => {
+  const addNotification = (
+    notification: Omit<Notification, "id" | "createdAt" | "read">
+  ) => {
     const newNotification: Notification = {
       ...notification,
       id: `NOT-${Date.now()}`,
       createdAt: new Date().toISOString(),
       read: false,
     };
-    setNotifications(prev => [newNotification, ...prev]);
+    setNotifications((prev) => [newNotification, ...prev]);
   };
 
   const markNotificationAsRead = (notificationId: string) => {
-    setNotifications(prev => prev.map(notif => 
-      notif.id === notificationId ? { ...notif, read: true } : notif
-    ));
+    setNotifications((prev) =>
+      prev.map((notif) =>
+        notif.id === notificationId ? { ...notif, read: true } : notif
+      )
+    );
   };
 
-  const value = useMemo(() => ({
-    owner: mockOwner,
-    restaurants,
-    financialData: mockFinancialData,
-    staff,
-    orders: mockOrders,
-    notifications,
-    updateRestaurantStatus,
-    updateStaffStatus,
-    addNotification,
-    markNotificationAsRead,
-  }), [restaurants, staff, notifications]);
+  const value = useMemo(
+    () => ({
+      owner: ownerFromSession,
+      restaurants,
+      financialData: mockFinancialData,
+      staff,
+      orders: mockOrders,
+      notifications,
+      updateRestaurantStatus,
+      updateStaffStatus,
+      addNotification,
+      markNotificationAsRead,
+    }),
+    [restaurants, staff, notifications]
+  );
 
   return (
     <OwnerDashboardContext.Provider value={value}>
@@ -361,7 +426,9 @@ export function OwnerDashboardProvider({ children }: { children: React.ReactNode
 export function useOwnerDashboard() {
   const context = useContext(OwnerDashboardContext);
   if (context === undefined) {
-    throw new Error("useOwnerDashboard must be used within an OwnerDashboardProvider");
+    throw new Error(
+      "useOwnerDashboard must be used within an OwnerDashboardProvider"
+    );
   }
   return context;
 }

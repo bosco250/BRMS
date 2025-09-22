@@ -25,6 +25,10 @@ import {
   Filter,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import uploadImage from "../../../services/imageUpload";
+import { registerBusiness } from "./apiServises";
+import type { RegisterBusinessPayload } from "./apiServises";
+import { toast } from "react-toastify";
 
 interface Business {
   id: string;
@@ -83,6 +87,8 @@ export default function Businesses() {
     null
   );
   const [selectedBusinesses, setSelectedBusinesses] = useState<string[]>([]);
+  const [submittingBusiness, setSubmittingBusiness] = useState(false);
+  const [submittingMenu, setSubmittingMenu] = useState(false);
 
   // Form states
   const [businessForm, setBusinessForm] = useState({
@@ -321,32 +327,145 @@ export default function Businesses() {
     }
   };
 
-  const handleBusinessSubmit = (e: React.FormEvent) => {
+  const handleBusinessSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    addNotification({
-      type: "system",
-      title: editingBusiness ? "Business Updated" : "Business Added",
-      message: `${businessForm.name} has been ${
-        editingBusiness ? "updated" : "added"
-      } successfully`,
-      priority: "medium",
-      actionRequired: false,
-    });
-    resetBusinessForm();
+
+    try {
+      setSubmittingBusiness(true);
+      let uploadedLogoUrl: string | null = null;
+      if (businessForm.logo instanceof File) {
+        const { secureUrl } = await uploadImage({
+          file: businessForm.logo,
+          folder: "business-logos",
+        });
+        uploadedLogoUrl = secureUrl;
+        console.log("Uploaded business logo URL:", uploadedLogoUrl);
+      }
+
+      const payload: RegisterBusinessPayload = {
+        business_name: businessForm.name,
+        business_type: businessForm.type,
+        address: businessForm.address,
+        phone: businessForm.phone,
+        email: businessForm.email,
+        description: businessForm.description,
+        cuisine: businessForm.cuisine || undefined,
+        website: businessForm.website || undefined,
+        accept_reservations: Boolean(businessForm.acceptsReservations),
+        business_logo: uploadedLogoUrl || undefined,
+        // Additional optional fields you may support later
+        // location: businessForm.location,
+        // city: businessForm.city,
+        // opens_at: businessForm.opensAt,
+        // closes_at: businessForm.closesAt,
+        // capacity: businessForm.capacity,
+        // price_range: businessForm.priceRange,
+        // payment_methods: businessForm.paymentMethods,
+        // amenities: businessForm.amenities,
+        // tags: businessForm.tags,
+      };
+
+      console.log("Business form payload:", payload);
+
+      // Create business via backend
+      const createdBusiness = await registerBusiness(payload);
+      console.log("Created business (API):", createdBusiness);
+
+      addNotification({
+        type: "system",
+        title: editingBusiness ? "Business Updated" : "Business Added",
+        message: `${businessForm.name} has been ${
+          editingBusiness ? "updated" : "added"
+        } successfully`,
+        priority: "medium",
+        actionRequired: false,
+      });
+      toast.success("Business saved successfully");
+
+      // TODO: send uploadedLogoUrl with other form data to your backend here
+
+      resetBusinessForm();
+    } catch (error: any) {
+      console.error("Business logo upload failed:", error?.message || error);
+      addNotification({
+        type: "system",
+        title: "Business Create Failed",
+        message:
+          error?.message === "Not authenticated. Please log in."
+            ? "You must be logged in to create a business."
+            : error?.message || "Could not create business. Please try again.",
+        priority: "high",
+        actionRequired: false,
+      });
+      toast.error(
+        error?.message === "Not authenticated. Please log in."
+          ? "You must be logged in to create a business."
+          : error?.message || "Could not create business. Please try again."
+      );
+    } finally {
+      setSubmittingBusiness(false);
+    }
   };
 
-  const handleMenuSubmit = (e: React.FormEvent) => {
+  const handleMenuSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    addNotification({
-      type: "system",
-      title: editingMenu ? "Menu Item Updated" : "Menu Item Added",
-      message: `${menuForm.name} has been ${
-        editingMenu ? "updated" : "added"
-      } successfully`,
-      priority: "medium",
-      actionRequired: false,
-    });
-    resetMenuForm();
+
+    try {
+      setSubmittingMenu(true);
+      let uploadedPhotoUrl: string | null = null;
+      if (menuForm.photo instanceof File) {
+        const { secureUrl } = await uploadImage({
+          file: menuForm.photo,
+          folder: "menu-photos",
+        });
+        uploadedPhotoUrl = secureUrl;
+        console.log("Uploaded menu item photo URL:", uploadedPhotoUrl);
+      }
+
+      const payload = {
+        restaurantId: selectedRestaurant?.id || null,
+        name: menuForm.name,
+        description: menuForm.description,
+        price: Number(menuForm.price),
+        category: menuForm.category,
+        availability: menuForm.availability,
+        photo: uploadedPhotoUrl,
+        ingredients: menuForm.ingredients,
+        allergens: menuForm.allergens,
+        preparationTime: menuForm.preparationTime,
+        calories: menuForm.calories,
+      };
+
+      console.log("Menu form payload:", payload);
+
+      addNotification({
+        type: "system",
+        title: editingMenu ? "Menu Item Updated" : "Menu Item Added",
+        message: `${menuForm.name} has been ${
+          editingMenu ? "updated" : "added"
+        } successfully`,
+        priority: "medium",
+        actionRequired: false,
+      });
+      toast.success("Menu item saved successfully");
+
+      // TODO: send 'payload' to your backend
+      resetMenuForm();
+    } catch (error: any) {
+      console.error("Menu item photo upload failed:", error?.message || error);
+      addNotification({
+        type: "system",
+        title: "Photo Upload Failed",
+        message: error?.message || "Could not upload photo. Please try again.",
+        priority: "high",
+        actionRequired: false,
+      });
+      toast.error(
+        error?.message || "Could not upload photo. Please try again."
+      );
+    } finally {
+      setSubmittingMenu(false);
+    }
   };
 
   const resetBusinessForm = () => {
@@ -1436,9 +1555,18 @@ export default function Businesses() {
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 px-6 py-3 bg-gradient-to-r from-brand to-brand-hover text-text-inverted rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
+                      disabled={submittingBusiness}
+                      className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-200 text-text-inverted ${
+                        submittingBusiness
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-gradient-to-r from-brand to-brand-hover hover:shadow-lg"
+                      }`}
                     >
-                      {editingBusiness ? "Update Business" : "Add Business"}
+                      {submittingBusiness
+                        ? "Saving..."
+                        : editingBusiness
+                        ? "Update Business"
+                        : "Add Business"}
                     </button>
                   </div>
                 </form>
@@ -1729,9 +1857,18 @@ export default function Businesses() {
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
+                      disabled={submittingMenu}
+                      className={`flex-1 px-6 py-3 text-white rounded-xl font-semibold transition-all duration-200 ${
+                        submittingMenu
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-gradient-to-r from-green-600 to-green-700 hover:shadow-lg"
+                      }`}
                     >
-                      {editingMenu ? "Update Menu Item" : "Add Menu Item"}
+                      {submittingMenu
+                        ? "Saving..."
+                        : editingMenu
+                        ? "Update Menu Item"
+                        : "Add Menu Item"}
                     </button>
                   </div>
                 </form>
