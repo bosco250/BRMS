@@ -48,12 +48,17 @@ export default function RestaurantCard({ business }: { business: Business }) {
       whileHover={{ y: -6, scale: 1.01 }}
       transition={{ type: "spring", stiffness: 300, damping: 22 }}
     >
-      <div className="aspect-[4/3] bg-border-subtle/40 relative">
+      <div className="aspect-[4/3] bg-gradient-to-br from-border-subtle/40 to-border-subtle/20 relative overflow-hidden">
         <img
           src={business.image}
           alt={business.name}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
           loading="lazy"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src =
+              "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop";
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/0 to-black/0" />
         <div className="absolute top-3 left-3">

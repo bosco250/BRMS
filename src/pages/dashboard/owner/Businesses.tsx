@@ -1,76 +1,32 @@
-import React, { useState, useMemo } from "react";
-import { useOwnerDashboard } from "./context";
-import {
-  Plus,
-  Edit,
-  Trash2,
-  Upload,
-  Image,
-  X,
-  Search,
-  MapPin,
-  Phone,
-  Mail,
-  Star,
-  Clock,
-  Users,
-  Menu,
-  Camera,
-  CheckCircle,
-  AlertCircle,
-  XCircle,
-  Building2,
-  Settings,
-  Eye,
-  Filter,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import uploadImage from "../../../services/imageUpload";
-import { registerBusiness } from "./apiServises";
-import type { RegisterBusinessPayload } from "./apiServises";
+import React, { useState, useMemo, useEffect } from "react";
 import { toast } from "react-toastify";
+import { Plus, Search, Menu, Building2, Filter, RefreshCw } from "lucide-react";
 
-interface Business {
-  id: string;
-  name: string;
-  location: string;
-  type: string;
-  phone: string;
-  email: string;
-  website: string;
-  description: string;
-  logo?: string | null;
-  status: string;
-  revenue: number;
-  staffCount: number;
-  rating: number;
-  createdAt: string;
-  address?: string;
-  city?: string;
-  cuisine?: string;
-  priceRange?: string;
-  opensAt?: string;
-  closesAt?: string;
-  capacity?: number;
-  acceptsReservations?: boolean;
-}
+import { useOwnerDashboard } from "./context";
+import uploadImage from "../../../services/imageUpload";
+import {
+  registerBusiness,
+  canCreateBusiness,
+  getUserBusinesses,
+  type UserBusiness,
+} from "./apiServises";
+import type { RegisterBusinessPayload } from "./apiServises";
+import { getSessionUser } from "../../../auth/session";
 
-interface MenuItem {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  availability: string;
-  photo?: string | null;
-  ingredients: string;
-  allergens: string;
-  preparationTime: string;
-  calories: string;
-  restaurantId: string;
-  status?: string;
-  createdAt: string;
-}
+import type {
+  Business,
+  MenuItem,
+  BusinessFormData,
+  MenuFormData,
+} from "../../../types/business";
+// import { mockBusinesses, mockMenuItems } from "../../../data/mockBusinessData"; // Removed - using API data
+import BusinessTable from "./business/BusinessTable";
+import MenuGrid from "./business/MenuGrid";
+import BusinessModal from "./business/BusinessModal";
+import MenuModal from "./business/MenuModal";
+import BusinessDetailsModal from "./business/BusinessDetailsModal";
+
+// import { getSessionUser } from "../../../auth/session";
 
 export default function Businesses() {
   const { addNotification } = useOwnerDashboard();
@@ -90,8 +46,105 @@ export default function Businesses() {
   const [submittingBusiness, setSubmittingBusiness] = useState(false);
   const [submittingMenu, setSubmittingMenu] = useState(false);
 
+  // API data states
+  const [userBusinesses, setUserBusinesses] = useState<UserBusiness[]>([]);
+  const [loadingBusinesses, setLoadingBusinesses] = useState(false);
+  const [businessesError, setBusinessesError] = useState<string>("");
+  // const [businessMenus, setBusinessMenus] = useState<Record<string, any[]>>({}); // For future menu API integration
+  // const [loadingMenus, setLoadingMenus] = useState<Record<string, boolean>>({}); // Unused for now
+
+  // Fetch user businesses
+  const fetchUserBusinesses = async () => {
+    const user = getSessionUser();
+    if (!user?.id) {
+      setBusinessesError("User not authenticated");
+      return;
+    }
+
+    setLoadingBusinesses(true);
+    setBusinessesError("");
+
+    try {
+      const response = await getUserBusinesses(user.id);
+      console.log("🔍 API Response:", response);
+
+      if (response.success && response.data) {
+        console.log("✅ Businesses fetched successfully:", response.data);
+        console.log("📊 Number of businesses:", response.data.length);
+
+        // Log each business individually with full details
+        response.data.forEach((business, index) => {
+          console.log(`🏢 Business ${index + 1} - Full Data:`, business);
+          console.log(`📋 Business ${index + 1} - Summary:`, {
+            id: business.id,
+            name: business.name,
+            cuisine: business.cuisine,
+            rating: business.rating,
+            city: business.city,
+            address: business.address,
+            phone: business.phone,
+            email: business.email,
+            website: business.website,
+            image: business.image,
+            capacity: business.capacity,
+            acceptsReservations: business.acceptsReservations,
+            paymentMethods: business.paymentMethods,
+            amenities: business.amenities,
+            tags: business.tags,
+            menuItems: business.menu?.length || 0,
+            description: business.description,
+          });
+        });
+
+        setUserBusinesses(response.data);
+        addNotification({
+          type: "restaurant",
+          title: "Businesses Loaded",
+          message: `Found ${response.data.length} businesses`,
+          priority: "low",
+          actionRequired: false,
+        });
+      } else {
+        console.error("❌ Failed to fetch businesses:", response.error);
+        setBusinessesError(response.error || "Failed to load businesses");
+        toast.error(response.error || "Failed to load businesses");
+      }
+    } catch (error) {
+      const errorMessage = "Failed to load businesses";
+      setBusinessesError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoadingBusinesses(false);
+    }
+  };
+
+  // Fetch business menu (for future use)
+  // const fetchBusinessMenu = async (businessId: string) => {
+  //   if (businessMenus[businessId]) return; // Already loaded
+
+  //   setLoadingMenus(prev => ({ ...prev, [businessId]: true }));
+
+  //   try {
+  //     const response = await getBusinessMenu(businessId);
+  //     if (response.success && response.data) {
+  //       setBusinessMenus(prev => ({ ...prev, [businessId]: response.data || [] }));
+  //     } else {
+  //       toast.error(response.error || "Failed to load menu");
+  //     }
+  //   } catch (error) {
+  //     toast.error("Failed to load menu");
+  //   } finally {
+  //     setLoadingMenus(prev => ({ ...prev, [businessId]: false }));
+  //   }
+  // };
+
+  // Load businesses on component mount
+  useEffect(() => {
+    fetchUserBusinesses();
+  }, []);
+
   // Form states
-  const [businessForm, setBusinessForm] = useState({
+  const [businessForm, setBusinessForm] = useState<BusinessFormData>({
     name: "",
     location: "",
     type: "restaurant",
@@ -99,7 +152,7 @@ export default function Businesses() {
     email: "",
     website: "",
     description: "",
-    logo: null as File | null,
+    logo: null,
     cuisine: "",
     address: "",
     city: "",
@@ -113,135 +166,102 @@ export default function Businesses() {
     tags: ["Dine-in", "Delivery"],
   });
 
-  const [menuForm, setMenuForm] = useState({
+  const [menuForm, setMenuForm] = useState<MenuFormData>({
     name: "",
     description: "",
     price: "",
     category: "main",
     availability: "available",
-    photo: null as File | null,
+    photo: null,
     ingredients: "",
     allergens: "",
     preparationTime: "",
     calories: "",
   });
 
-  // Mock data
-  const businesses: Business[] = [
-    {
-      id: "1",
-      name: "La Casa Italiana",
-      location: "Kigali, Rwanda",
-      type: "restaurant",
-      phone: "+250 788 123 456",
-      email: "info@lacasa.rw",
-      website: "www.lacasa.rw",
-      description: "Authentic Italian cuisine in the heart of Kigali",
-      logo: "/api/placeholder/100/100",
-      status: "active",
-      revenue: 450000,
-      staffCount: 25,
-      rating: 4.8,
-      createdAt: "2024-01-15",
-      address: "KN 4 Ave, Kigali, Rwanda",
-      city: "Kigali",
-      cuisine: "Italian",
-      priceRange: "$$$",
-      opensAt: "11:00",
-      closesAt: "23:00",
-      capacity: 80,
-      acceptsReservations: true,
-    },
-    {
-      id: "2",
-      name: "Sky Lounge Bar",
-      location: "Kigali, Rwanda",
-      type: "bar",
-      phone: "+250 789 456 789",
-      email: "contact@skylounge.rw",
-      website: "www.skylounge.rw",
-      description: "Premium rooftop bar with city views",
-      logo: "/api/placeholder/100/100",
-      status: "active",
-      revenue: 320000,
-      staffCount: 18,
-      rating: 4.6,
-      createdAt: "2024-02-20",
-      address: "KG 123 St, Kigali, Rwanda",
-      city: "Kigali",
-      cuisine: "International",
-      priceRange: "$$$",
-      opensAt: "18:00",
-      closesAt: "02:00",
-      capacity: 60,
-      acceptsReservations: true,
-    },
-    {
-      id: "3",
-      name: "Urban Coffee Co.",
-      location: "Kigali, Rwanda",
-      type: "cafe",
-      phone: "+250 790 123 456",
-      email: "hello@urbancoffee.rw",
-      website: "www.urbancoffee.rw",
-      description: "Artisanal coffee and light meals",
-      logo: "/api/placeholder/100/100",
-      status: "active",
-      revenue: 180000,
-      staffCount: 12,
-      rating: 4.4,
-      createdAt: "2024-03-10",
-      address: "KG 456 Ave, Kigali, Rwanda",
-      city: "Kigali",
-      cuisine: "Coffee & Light Meals",
-      priceRange: "$$",
-      opensAt: "06:00",
-      closesAt: "20:00",
-      capacity: 40,
-      acceptsReservations: false,
-    },
-  ];
+  // Convert API data to component format
+  const businesses = useMemo(() => {
+    console.log("🔄 Converting API data to component format...");
+    console.log("📥 Input userBusinesses:", userBusinesses);
 
-  const menuItems: MenuItem[] = [
-    {
-      id: "1",
-      name: "Grilled Tilapia",
-      description: "Fresh tilapia grilled with local spices",
-      price: 4500,
-      category: "main",
-      availability: "available",
-      photo: "/api/placeholder/200/150",
-      ingredients: "Tilapia, garlic, ginger, lemon, salt, pepper",
-      allergens: "Fish",
-      preparationTime: "25 minutes",
-      calories: "320",
-      restaurantId: "1",
-      createdAt: "2024-01-15",
-    },
-    {
-      id: "2",
-      name: "Rwandan Coffee",
-      description: "Premium locally sourced coffee beans",
-      price: 2000,
-      category: "beverage",
-      availability: "available",
-      photo: "/api/placeholder/200/150",
-      ingredients: "Coffee beans, water, sugar (optional)",
-      allergens: "None",
-      preparationTime: "5 minutes",
-      calories: "5",
-      restaurantId: "3",
-      createdAt: "2024-02-20",
-    },
-  ];
+    const converted = userBusinesses.map((business) => ({
+      id: business.id,
+      name: business.name || "",
+      location: business.address || "",
+      type: (business.type || "restaurant").toLowerCase() as
+        | "restaurant"
+        | "bar"
+        | "cafe",
+      status: business.openNow
+        ? "active"
+        : ("inactive" as "active" | "inactive" | "maintenance"),
+      revenue: 0, // Not provided in API
+      staffCount: 0, // Not provided in API
+      rating: typeof business.rating === "number" ? business.rating : 0,
+      lastUpdated: new Date().toISOString(),
+      createdAt: new Date().toISOString(), // Add missing field
+      // Additional API fields
+      cuisine: business.cuisine || "",
+      city: business.city || "",
+      phone: business.phone || "",
+      email: business.email || "",
+      website: business.website || "",
+      description: business.description || "",
+      capacity: business.capacity ?? 0,
+      acceptsReservations: business.acceptsReservations,
+      paymentMethods: business.paymentMethods || [],
+      amenities: business.amenities || [],
+      tags: business.tags || [],
+      image: business.image || "",
+      averageWaitTime: business.averageWaitTime || "",
+      priceRange: business.priceRange || "",
+      owners: business.owners || [],
+      menu: business.menu || [],
+    }));
+
+    console.log("📤 Converted businesses:", converted);
+    return converted;
+  }, [userBusinesses]);
+
+  // Get all menu items from all businesses
+  const allMenuItems = useMemo(() => {
+    return (userBusinesses || []).flatMap((business) =>
+      (business.menu ?? []).map((item) => ({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        price: item.price,
+        category: item.category || "Main Course",
+        availability: item.available ? "available" : "unavailable",
+        photo: null,
+        ingredients: "",
+        allergens: "",
+        preparationTime: "",
+        calories: "",
+        restaurantId: business.id,
+        status: "active",
+        createdAt: new Date().toISOString(),
+        // Additional fields
+        restaurantName: business.name || "",
+        available: item.available,
+      }))
+    );
+  }, [userBusinesses]);
 
   // Filter data
   const filteredBusinesses = useMemo(() => {
     return businesses.filter((business) => {
+      const name = (business.name || "").toLowerCase();
+      const location = (business.location || "").toLowerCase();
+      const type = (business.type || "").toLowerCase();
+      const cuisine = (business.cuisine || "").toLowerCase();
+      const query = (searchQuery || "").toLowerCase();
+
       const matchesSearch =
-        business.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        business.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        business.type.toLowerCase().includes(searchQuery.toLowerCase());
+        name.includes(query) ||
+        location.includes(query) ||
+        type.includes(query) ||
+        cuisine.includes(query);
       const matchesStatus =
         statusFilter === "all" || business.status === statusFilter;
       const matchesType = typeFilter === "all" || business.type === typeFilter;
@@ -250,7 +270,7 @@ export default function Businesses() {
   }, [businesses, searchQuery, statusFilter, typeFilter]);
 
   const filteredMenuItems = useMemo(() => {
-    return menuItems.filter((item) => {
+    return allMenuItems.filter((item) => {
       const matchesSearch =
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -258,56 +278,7 @@ export default function Businesses() {
         !selectedRestaurant || item.restaurantId === selectedRestaurant.id;
       return matchesSearch && matchesRestaurant;
     });
-  }, [menuItems, searchQuery, selectedRestaurant]);
-
-  // Utility functions
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "inactive":
-        return "bg-red-100 text-red-800 border-red-200";
-      case "maintenance":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "active":
-        return <CheckCircle className="w-3 h-3" />;
-      case "inactive":
-        return <XCircle className="w-3 h-3" />;
-      case "maintenance":
-        return <AlertCircle className="w-3 h-3" />;
-      default:
-        return <Clock className="w-3 h-3" />;
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "restaurant":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "bar":
-        return "bg-purple-100 text-purple-800 border-purple-200";
-      case "cafe":
-        return "bg-orange-100 text-orange-800 border-orange-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-RW", {
-      style: "currency",
-      currency: "RWF",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+  }, [allMenuItems, searchQuery, selectedRestaurant]);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -367,9 +338,39 @@ export default function Businesses() {
 
       console.log("Business form payload:", payload);
 
-      // Create business via backend
-      const createdBusiness = await registerBusiness(payload);
-      console.log("Created business (API):", createdBusiness);
+      // Permission check via api service
+      if (!canCreateBusiness()) {
+        const msg =
+          "You need Admin or Business Owner role to create businesses";
+        toast.error(msg);
+        addNotification({
+          type: "system",
+          title: "Unauthorized",
+          message: msg,
+          priority: "high",
+          actionRequired: false,
+        });
+        return;
+      }
+
+      const result = await registerBusiness(payload);
+      console.log("Created business (API):", result);
+
+      if (!result.success) {
+        const message = result.error || "Could not create business.";
+        addNotification({
+          type: "system",
+          title: "Business Create Failed",
+          message,
+          priority: "high",
+          actionRequired: false,
+        });
+        toast.error(message);
+        if (result.status === 401) {
+          window.location.href = "/login";
+        }
+        return;
+      }
 
       addNotification({
         type: "system",
@@ -380,9 +381,7 @@ export default function Businesses() {
         priority: "medium",
         actionRequired: false,
       });
-      toast.success("Business saved successfully");
-
-      // TODO: send uploadedLogoUrl with other form data to your backend here
+      toast.success(result.message || "Business created successfully");
 
       resetBusinessForm();
     } catch (error: any) {
@@ -581,7 +580,7 @@ export default function Businesses() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-surface-secondary via-surface-primary to-surface-secondary">
+    <div className="min-h-screen bg-gradient-to-br from-surface-secondary via-surface-primary to-surface-secondary ">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-brand/5 rounded-full blur-3xl"></div>
@@ -599,6 +598,16 @@ export default function Businesses() {
             </p>
           </div>
           <div className="flex gap-3">
+            <button
+              onClick={fetchUserBusinesses}
+              disabled={loadingBusinesses}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-xl font-semibold hover:bg-gray-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RefreshCw
+                className={`w-5 h-5 ${loadingBusinesses ? "animate-spin" : ""}`}
+              />
+              {loadingBusinesses ? "Loading..." : "Refresh"}
+            </button>
             <button
               onClick={() => {
                 setEditingBusiness(null);
@@ -720,1162 +729,124 @@ export default function Businesses() {
 
             {/* Businesses Table */}
             {activeTab === "businesses" && (
-              <div className="bg-surface-primary rounded-xl border border-border-subtle overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-surface-secondary/50">
-                      <tr>
-                        <th className="px-6 py-4 text-left">
-                          <input
-                            type="checkbox"
-                            checked={
-                              selectedBusinesses.length ===
-                                filteredBusinesses.length &&
-                              filteredBusinesses.length > 0
-                            }
-                            onChange={(e) => handleSelectAll(e.target.checked)}
-                            className="w-4 h-4 text-brand rounded border-border-subtle focus:ring-brand/30"
-                          />
-                        </th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-text-secondary">
-                          Business
-                        </th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-text-secondary">
-                          Location
-                        </th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-text-secondary">
-                          Type
-                        </th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-text-secondary">
-                          Status
-                        </th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-text-secondary">
-                          Revenue
-                        </th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-text-secondary">
-                          Staff
-                        </th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-text-secondary">
-                          Rating
-                        </th>
-                        <th className="px-6 py-4 text-right text-sm font-semibold text-text-secondary">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border-subtle">
-                      {filteredBusinesses.map((business) => (
-                        <motion.tr
-                          key={business.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="hover:bg-surface-secondary/30 transition-colors duration-200"
+              <>
+                {loadingBusinesses ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="text-center">
+                      <RefreshCw className="w-8 h-8 animate-spin text-brand mx-auto mb-4" />
+                      <p className="text-text-secondary">
+                        Loading businesses...
+                      </p>
+                    </div>
+                  </div>
+                ) : businessesError ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-error/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-error text-2xl">⚠️</span>
+                      </div>
+                      <h3 className="text-lg font-semibold text-text-primary mb-2">
+                        Failed to load businesses
+                      </h3>
+                      <p className="text-text-secondary mb-4">
+                        {businessesError}
+                      </p>
+                      <button
+                        onClick={fetchUserBusinesses}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-text-inverted rounded-md hover:bg-brand-dark transition-colors"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                        Try Again
+                      </button>
+                    </div>
+                  </div>
+                ) : filteredBusinesses.length === 0 ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="text-center">
+                      <Building2 className="w-16 h-16 text-text-muted mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-text-primary mb-2">
+                        No businesses found
+                      </h3>
+                      <p className="text-text-secondary mb-4">
+                        {userBusinesses.length === 0
+                          ? "You haven't registered any businesses yet."
+                          : "No businesses match your current filters."}
+                      </p>
+                      {userBusinesses.length === 0 && (
+                        <button
+                          onClick={() => {
+                            setEditingBusiness(null);
+                            resetBusinessForm();
+                            setShowBusinessModal(true);
+                          }}
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-text-inverted rounded-md hover:bg-brand-dark transition-colors"
                         >
-                          <td className="px-6 py-4">
-                            <input
-                              type="checkbox"
-                              checked={selectedBusinesses.includes(business.id)}
-                              onChange={(e) =>
-                                handleSelectBusiness(
-                                  business.id,
-                                  e.target.checked
-                                )
-                              }
-                              className="w-4 h-4 text-brand rounded border-border-subtle focus:ring-brand/30"
-                            />
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-gradient-to-br from-brand to-brand-hover rounded-lg flex items-center justify-center text-white font-bold text-lg">
-                                {business.logo ? (
-                                  <img
-                                    src={business.logo}
-                                    alt={business.name}
-                                    className="w-full h-full object-cover rounded-lg"
-                                  />
-                                ) : (
-                                  business.name.charAt(0)
-                                )}
-                              </div>
-                              <div>
-                                <div className="font-semibold text-text-primary">
-                                  {business.name}
-                                </div>
-                                <div className="text-sm text-text-muted">
-                                  ID: {business.id.toUpperCase()}
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-2 text-sm text-text-secondary">
-                              <MapPin className="w-4 h-4 text-brand" />
-                              <span className="font-medium">
-                                {business.location}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span
-                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${getTypeColor(
-                                business.type
-                              )}`}
-                            >
-                              {business.type.charAt(0).toUpperCase() +
-                                business.type.slice(1)}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span
-                              className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(
-                                business.status
-                              )}`}
-                            >
-                              {getStatusIcon(business.status)}
-                              {business.status.charAt(0).toUpperCase() +
-                                business.status.slice(1)}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm font-semibold text-text-primary">
-                              {formatCurrency(business.revenue)}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-2 text-sm text-text-secondary">
-                              <Users className="w-4 h-4" />
-                              <span className="font-medium">
-                                {business.staffCount}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-2 text-sm">
-                              <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                              <span className="font-semibold text-text-primary">
-                                {business.rating}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                                onClick={() => {
-                                  setSelectedRestaurant(business);
-                                  setShowDetailsModal(true);
-                                }}
-                                className="p-2 text-text-secondary hover:text-brand hover:bg-brand/10 rounded-lg transition-all duration-200 group"
-                                title="View Details"
-                              >
-                                <Eye className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                              </button>
-                              <button
-                                onClick={() => handleEditBusiness(business)}
-                                className="p-2 text-text-secondary hover:text-blue-600 hover:bg-blue-500/10 rounded-lg transition-all duration-200 group"
-                                title="Edit Business"
-                              >
-                                <Edit className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleDeleteBusiness(business.id)
-                                }
-                                className="p-2 text-text-secondary hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all duration-200 group"
-                                title="Delete Business"
-                              >
-                                <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                              </button>
-                            </div>
-                          </td>
-                        </motion.tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+                          <Plus className="w-4 h-4" />
+                          Add Your First Business
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <BusinessTable
+                    businesses={filteredBusinesses}
+                    selectedBusinesses={selectedBusinesses}
+                    onSelectAll={handleSelectAll}
+                    onSelectBusiness={handleSelectBusiness}
+                    onViewDetails={(business) => {
+                      setSelectedRestaurant(business);
+                      setShowDetailsModal(true);
+                    }}
+                    onEditBusiness={handleEditBusiness}
+                    onDeleteBusiness={handleDeleteBusiness}
+                  />
+                )}
+              </>
             )}
 
             {/* Menu Items Grid */}
             {activeTab === "menu" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredMenuItems.map((item) => (
-                  <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="bg-surface-secondary rounded-xl border border-border-subtle overflow-hidden hover:shadow-lg transition-all duration-200 group"
-                  >
-                    <div className="h-48 bg-gradient-to-br from-surface-secondary to-surface-card relative">
-                      {item.photo ? (
-                        <img
-                          src={item.photo}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Image className="w-12 h-12 text-text-muted" />
-                        </div>
-                      )}
-                      <div className="absolute top-3 right-3">
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-brand/90 text-white">
-                          {item.category.charAt(0).toUpperCase() +
-                            item.category.slice(1)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="text-lg font-semibold text-text-primary group-hover:text-brand transition-colors">
-                          {item.name}
-                        </h3>
-                        <span className="text-lg font-bold text-brand">
-                          {formatCurrency(item.price)}
-                        </span>
-                      </div>
-                      <p className="text-text-secondary text-sm mb-3 line-clamp-2">
-                        {item.description}
-                      </p>
-                      <div className="space-y-2 text-xs text-text-secondary mb-4">
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-3 h-3" />
-                          <span>{item.preparationTime}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span>Calories: {item.calories}</span>
-                        </div>
-                        {item.allergens && (
-                          <div className="flex items-center gap-2">
-                            <span>Allergens: {item.allergens}</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleEditMenu(item)}
-                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-brand text-white text-sm rounded-lg hover:bg-brand-hover transition-colors"
-                        >
-                          <Edit className="w-4 h-4" />
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteMenu(item.id)}
-                          className="p-2 text-text-secondary hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                          title="Delete Menu Item"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+              <MenuGrid
+                menuItems={filteredMenuItems}
+                onEditMenu={handleEditMenu}
+                onDeleteMenu={handleDeleteMenu}
+              />
             )}
           </div>
         </div>
 
         {/* Business Details Modal */}
-        <AnimatePresence>
-          {showDetailsModal && selectedRestaurant && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-              onClick={() => setShowDetailsModal(false)}
-            >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="bg-surface-primary rounded-3xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-border-subtle/20"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-gradient-to-br from-brand to-brand-hover rounded-2xl flex items-center justify-center text-white font-bold text-2xl">
-                      {selectedRestaurant.name.charAt(0)}
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold text-text-primary">
-                        {selectedRestaurant.name}
-                      </h3>
-                      <p className="text-text-secondary">
-                        {selectedRestaurant.type.charAt(0).toUpperCase() +
-                          selectedRestaurant.type.slice(1)}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setShowDetailsModal(false)}
-                    className="p-3 text-text-muted hover:text-text-primary hover:bg-surface-secondary rounded-full transition-all duration-200"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-6">
-                    <div>
-                      <h4 className="text-lg font-bold text-text-primary flex items-center gap-2 mb-4">
-                        <Building2 className="w-5 h-5 text-brand" />
-                        Basic Information
-                      </h4>
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                          <MapPin className="w-5 h-5 text-brand" />
-                          <div>
-                            <p className="text-sm text-text-secondary">
-                              Location
-                            </p>
-                            <p className="font-semibold text-text-primary">
-                              {selectedRestaurant.location}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Phone className="w-5 h-5 text-brand" />
-                          <div>
-                            <p className="text-sm text-text-secondary">Phone</p>
-                            <p className="font-semibold text-text-primary">
-                              {selectedRestaurant.phone}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Mail className="w-5 h-5 text-brand" />
-                          <div>
-                            <p className="text-sm text-text-secondary">Email</p>
-                            <p className="font-semibold text-text-primary">
-                              {selectedRestaurant.email}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-6">
-                    <div>
-                      <h4 className="text-lg font-bold text-text-primary flex items-center gap-2 mb-4">
-                        <Star className="w-5 h-5 text-brand" />
-                        Performance Metrics
-                      </h4>
-                      <div className="space-y-4">
-                        <div className="p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/20">
-                          <div className="flex justify-between items-center">
-                            <span className="text-text-secondary font-medium">
-                              Revenue
-                            </span>
-                            <span className="text-2xl font-bold text-green-600">
-                              {formatCurrency(selectedRestaurant.revenue)}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="p-4 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-xl border border-blue-500/20">
-                          <div className="flex justify-between items-center">
-                            <span className="text-text-secondary font-medium">
-                              Staff Count
-                            </span>
-                            <span className="text-2xl font-bold text-blue-600">
-                              {selectedRestaurant.staffCount}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="p-4 bg-gradient-to-r from-purple-500/10 to-violet-500/10 rounded-xl border border-purple-500/20">
-                          <div className="flex justify-between items-center">
-                            <span className="text-text-secondary font-medium">
-                              Rating
-                            </span>
-                            <span className="text-2xl font-bold text-purple-600">
-                              {selectedRestaurant.rating} / 5.0
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-4 pt-8">
-                  <button
-                    onClick={() => setShowDetailsModal(false)}
-                    className="flex-1 px-6 py-3 text-text-secondary hover:text-text-primary hover:bg-surface-secondary rounded-xl font-semibold transition-all duration-200"
-                  >
-                    Close
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowDetailsModal(false);
-                      handleEditBusiness(selectedRestaurant);
-                    }}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-brand to-brand-hover text-text-inverted rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
-                  >
-                    Edit Business
-                  </button>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <BusinessDetailsModal
+          isOpen={showDetailsModal}
+          business={selectedRestaurant}
+          onClose={() => setShowDetailsModal(false)}
+          onEdit={handleEditBusiness}
+        />
 
         {/* Add/Edit Business Modal */}
-        <AnimatePresence>
-          {showBusinessModal && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-              onClick={() => setShowBusinessModal(false)}
-            >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="bg-surface-primary rounded-3xl p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl border border-border-subtle/20"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-3">
-                    <div className="p-3 bg-gradient-to-br from-brand to-brand-hover rounded-xl">
-                      <Building2 className="w-6 h-6 text-text-inverted" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold text-text-primary">
-                        {editingBusiness ? "Edit Business" : "Add New Business"}
-                      </h3>
-                      <p className="text-text-secondary">
-                        {editingBusiness
-                          ? "Update business information"
-                          : "Create a new business location"}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setShowBusinessModal(false)}
-                    className="p-3 text-text-muted hover:text-text-primary hover:bg-surface-secondary rounded-full transition-all duration-200"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-
-                <form onSubmit={handleBusinessSubmit} className="space-y-8">
-                  {/* Basic Information */}
-                  <div className="space-y-6">
-                    <h4 className="text-lg font-bold text-text-primary flex items-center gap-2">
-                      <Building2 className="w-5 h-5 text-brand" />
-                      Basic Information
-                    </h4>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-semibold text-text-primary mb-2">
-                          Business Name *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={businessForm.name}
-                          onChange={(e) =>
-                            setBusinessForm({
-                              ...businessForm,
-                              name: e.target.value,
-                            })
-                          }
-                          placeholder="Enter business name"
-                          className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-text-primary mb-2">
-                          Business Type *
-                        </label>
-                        <select
-                          value={businessForm.type}
-                          onChange={(e) =>
-                            setBusinessForm({
-                              ...businessForm,
-                              type: e.target.value,
-                            })
-                          }
-                          required
-                          className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                        >
-                          <option value="restaurant">Restaurant</option>
-                          <option value="bar">Bar</option>
-                          <option value="cafe">Cafe</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-text-primary mb-2">
-                        Description *
-                      </label>
-                      <textarea
-                        required
-                        value={businessForm.description}
-                        onChange={(e) =>
-                          setBusinessForm({
-                            ...businessForm,
-                            description: e.target.value,
-                          })
-                        }
-                        placeholder="Describe your business..."
-                        rows={3}
-                        className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200 resize-none"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-semibold text-text-primary mb-2">
-                          Cuisine Type
-                        </label>
-                        <input
-                          type="text"
-                          value={businessForm.cuisine}
-                          onChange={(e) =>
-                            setBusinessForm({
-                              ...businessForm,
-                              cuisine: e.target.value,
-                            })
-                          }
-                          placeholder="e.g., Italian, Asian, African"
-                          className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-text-primary mb-2">
-                          Price Range
-                        </label>
-                        <select
-                          value={businessForm.priceRange}
-                          onChange={(e) =>
-                            setBusinessForm({
-                              ...businessForm,
-                              priceRange: e.target.value,
-                            })
-                          }
-                          className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                        >
-                          <option value="$">$ - Budget Friendly</option>
-                          <option value="$$">$$ - Moderate</option>
-                          <option value="$$$">$$$ - Expensive</option>
-                          <option value="$$$$">$$$$ - Very Expensive</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Location Information */}
-                  <div className="space-y-6">
-                    <h4 className="text-lg font-bold text-text-primary flex items-center gap-2">
-                      <MapPin className="w-5 h-5 text-brand" />
-                      Location Information
-                    </h4>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-text-primary mb-2">
-                        Full Address *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={businessForm.address}
-                        onChange={(e) =>
-                          setBusinessForm({
-                            ...businessForm,
-                            address: e.target.value,
-                          })
-                        }
-                        placeholder="Enter full address"
-                        className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-semibold text-text-primary mb-2">
-                          City *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={businessForm.city}
-                          onChange={(e) =>
-                            setBusinessForm({
-                              ...businessForm,
-                              city: e.target.value,
-                            })
-                          }
-                          placeholder="Enter city"
-                          className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-text-primary mb-2">
-                          Location (Display)
-                        </label>
-                        <input
-                          type="text"
-                          value={businessForm.location}
-                          onChange={(e) =>
-                            setBusinessForm({
-                              ...businessForm,
-                              location: e.target.value,
-                            })
-                          }
-                          placeholder="e.g., Kigali, Rwanda"
-                          className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Contact Information */}
-                  <div className="space-y-6">
-                    <h4 className="text-lg font-bold text-text-primary flex items-center gap-2">
-                      <Phone className="w-5 h-5 text-brand" />
-                      Contact Information
-                    </h4>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-semibold text-text-primary mb-2">
-                          Phone Number *
-                        </label>
-                        <input
-                          type="tel"
-                          required
-                          value={businessForm.phone}
-                          onChange={(e) =>
-                            setBusinessForm({
-                              ...businessForm,
-                              phone: e.target.value,
-                            })
-                          }
-                          placeholder="+250 7xx xxx xxx"
-                          className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-text-primary mb-2">
-                          Email *
-                        </label>
-                        <input
-                          type="email"
-                          required
-                          value={businessForm.email}
-                          onChange={(e) =>
-                            setBusinessForm({
-                              ...businessForm,
-                              email: e.target.value,
-                            })
-                          }
-                          placeholder="business@example.com"
-                          className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-text-primary mb-2">
-                        Website
-                      </label>
-                      <input
-                        type="url"
-                        value={businessForm.website}
-                        onChange={(e) =>
-                          setBusinessForm({
-                            ...businessForm,
-                            website: e.target.value,
-                          })
-                        }
-                        placeholder="https://yourwebsite.com"
-                        className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Operating Hours */}
-                  <div className="space-y-6">
-                    <h4 className="text-lg font-bold text-text-primary flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-brand" />
-                      Operating Hours
-                    </h4>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-semibold text-text-primary mb-2">
-                          Opening Time
-                        </label>
-                        <input
-                          type="time"
-                          value={businessForm.opensAt}
-                          onChange={(e) =>
-                            setBusinessForm({
-                              ...businessForm,
-                              opensAt: e.target.value,
-                            })
-                          }
-                          className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-text-primary mb-2">
-                          Closing Time
-                        </label>
-                        <input
-                          type="time"
-                          value={businessForm.closesAt}
-                          onChange={(e) =>
-                            setBusinessForm({
-                              ...businessForm,
-                              closesAt: e.target.value,
-                            })
-                          }
-                          className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Business Settings */}
-                  <div className="space-y-6">
-                    <h4 className="text-lg font-bold text-text-primary flex items-center gap-2">
-                      <Settings className="w-5 h-5 text-brand" />
-                      Business Settings
-                    </h4>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-semibold text-text-primary mb-2">
-                          Capacity (Seats)
-                        </label>
-                        <input
-                          type="number"
-                          min="1"
-                          value={businessForm.capacity}
-                          onChange={(e) =>
-                            setBusinessForm({
-                              ...businessForm,
-                              capacity: parseInt(e.target.value) || 50,
-                            })
-                          }
-                          className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-text-primary mb-2">
-                          Accepts Reservations
-                        </label>
-                        <select
-                          value={
-                            businessForm.acceptsReservations ? "yes" : "no"
-                          }
-                          onChange={(e) =>
-                            setBusinessForm({
-                              ...businessForm,
-                              acceptsReservations: e.target.value === "yes",
-                            })
-                          }
-                          className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                        >
-                          <option value="yes">Yes</option>
-                          <option value="no">No</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Business Logo */}
-                  <div className="space-y-6">
-                    <h4 className="text-lg font-bold text-text-primary flex items-center gap-2">
-                      <Camera className="w-5 h-5 text-brand" />
-                      Business Logo
-                    </h4>
-
-                    <div className="border-2 border-dashed border-border-subtle rounded-xl p-6 text-center hover:border-brand/50 transition-colors">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) =>
-                          setBusinessForm({
-                            ...businessForm,
-                            logo: e.target.files?.[0] || null,
-                          })
-                        }
-                        className="hidden"
-                        id="business-logo"
-                      />
-                      <label
-                        htmlFor="business-logo"
-                        className="cursor-pointer flex flex-col items-center gap-3"
-                      >
-                        {businessForm.logo ? (
-                          <div className="w-24 h-24 rounded-xl overflow-hidden border-2 border-brand/20">
-                            <img
-                              src={URL.createObjectURL(businessForm.logo)}
-                              alt="Logo preview"
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-24 h-24 bg-surface-secondary rounded-xl flex items-center justify-center border-2 border-dashed border-border-subtle">
-                            <Upload className="w-8 h-8 text-text-muted" />
-                          </div>
-                        )}
-                        <span className="text-sm text-text-secondary font-medium">
-                          {businessForm.logo ? "Change Logo" : "Upload Logo"}
-                        </span>
-                        <span className="text-xs text-text-muted">
-                          PNG, JPG up to 2MB
-                        </span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4 pt-6">
-                    <button
-                      type="button"
-                      onClick={() => setShowBusinessModal(false)}
-                      className="flex-1 px-6 py-3 text-text-secondary hover:text-text-primary hover:bg-surface-secondary rounded-xl font-semibold transition-all duration-200"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={submittingBusiness}
-                      className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-200 text-text-inverted ${
-                        submittingBusiness
-                          ? "bg-gray-400 cursor-not-allowed"
-                          : "bg-gradient-to-r from-brand to-brand-hover hover:shadow-lg"
-                      }`}
-                    >
-                      {submittingBusiness
-                        ? "Saving..."
-                        : editingBusiness
-                        ? "Update Business"
-                        : "Add Business"}
-                    </button>
-                  </div>
-                </form>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <BusinessModal
+          isOpen={showBusinessModal}
+          formData={businessForm}
+          onSubmit={handleBusinessSubmit}
+          onChange={(data) => setBusinessForm({ ...businessForm, ...data })}
+          onClose={() => setShowBusinessModal(false)}
+          isSubmitting={submittingBusiness}
+          isEditing={!!editingBusiness}
+        />
 
         {/* Add/Edit Menu Modal */}
-        <AnimatePresence>
-          {showMenuModal && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-              onClick={() => setShowMenuModal(false)}
-            >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="bg-surface-primary rounded-3xl p-8 w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl border border-border-subtle/20"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-3">
-                    <div className="p-3 bg-gradient-to-br from-green-600 to-green-700 rounded-xl">
-                      <Menu className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold text-text-primary">
-                        {editingMenu ? "Edit Menu Item" : "Add New Menu Item"}
-                      </h3>
-                      <p className="text-text-secondary">
-                        {editingMenu
-                          ? "Update menu item information"
-                          : "Create a new menu item"}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setShowMenuModal(false)}
-                    className="p-3 text-text-muted hover:text-text-primary hover:bg-surface-secondary rounded-full transition-all duration-200"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-
-                <form onSubmit={handleMenuSubmit} className="space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-semibold text-text-primary mb-2">
-                        Restaurant *
-                      </label>
-                      <select
-                        value={selectedRestaurant?.id || ""}
-                        onChange={(e) => {
-                          const business = businesses.find(
-                            (b) => b.id === e.target.value
-                          );
-                          setSelectedRestaurant(business || null);
-                        }}
-                        required
-                        className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                      >
-                        <option value="">Select Restaurant</option>
-                        {businesses.map((business) => (
-                          <option key={business.id} value={business.id}>
-                            {business.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-text-primary mb-2">
-                        Category *
-                      </label>
-                      <select
-                        value={menuForm.category}
-                        onChange={(e) =>
-                          setMenuForm({ ...menuForm, category: e.target.value })
-                        }
-                        required
-                        className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                      >
-                        <option value="main">Main Course</option>
-                        <option value="appetizer">Appetizer</option>
-                        <option value="beverage">Beverage</option>
-                        <option value="dessert">Dessert</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-text-primary mb-2">
-                        Item Name *
-                      </label>
-                      <input
-                        type="text"
-                        value={menuForm.name}
-                        onChange={(e) =>
-                          setMenuForm({ ...menuForm, name: e.target.value })
-                        }
-                        required
-                        className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-text-primary mb-2">
-                        Price (RWF) *
-                      </label>
-                      <input
-                        type="number"
-                        value={menuForm.price}
-                        onChange={(e) =>
-                          setMenuForm({ ...menuForm, price: e.target.value })
-                        }
-                        required
-                        min="0"
-                        step="100"
-                        className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-text-primary mb-2">
-                        Preparation Time
-                      </label>
-                      <input
-                        type="text"
-                        value={menuForm.preparationTime}
-                        onChange={(e) =>
-                          setMenuForm({
-                            ...menuForm,
-                            preparationTime: e.target.value,
-                          })
-                        }
-                        placeholder="e.g., 25 minutes"
-                        className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-text-primary mb-2">
-                        Calories
-                      </label>
-                      <input
-                        type="text"
-                        value={menuForm.calories}
-                        onChange={(e) =>
-                          setMenuForm({ ...menuForm, calories: e.target.value })
-                        }
-                        placeholder="e.g., 320"
-                        className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-text-primary mb-2">
-                        Availability *
-                      </label>
-                      <select
-                        value={menuForm.availability}
-                        onChange={(e) =>
-                          setMenuForm({
-                            ...menuForm,
-                            availability: e.target.value,
-                          })
-                        }
-                        required
-                        className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                      >
-                        <option value="available">Available</option>
-                        <option value="unavailable">Unavailable</option>
-                        <option value="limited">Limited</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-text-primary mb-2">
-                        Allergens
-                      </label>
-                      <input
-                        type="text"
-                        value={menuForm.allergens}
-                        onChange={(e) =>
-                          setMenuForm({
-                            ...menuForm,
-                            allergens: e.target.value,
-                          })
-                        }
-                        placeholder="e.g., Fish, Nuts, Dairy"
-                        className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-text-primary mb-2">
-                      Description *
-                    </label>
-                    <textarea
-                      value={menuForm.description}
-                      onChange={(e) =>
-                        setMenuForm({
-                          ...menuForm,
-                          description: e.target.value,
-                        })
-                      }
-                      required
-                      rows={3}
-                      className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200 resize-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-text-primary mb-2">
-                      Ingredients
-                    </label>
-                    <textarea
-                      value={menuForm.ingredients}
-                      onChange={(e) =>
-                        setMenuForm({
-                          ...menuForm,
-                          ingredients: e.target.value,
-                        })
-                      }
-                      rows={3}
-                      placeholder="List ingredients separated by commas"
-                      className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200 resize-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-text-primary mb-2">
-                      Menu Item Photo
-                    </label>
-                    <div className="border-2 border-dashed border-border-subtle rounded-xl p-6 text-center hover:border-brand/50 transition-colors">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) =>
-                          setMenuForm({
-                            ...menuForm,
-                            photo: e.target.files?.[0] || null,
-                          })
-                        }
-                        className="hidden"
-                        id="menu-photo"
-                      />
-                      <label
-                        htmlFor="menu-photo"
-                        className="cursor-pointer flex flex-col items-center gap-3"
-                      >
-                        {menuForm.photo ? (
-                          <div className="w-24 h-24 rounded-xl overflow-hidden border-2 border-brand/20">
-                            <img
-                              src={URL.createObjectURL(menuForm.photo)}
-                              alt="Menu preview"
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-24 h-24 bg-surface-secondary rounded-xl flex items-center justify-center border-2 border-dashed border-border-subtle">
-                            <Camera className="w-8 h-8 text-text-muted" />
-                          </div>
-                        )}
-                        <span className="text-sm text-text-secondary font-medium">
-                          {menuForm.photo ? "Change Photo" : "Upload Photo"}
-                        </span>
-                        <span className="text-xs text-text-muted">
-                          PNG, JPG up to 2MB
-                        </span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4 pt-6">
-                    <button
-                      type="button"
-                      onClick={() => setShowMenuModal(false)}
-                      className="flex-1 px-6 py-3 text-text-secondary hover:text-text-primary hover:bg-surface-secondary rounded-xl font-semibold transition-all duration-200"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={submittingMenu}
-                      className={`flex-1 px-6 py-3 text-white rounded-xl font-semibold transition-all duration-200 ${
-                        submittingMenu
-                          ? "bg-gray-400 cursor-not-allowed"
-                          : "bg-gradient-to-r from-green-600 to-green-700 hover:shadow-lg"
-                      }`}
-                    >
-                      {submittingMenu
-                        ? "Saving..."
-                        : editingMenu
-                        ? "Update Menu Item"
-                        : "Add Menu Item"}
-                    </button>
-                  </div>
-                </form>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <MenuModal
+          isOpen={showMenuModal}
+          formData={menuForm}
+          businesses={businesses}
+          selectedRestaurant={selectedRestaurant}
+          onSubmit={handleMenuSubmit}
+          onChange={(data) => setMenuForm({ ...menuForm, ...data })}
+          onRestaurantChange={setSelectedRestaurant}
+          onClose={() => setShowMenuModal(false)}
+          isSubmitting={submittingMenu}
+          isEditing={!!editingMenu}
+        />
       </div>
     </div>
   );

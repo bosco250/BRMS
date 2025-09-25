@@ -23,7 +23,6 @@ import {
   X,
   ArrowRight,
   BarChart3,
-  Settings,
   Target,
   CreditCard,
   Bell,
@@ -131,7 +130,7 @@ export default function Dashboard() {
 
     switch (action) {
       case "add_restaurant":
-        navigate("/dashboard/owner/business-management");
+        navigate("/dashboard/owner/businesses");
         toast.success("Navigating to Business Management");
         break;
       case "hire_staff":
@@ -212,7 +211,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-surface-secondary via-surface-primary to-surface-secondary">
+    <div className="min-h-screen bg-gradient-to-br from-surface-secondary via-surface-primary to-surface-secondary overflow-x-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-brand/5 rounded-full blur-3xl"></div>

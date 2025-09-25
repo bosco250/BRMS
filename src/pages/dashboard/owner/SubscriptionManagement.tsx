@@ -15,7 +15,7 @@ import {
   Pause,
   Play,
   RefreshCw,
-  Download,
+  Download, 
   Eye,
 } from "lucide-react";
 

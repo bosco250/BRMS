@@ -9,7 +9,7 @@ import {
   PieChart,
   Pie,
   Cell,
-  XAxis,
+  XAxis, 
   YAxis,
   CartesianGrid,
   Tooltip,

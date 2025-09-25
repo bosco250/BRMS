@@ -1,329 +1,81 @@
-import { useMemo, useState } from "react";
-import { FaSearch } from "react-icons/fa";
-import { getAllRestaurants } from "../data/restaurants";
+import { useEffect, useMemo, useState } from "react";
+import { FaSearch, FaExclamationTriangle, FaRedo } from "react-icons/fa";
+import { fetchAllBusinesses } from "./businessApiServise";
+import type { ApiBusiness } from "./businessApiServise";
 import RestaurantCard from "../components/RestaurantCard";
-
-// Mock bar data
-const bars = [
-  {
-    id: "b1",
-    name: "Sky Lounge",
-    cuisine: "Cocktail Bar",
-    rating: 4.5,
-    city: "Kigali",
-    address: "Kacyiru, KG 2 Ave, Kigali, Rwanda",
-    phone: "+250 788 234 567",
-    email: "info@skylounge.rw",
-    website: "https://skylounge.rw",
-    openNow: true,
-    opensAt: "18:00",
-    closesAt: "02:00",
-    tags: ["Cocktails", "Rooftop", "Live Music", "Premium"],
-    image:
-      "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400&h=300&fit=crop",
-    description:
-      "Elegant rooftop bar with panoramic city views and craft cocktails",
-    capacity: 80,
-    acceptsReservations: true,
-    paymentMethods: ["Cash", "Card", "Mobile Money"],
-    menu: [
-      {
-        id: "b1_d1",
-        name: "Signature Cocktails",
-        description: "Premium craft cocktails made with premium spirits",
-        price: 0,
-        category: "Cocktails",
-        available: true,
-        image:
-          "https://images.unsplash.com/photo-1514362545857-3bc16c4c7f1a?w=300&h=200&fit=crop",
-        popular: true,
-      },
-      {
-        id: "b1_d2",
-        name: "Sky High Martini",
-        description: "Gin martini with a twist, served with city views",
-        price: 15,
-        category: "Cocktails",
-        available: true,
-        popular: true,
-      },
-      {
-        id: "b1_d3",
-        name: "Sunset Spritz",
-        description: "Aperol spritz with prosecco and orange slice",
-        price: 12,
-        category: "Cocktails",
-        available: true,
-      },
-      {
-        id: "b1_d4",
-        name: "Rooftop Old Fashioned",
-        description: "Classic bourbon cocktail with house-made simple syrup",
-        price: 18,
-        category: "Cocktails",
-        available: true,
-      },
-      {
-        id: "b1_d5",
-        name: "Champagne Selection",
-        description: "Premium champagne by the glass",
-        price: 25,
-        category: "Wine",
-        available: true,
-      },
-      {
-        id: "b1_d6",
-        name: "Craft Beer Selection",
-        description: "Local and international craft beers",
-        price: 8,
-        category: "Beer",
-        available: true,
-      },
-      {
-        id: "b1_d7",
-        name: "Bar Snacks",
-        description: "Artisanal nuts, olives, and charcuterie board",
-        price: 16,
-        category: "Food",
-        available: true,
-      },
-    ],
-    amenities: ["Rooftop", "Live Music", "Valet Parking", "WiFi"],
-    averageWaitTime: "5-10 min",
-    priceRange: "$$$",
-    type: "bar",
-  },
-  {
-    id: "b2",
-    name: "Brew & Bites",
-    cuisine: "Craft Beer Bar",
-    rating: 4.3,
-    city: "Kigali",
-    address: "Nyamirambo, KG 1 Ave, Kigali, Rwanda",
-    phone: "+250 788 345 678",
-    email: "info@brewbites.rw",
-    website: "https://brewbites.rw",
-    openNow: true,
-    opensAt: "16:00",
-    closesAt: "01:00",
-    tags: ["Craft Beer", "Pub Food", "Sports", "Casual"],
-    image:
-      "https://images.unsplash.com/photo-1571613316887-6f8d5cbf7ef7?w=400&h=300&fit=crop",
-    description: "Local craft beer bar with pub food and sports viewing",
-    capacity: 60,
-    acceptsReservations: false,
-    paymentMethods: ["Cash", "Card"],
-    menu: [
-      {
-        id: "b2_d1",
-        name: "Craft Beer Flight",
-        description: "Sample 4 different local craft beers",
-        price: 20,
-        category: "Beer",
-        available: true,
-        popular: true,
-      },
-      {
-        id: "b2_d2",
-        name: "IPA Selection",
-        description: "Rotating selection of hoppy IPAs",
-        price: 6,
-        category: "Beer",
-        available: true,
-        popular: true,
-      },
-      {
-        id: "b2_d3",
-        name: "Stout & Porter",
-        description: "Dark, rich beers for the connoisseur",
-        price: 7,
-        category: "Beer",
-        available: true,
-      },
-      {
-        id: "b2_d4",
-        name: "Wheat Beer",
-        description: "Light and refreshing wheat beers",
-        price: 5,
-        category: "Beer",
-        available: true,
-      },
-      {
-        id: "b2_d5",
-        name: "Barley Wine",
-        description: "Strong, complex ale aged to perfection",
-        price: 12,
-        category: "Beer",
-        available: true,
-      },
-      {
-        id: "b2_d6",
-        name: "Buffalo Wings",
-        description: "Spicy wings with blue cheese dip",
-        price: 14,
-        category: "Food",
-        available: true,
-        popular: true,
-      },
-      {
-        id: "b2_d7",
-        name: "Loaded Nachos",
-        description: "Tortilla chips with cheese, jalapeños, and sour cream",
-        price: 12,
-        category: "Food",
-        available: true,
-      },
-      {
-        id: "b2_d8",
-        name: "Beer Battered Fish",
-        description: "Fresh fish in our signature beer batter",
-        price: 16,
-        category: "Food",
-        available: true,
-      },
-      {
-        id: "b2_d9",
-        name: "Soft Pretzels",
-        description: "Warm pretzels with beer cheese sauce",
-        price: 8,
-        category: "Food",
-        available: true,
-      },
-    ],
-    amenities: ["Sports TV", "Outdoor Seating", "WiFi", "Games"],
-    averageWaitTime: "2-5 min",
-    priceRange: "$$",
-    type: "bar",
-  },
-  {
-    id: "b3",
-    name: "Wine & Dine",
-    cuisine: "Wine Bar",
-    rating: 4.6,
-    city: "Kigali",
-    address: "Kimisagara, KG 3 Ave, Kigali, Rwanda",
-    phone: "+250 788 456 789",
-    email: "info@winedine.rw",
-    website: "https://winedine.rw",
-    openNow: false,
-    opensAt: "17:00",
-    closesAt: "23:00",
-    tags: ["Wine", "Fine Dining", "Romantic", "Upscale"],
-    image:
-      "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop",
-    description:
-      "Sophisticated wine bar with curated selection and gourmet bites",
-    capacity: 40,
-    acceptsReservations: true,
-    paymentMethods: ["Cash", "Card", "Mobile Money"],
-    menu: [
-      {
-        id: "b3_d1",
-        name: "Wine Tasting Flight",
-        description: "Curated selection of 5 premium wines",
-        price: 35,
-        category: "Wine",
-        available: true,
-        popular: true,
-      },
-      {
-        id: "b3_d2",
-        name: "Champagne by the Glass",
-        description: "Premium champagne selection",
-        price: 18,
-        category: "Wine",
-        available: true,
-        popular: true,
-      },
-      {
-        id: "b3_d3",
-        name: "Red Wine Selection",
-        description: "Cabernet, Merlot, Pinot Noir, and more",
-        price: 12,
-        category: "Wine",
-        available: true,
-      },
-      {
-        id: "b3_d4",
-        name: "White Wine Selection",
-        description: "Chardonnay, Sauvignon Blanc, Riesling",
-        price: 10,
-        category: "Wine",
-        available: true,
-      },
-      {
-        id: "b3_d5",
-        name: "Rosé Collection",
-        description: "Elegant rosé wines from around the world",
-        price: 11,
-        category: "Wine",
-        available: true,
-      },
-      {
-        id: "b3_d6",
-        name: "Dessert Wines",
-        description: "Port, Sauternes, and late harvest wines",
-        price: 15,
-        category: "Wine",
-        available: true,
-      },
-      {
-        id: "b3_d7",
-        name: "Artisan Cheese Board",
-        description: "Selection of fine cheeses with accompaniments",
-        price: 24,
-        category: "Food",
-        available: true,
-        popular: true,
-      },
-      {
-        id: "b3_d8",
-        name: "Charcuterie Platter",
-        description: "Cured meats, pâtés, and artisanal selections",
-        price: 22,
-        category: "Food",
-        available: true,
-      },
-      {
-        id: "b3_d9",
-        name: "Truffle Crostini",
-        description: "Crispy bread with truffle oil and parmesan",
-        price: 16,
-        category: "Food",
-        available: true,
-      },
-      {
-        id: "b3_d10",
-        name: "Oysters on the Half Shell",
-        description: "Fresh oysters with mignonette sauce",
-        price: 28,
-        category: "Food",
-        available: true,
-      },
-      {
-        id: "b3_d11",
-        name: "Chocolate Truffles",
-        description: "Handmade dark chocolate truffles",
-        price: 12,
-        category: "Dessert",
-        available: true,
-      },
-    ],
-    amenities: ["Wine Cellar", "Private Dining", "Valet Parking", "WiFi"],
-    averageWaitTime: "10-15 min",
-    priceRange: "$$$$",
-    type: "bar",
-  },
-];
-
+import BusinessCardSkeleton from "../components/BusinessCardSkeleton";
 // Rating UI moved into RestaurantCard
 
 export default function Resto() {
-  const restaurants = getAllRestaurants();
-  const allBusinesses = [
-    ...restaurants.map((r) => ({ ...r, type: "restaurant" })),
-    ...bars,
-  ];
+  const [apiBusinesses, setApiBusinesses] = useState<ApiBusiness[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+
+  const fetchBusinesses = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await fetchAllBusinesses();
+      setApiBusinesses(Array.isArray(data) ? data : []);
+    } catch (e) {
+      setError(
+        "Failed to load businesses. Please check your connection and try again."
+      );
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBusinesses();
+  }, []);
+
+  const mappedApiBusinesses = useMemo(() => {
+    return apiBusinesses.map((b) => ({
+      id: b.id,
+      name: b.name,
+      cuisine: b.cuisine ?? "Various Cuisine",
+      rating: b.rating ?? 4.0,
+      city: b.city ?? "Kigali",
+      address: b.address ?? "Address not available",
+      phone: b.phone ?? "+250 000 000 000",
+      email: b.email ?? "info@restaurant.rw",
+      website: b.website,
+      openNow: true,
+      opensAt: "08:00",
+      closesAt: "22:00",
+      tags: b.tags?.length > 0 ? b.tags : ["Dine-in", "Takeaway"],
+      image:
+        b.image ||
+        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop",
+      description:
+        b.description || "A great place to enjoy delicious food and drinks.",
+      capacity: b.capacity ?? 50,
+      acceptsReservations: Boolean(b.acceptsReservations),
+      paymentMethods:
+        b.paymentMethods && b.paymentMethods.length > 0
+          ? b.paymentMethods
+          : ["Cash", "Card"],
+      amenities:
+        b.amenities && b.amenities.length > 0
+          ? b.amenities
+          : ["WiFi", "Parking"],
+      menu: (b.menu ?? []).map((m) => ({
+        id: m.id,
+        name: m.name,
+        description: m.description,
+        price: m.price,
+        category: m.category || "Main Course",
+        available: m.available,
+      })),
+      averageWaitTime: "15-20 min",
+      priceRange: "$$",
+      type: "restaurant" as const,
+    }));
+  }, [apiBusinesses]);
+
+  const allBusinesses = mappedApiBusinesses;
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [addressFilter, setAddressFilter] = useState("");
@@ -503,7 +255,36 @@ export default function Resto() {
         </div>
 
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredBusinesses.length > 0 ? (
+          {loading && (
+            <>
+              {Array.from({ length: 8 }).map((_, i) => (
+                <BusinessCardSkeleton key={i} />
+              ))}
+            </>
+          )}
+
+          {!loading && error && (
+            <div className="col-span-full text-center py-12">
+              <div className="mx-auto w-16 h-16 bg-error/10 rounded-full flex items-center justify-center mb-4">
+                <FaExclamationTriangle className="w-8 h-8 text-error" />
+              </div>
+              <h3 className="text-lg font-semibold text-text-primary mb-2">
+                Unable to load businesses
+              </h3>
+              <p className="text-text-secondary mb-4">{error}</p>
+              <button
+                onClick={fetchBusinesses}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-text-inverted rounded-md hover:bg-brand-dark transition-colors"
+              >
+                <FaRedo className="w-4 h-4" />
+                Try Again
+              </button>
+            </div>
+          )}
+
+          {!loading &&
+            !error &&
+            filteredBusinesses.length > 0 &&
             filteredBusinesses.map((business) => (
               <RestaurantCard
                 key={business.id}
@@ -520,11 +301,32 @@ export default function Resto() {
                   type: business.type as "restaurant" | "bar",
                 }}
               />
-            ))
-          ) : (
-            <p className="col-span-full text-center text-text-secondary">
-              No businesses found matching your criteria.
-            </p>
+            ))}
+
+          {!loading && !error && filteredBusinesses.length === 0 && (
+            <div className="col-span-full text-center py-12">
+              <div className="mx-auto w-16 h-16 bg-border-subtle/20 rounded-full flex items-center justify-center mb-4">
+                <FaSearch className="w-8 h-8 text-text-muted" />
+              </div>
+              <h3 className="text-lg font-semibold text-text-primary mb-2">
+                No businesses found
+              </h3>
+              <p className="text-text-secondary mb-4">
+                Try adjusting your search criteria or filters
+              </p>
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setSelectedCity("");
+                  setAddressFilter("");
+                  setBusinessType("all");
+                  setSortBy("recommended");
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-text-inverted rounded-md hover:bg-brand-dark transition-colors"
+              >
+                Clear Filters
+              </button>
+            </div>
           )}
         </div>
       </div>
