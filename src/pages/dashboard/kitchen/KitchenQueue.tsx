@@ -66,7 +66,6 @@ const KitchenQueue: React.FC = () => {
     const pendingCount = getOrdersByStatus("pending").length;
     if (pendingCount > newOrderCount && newOrderCount > 0) {
       // New order detected - could trigger notification sound here
-      console.log("New order detected!");
     }
     setNewOrderCount(pendingCount);
   }, [getOrdersByStatus, newOrderCount]);
@@ -143,7 +142,6 @@ const KitchenQueue: React.FC = () => {
 
     // Notify server if order is ready
     if (newStatus === "ready") {
-      console.log(`Order ${orderId} is ready for pickup!`);
       // In real implementation, this would send notification to server
     }
   };

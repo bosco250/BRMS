@@ -205,7 +205,7 @@ export default function PaymentProcessing() {
   };
 
   const handlePrintReceipt = (paymentId: string) => {
-    console.log("Printing receipt for:", paymentId);
+    // Print receipt functionality
   };
 
   // Auto-process served orders by default

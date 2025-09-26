@@ -1,7 +1,7 @@
 import axios from "axios";
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-export type ApiMenuItem = {
+export type ApiMenue = {
   id: string;
   name: string;
   description: string;

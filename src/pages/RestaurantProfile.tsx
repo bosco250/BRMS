@@ -33,7 +33,6 @@ import type { CartItem } from "../data/checkoutTypes";
 import { toast } from "react-toastify";
 import RestaurantProfileSkeleton from "../components/RestaurantProfileSkeleton";
 
-
 function Rating({ value }: { value: number }) {
   const fullStars = Math.floor(value);
   const hasHalf = value - fullStars >= 0.5;
@@ -187,7 +186,7 @@ export default function RestaurantProfile() {
         await navigator.share(shareData);
         toast.success("Shared successfully!");
       } catch (err) {
-        console.log("Error sharing:", err);
+        // Error sharing silently handled
       }
     } else {
       // Fallback: copy to clipboard

@@ -48,9 +48,6 @@ export default function Login() {
       // Use API call for authentication
       const user = await loginUser(sanitizedEmail, sanitizedPassword);
 
-      // Show response in console
-      console.log("Login response:", user);
-
       if (!user || !user.access_token) {
         toast.error("Invalid email or password. Please try again.");
         setLoading(false);
@@ -72,12 +69,6 @@ export default function Login() {
             .toLowerCase()
             .trim();
         }
-        console.log(
-          "Role from user object:",
-          user.role,
-          "-> converted to:",
-          role
-        );
       } else {
         // Try to decode JWT to get role
         try {
@@ -85,16 +76,8 @@ export default function Login() {
           role = String(payload.role || "")
             .toLowerCase()
             .trim();
-          console.log(
-            "Role from JWT payload:",
-            payload.role,
-            "-> converted to:",
-            role
-          );
-          console.log("Full JWT payload:", payload);
         } catch (e) {
           role = "";
-          console.log("Failed to decode JWT:", e);
         }
       }
 
@@ -108,7 +91,6 @@ export default function Login() {
         expiresAt: Date.now() + 12 * 60 * 60 * 1000, // 12 hours
       };
       localStorage.setItem("brms_user", JSON.stringify(sessionUser));
-      console.log("Session user set:", sessionUser);
 
       const routeByRole: Record<string, string> = {
         admin: "/dashboard/admin",
@@ -134,7 +116,6 @@ export default function Login() {
 
       // Show success message
       toast.success("Login successful! Redirecting...");
-
 
       // Navigate immediately without delay
       try {

@@ -24,18 +24,7 @@ export function withRoleGuard<TProps extends Record<string, any>>(
     const userRole = user.role?.toLowerCase();
     const requiredRole = role.toLowerCase();
 
-    console.log("Role Guard Debug:", {
-      userRole,
-      requiredRole,
-      user,
-      routeByRole: routeByRole[userRole],
-    });
-
     if (userRole !== requiredRole) {
-      console.log(
-        "Role mismatch - redirecting to:",
-        routeByRole[userRole] || "/"
-      );
       return <Navigate to={routeByRole[userRole] || "/"} replace />;
     }
     return <Component {...props} />;

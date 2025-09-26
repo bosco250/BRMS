@@ -194,10 +194,6 @@ export async function getUserBusinesses(
       withCredentials: true,
     });
 
-    console.log("🌐 Raw API Response from backend:", response.data);
-    console.log("📡 Response status:", response.status);
-    console.log("🔗 API URL:", `${BACKEND_URL}/business/user/${userId}`);
-
     return {
       success: true,
       data: response.data,
@@ -298,5 +294,3 @@ export async function getBusinessMenu(
     };
   }
 }
-
-//get business by id

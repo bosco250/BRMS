@@ -95,7 +95,6 @@ const KitchenOrders: React.FC = () => {
     // Show notification for ready orders
     if (newStatus === "ready") {
       // In a real app, this would notify the waiter
-      console.log(`Order ${orderId} is ready for pickup!`);
     }
 
     // Update last update time

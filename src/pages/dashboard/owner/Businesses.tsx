@@ -66,35 +66,8 @@ export default function Businesses() {
 
     try {
       const response = await getUserBusinesses(user.id);
-      console.log("🔍 API Response:", response);
 
       if (response.success && response.data) {
-        console.log("✅ Businesses fetched successfully:", response.data);
-        console.log("📊 Number of businesses:", response.data.length);
-
-        // Log each business individually with full details
-        response.data.forEach((business, index) => {
-          console.log(`🏢 Business ${index + 1} - Full Data:`, business);
-          console.log(`📋 Business ${index + 1} - Summary:`, {
-            id: business.id,
-            name: business.name,
-            cuisine: business.cuisine,
-            rating: business.rating,
-            city: business.city,
-            address: business.address,
-            phone: business.phone,
-            email: business.email,
-            website: business.website,
-            image: business.image,
-            capacity: business.capacity,
-            acceptsReservations: business.acceptsReservations,
-            paymentMethods: business.paymentMethods,
-            amenities: business.amenities,
-            tags: business.tags,
-            menuItems: business.menu?.length || 0,
-            description: business.description,
-          });
-        });
 
         setUserBusinesses(response.data);
         addNotification({
@@ -117,26 +90,6 @@ export default function Businesses() {
       setLoadingBusinesses(false);
     }
   };
-
-  // Fetch business menu (for future use)
-  // const fetchBusinessMenu = async (businessId: string) => {
-  //   if (businessMenus[businessId]) return; // Already loaded
-
-  //   setLoadingMenus(prev => ({ ...prev, [businessId]: true }));
-
-  //   try {
-  //     const response = await getBusinessMenu(businessId);
-  //     if (response.success && response.data) {
-  //       setBusinessMenus(prev => ({ ...prev, [businessId]: response.data || [] }));
-  //     } else {
-  //       toast.error(response.error || "Failed to load menu");
-  //     }
-  //   } catch (error) {
-  //     toast.error("Failed to load menu");
-  //   } finally {
-  //     setLoadingMenus(prev => ({ ...prev, [businessId]: false }));
-  //   }
-  // };
 
   // Load businesses on component mount
   useEffect(() => {
@@ -163,7 +116,7 @@ export default function Businesses() {
     acceptsReservations: true,
     paymentMethods: ["Cash", "Card", "Mobile Money"],
     amenities: ["WiFi", "Parking", "Outdoor Seating"],
-    tags: ["Dine-in", "Delivery"],
+    tags: ["Dine-in", "Take-away", "Delivery"],
   });
 
   const [menuForm, setMenuForm] = useState<MenuFormData>({
@@ -181,9 +134,6 @@ export default function Businesses() {
 
   // Convert API data to component format
   const businesses = useMemo(() => {
-    console.log("🔄 Converting API data to component format...");
-    console.log("📥 Input userBusinesses:", userBusinesses);
-
     const converted = userBusinesses.map((business) => ({
       id: business.id,
       name: business.name || "",
@@ -219,7 +169,6 @@ export default function Businesses() {
       menu: business.menu || [],
     }));
 
-    console.log("📤 Converted businesses:", converted);
     return converted;
   }, [userBusinesses]);
 
@@ -310,7 +259,6 @@ export default function Businesses() {
           folder: "business-logos",
         });
         uploadedLogoUrl = secureUrl;
-        console.log("Uploaded business logo URL:", uploadedLogoUrl);
       }
 
       const payload: RegisterBusinessPayload = {
@@ -336,8 +284,6 @@ export default function Businesses() {
         // tags: businessForm.tags,
       };
 
-      console.log("Business form payload:", payload);
-
       // Permission check via api service
       if (!canCreateBusiness()) {
         const msg =
@@ -354,7 +300,6 @@ export default function Businesses() {
       }
 
       const result = await registerBusiness(payload);
-      console.log("Created business (API):", result);
 
       if (!result.success) {
         const message = result.error || "Could not create business.";
@@ -418,7 +363,6 @@ export default function Businesses() {
           folder: "menu-photos",
         });
         uploadedPhotoUrl = secureUrl;
-        console.log("Uploaded menu item photo URL:", uploadedPhotoUrl);
       }
 
       const payload = {
@@ -434,8 +378,6 @@ export default function Businesses() {
         preparationTime: menuForm.preparationTime,
         calories: menuForm.calories,
       };
-
-      console.log("Menu form payload:", payload);
 
       addNotification({
         type: "system",

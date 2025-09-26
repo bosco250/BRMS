@@ -18,7 +18,6 @@ export class KitchenWebSocketService {
       this.ws = new WebSocket(this.url);
 
       this.ws.onopen = () => {
-        console.log("Kitchen WebSocket connected");
         this.reconnectAttempts = 0;
         this.emit("connected");
       };
@@ -49,7 +48,6 @@ export class KitchenWebSocketService {
       };
 
       this.ws.onclose = () => {
-        console.log("Kitchen WebSocket disconnected");
         this.emit("disconnected");
         this.attemptReconnect();
       };
@@ -67,9 +65,6 @@ export class KitchenWebSocketService {
   private attemptReconnect(): void {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
-      console.log(
-        `Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`
-      );
 
       setTimeout(() => {
         this.connect();

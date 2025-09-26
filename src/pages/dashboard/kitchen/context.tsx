@@ -479,7 +479,6 @@ export function KitchenDashboardProvider({
     status: KitchenStaff["status"]
   ) => {
     // In real app, this would update the staff array
-    console.log(`Staff ${staffId} status updated to ${status}`);
   };
 
   // Station Management Functions
@@ -488,18 +487,16 @@ export function KitchenDashboardProvider({
     status: KitchenStation["status"]
   ) => {
     // In real app, this would update the stations array
-    console.log(`Station ${stationId} status updated to ${status}`);
   };
 
   // Statistics Functions
   const updateStats = () => {
     // In real app, this would recalculate stats from orders
-    console.log("Stats updated");
   };
 
   // Real-time Functions
   const reconnect = () => {
-    console.log("Reconnecting to kitchen system...");
+    // Reconnect to kitchen system
   };
 
   const value: KitchenDashboardContextType = useMemo(

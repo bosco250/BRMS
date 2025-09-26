@@ -155,7 +155,6 @@ export default function Orders() {
   // Handle view order details
   const handleViewOrder = (order: Order) => {
     // Navigate to order details or show in a different way
-    console.log("View order:", order);
   };
 
   return (

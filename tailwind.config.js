@@ -88,7 +88,7 @@ export default {
           medium: "#F59E0B",
           low: "#6B7280",
         },
-        
+
         // Dashboard
         dashboard: "#EAEEEF",
       },

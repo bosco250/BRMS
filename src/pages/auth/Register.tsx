@@ -98,12 +98,8 @@ export default function Register() {
         userType: formData.userType,
       };
 
-      console.log("Registering user with data:", sanitizedData);
-
       // Call the registration API
       const response = await registerUser(sanitizedData);
-
-      console.log("Registration response:", response);
 
       toast.success("Account created successfully! Please verify your email.", {
         autoClose: 7000,
