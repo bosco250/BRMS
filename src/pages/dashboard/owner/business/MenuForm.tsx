@@ -35,17 +35,19 @@ export default function MenuForm({
             Restaurant *
           </label>
           <select
-            value={selectedRestaurant?.id || ""}
+            value={selectedRestaurant ? String(selectedRestaurant.id) : ""}
             onChange={(e) => {
-              const business = businesses.find((b) => b.id === e.target.value);
-              onRestaurantChange(business || null);
+              const selectedId = String(e.target.value);
+              const business =
+                businesses.find((b) => String(b.id) === selectedId) || null;
+              onRestaurantChange(business);
             }}
             required
             className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
           >
             <option value="">Select Restaurant</option>
             {businesses.map((business) => (
-              <option key={business.id} value={business.id}>
+              <option key={String(business.id)} value={String(business.id)}>
                 {business.name}
               </option>
             ))}

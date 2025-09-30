@@ -969,7 +969,7 @@ export default function RestaurantProfile() {
                           {item.description}
                         </p>
 
-                        {/* Add to Cart Button */}
+                        {/* Add to Order Button */}
                         {item.available ? (
                           <button
                             onClick={() => {
@@ -989,7 +989,7 @@ export default function RestaurantProfile() {
                             }}
                             className="w-full bg-brand hover:bg-brand-hover text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-200"
                           >
-                            Add to Cart
+                            Add to Order
                           </button>
                         ) : (
                           <button
@@ -1089,7 +1089,7 @@ export default function RestaurantProfile() {
                             {item.description}
                           </p>
 
-                          {/* Add to Cart Button */}
+                          {/* Add to Order Button */}
                           {item.available ? (
                             <button
                               onClick={() => {
@@ -1109,7 +1109,7 @@ export default function RestaurantProfile() {
                               }}
                               className="w-full bg-brand hover:bg-brand-hover text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors duration-200"
                             >
-                              Add to Cart
+                              Add to Order
                             </button>
                           ) : (
                             <button

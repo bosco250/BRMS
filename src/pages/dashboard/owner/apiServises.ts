@@ -15,6 +15,17 @@ export type RegisterBusinessPayload = {
   business_logo?: string;
 };
 
+export type AddMenuItemPayload = {
+  item_name: string;
+  description: string;
+  price: number;
+  is_available: boolean;
+  imageUrl: string;
+  ingredients: string;
+  currency: string;
+  business_id: number;
+};
+
 export type ApiResponse<T = any> = {
   success: boolean;
   data?: T;
@@ -130,6 +141,7 @@ export function canCreateBusiness(): boolean {
 export type UserBusiness = {
   id: string;
   name: string;
+  business_name?: string; // Backend field
   cuisine: string;
   rating: number;
   city: string;
@@ -142,6 +154,7 @@ export type UserBusiness = {
   closesAt: string;
   tags: string[];
   image: string;
+  business_logo?: string; // Backend field
   description: string;
   capacity: number;
   acceptsReservations: boolean;
@@ -231,9 +244,12 @@ export async function getUserBusinesses(
 }
 
 // Get business menu by business ID
-export async function getBusinessMenu(
-  businessId: string
-): Promise<ApiResponse<any[]>> {
+// NOTE: getBusinessMenu removed. Menu data is obtained directly from getUserBusinesses
+
+// Add menu item to business
+export async function addMenuItem(
+  menuData: AddMenuItemPayload
+): Promise<ApiResponse> {
   try {
     if (!BACKEND_URL)
       throw new Error("Missing VITE_BACKEND_URL in environment");
@@ -248,21 +264,29 @@ export async function getBusinessMenu(
       };
     }
 
-    const response = await axios.get(
-      `${BACKEND_URL}/business/${businessId}/menu`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        withCredentials: true,
-      }
-    );
+    const payload: AddMenuItemPayload = {
+      item_name: menuData.item_name,
+      description: menuData.description,
+      price: Number(menuData.price),
+      is_available: Boolean(menuData.is_available),
+      imageUrl: menuData.imageUrl,
+      ingredients: menuData.ingredients,
+      currency: menuData.currency || "RWF",
+      business_id: Number(menuData.business_id),
+    };
+
+    const response = await axios.post(`${BACKEND_URL}/menu/add`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    });
 
     return {
       success: true,
       data: response.data,
-      message: "Menu retrieved successfully",
+      message: "Menu item added successfully",
       status: response.status,
     };
   } catch (error: any) {
@@ -274,9 +298,11 @@ export async function getBusinessMenu(
       (status === 401
         ? "Not authenticated. Please log in."
         : status === 403
-        ? "Forbidden"
+        ? "Forbidden - You don't have permission to add menu items"
         : status === 404
-        ? "Menu not found"
+        ? "Business not found"
+        : status === 422
+        ? "Invalid menu item data"
         : status === 500
         ? "Internal server error"
         : error?.message || "Request failed");

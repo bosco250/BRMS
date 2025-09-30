@@ -10,7 +10,7 @@ import FloatingCartButton from "./components/FloatingCartButton";
 function App() {
   return (
     <ErrorBoundary>
-      <div className="min-h-dvh flex flex-col bg-surface-primary text-text-primary">
+      <div className="min-h-dvh flex flex-col bg-white text-gray-900">
         <Navbar />
         <main className="flex-1">
           <ErrorBoundary>
@@ -33,7 +33,7 @@ function App() {
           pauseOnHover
           theme="light"
           toastClassName="rounded-lg shadow-lg"
-          progressClassName="bg-brand"
+          progressClassName="bg-orange-500"
           transition={Slide}
         />
       </div>

@@ -107,10 +107,10 @@ export default function BusinessForm({
               onChange={(e) => handleInputChange("priceRange", e.target.value)}
               className="w-full px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
             >
-              <option value="$">$ - Budget Friendly</option>
-              <option value="$$">$$ - Moderate</option>
-              <option value="$$$">$$$ - Expensive</option>
-              <option value="$$$$">$$$$ - Very Expensive</option>
+              <option value="$">Budget Friendly</option>
+              <option value="$$">Moderate</option>
+              <option value="$$$">Expensive</option>
+              <option value="$$$$">Very Expensive</option>
             </select>
           </div>
         </div>

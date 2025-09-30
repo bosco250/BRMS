@@ -8,9 +8,13 @@ import {
   registerBusiness,
   canCreateBusiness,
   getUserBusinesses,
+  addMenuItem,
   type UserBusiness,
 } from "./apiServises";
-import type { RegisterBusinessPayload } from "./apiServises";
+import type {
+  RegisterBusinessPayload,
+  AddMenuItemPayload,
+} from "./apiServises";
 import { getSessionUser } from "../../../auth/session";
 
 import type {
@@ -50,8 +54,7 @@ export default function Businesses() {
   const [userBusinesses, setUserBusinesses] = useState<UserBusiness[]>([]);
   const [loadingBusinesses, setLoadingBusinesses] = useState(false);
   const [businessesError, setBusinessesError] = useState<string>("");
-  // const [businessMenus, setBusinessMenus] = useState<Record<string, any[]>>({}); // For future menu API integration
-  // const [loadingMenus, setLoadingMenus] = useState<Record<string, boolean>>({}); // Unused for now
+  const [businessMenus, setBusinessMenus] = useState<Record<string, any[]>>({});
 
   // Fetch user businesses
   const fetchUserBusinesses = async () => {
@@ -68,7 +71,6 @@ export default function Businesses() {
       const response = await getUserBusinesses(user.id);
 
       if (response.success && response.data) {
-
         setUserBusinesses(response.data);
         addNotification({
           type: "restaurant",
@@ -95,6 +97,18 @@ export default function Businesses() {
   useEffect(() => {
     fetchUserBusinesses();
   }, []);
+
+  // Build menus map directly from getUserBusinesses response
+  useEffect(() => {
+    const map: Record<string, any[]> = {};
+    (userBusinesses || []).forEach((b) => {
+      const id = String(b.id);
+      map[id] = Array.isArray((b as any).menu)
+        ? ((b as any).menu as any[])
+        : [];
+    });
+    setBusinessMenus(map);
+  }, [userBusinesses]);
 
   // Form states
   const [businessForm, setBusinessForm] = useState<BusinessFormData>({
@@ -136,7 +150,7 @@ export default function Businesses() {
   const businesses = useMemo(() => {
     const converted = userBusinesses.map((business) => ({
       id: business.id,
-      name: business.name || "",
+      name: business.business_name || business.name || "",
       location: business.address || "",
       type: (business.type || "restaurant").toLowerCase() as
         | "restaurant"
@@ -149,7 +163,7 @@ export default function Businesses() {
       staffCount: 0, // Not provided in API
       rating: typeof business.rating === "number" ? business.rating : 0,
       lastUpdated: new Date().toISOString(),
-      createdAt: new Date().toISOString(), // Add missing field
+      createdAt: new Date().toISOString(),
       // Additional API fields
       cuisine: business.cuisine || "",
       city: business.city || "",
@@ -162,7 +176,7 @@ export default function Businesses() {
       paymentMethods: business.paymentMethods || [],
       amenities: business.amenities || [],
       tags: business.tags || [],
-      image: business.image || "",
+      image: business.business_logo || business.image || "",
       averageWaitTime: business.averageWaitTime || "",
       priceRange: business.priceRange || "",
       owners: business.owners || [],
@@ -174,28 +188,31 @@ export default function Businesses() {
 
   // Get all menu items from all businesses
   const allMenuItems = useMemo(() => {
-    return (userBusinesses || []).flatMap((business) =>
-      (business.menu ?? []).map((item) => ({
-        id: item.id,
-        name: item.name,
-        description: item.description,
-        price: item.price,
-        category: item.category || "Main Course",
+    return (userBusinesses || []).flatMap((business) => {
+      const id = String(business.id);
+      const menu = businessMenus[id] || (business.menu as any[]) || [];
+      return menu.map((item: any) => ({
+        id: String(item.id),
+        name: String(item.name || ""),
+        description: String(item.description || ""),
+        price: Number(item.price || 0),
+        category: String(item.category || "main"),
         availability: item.available ? "available" : "unavailable",
         photo: null,
-        ingredients: "",
-        allergens: "",
-        preparationTime: "",
-        calories: "",
-        restaurantId: business.id,
+        ingredients: String(item.ingredients || ""),
+        allergens: String(item.allergens || ""),
+        preparationTime: String(item.preparationTime || ""),
+        calories: String(item.calories || ""),
+        restaurantId: id,
         status: "active",
         createdAt: new Date().toISOString(),
-        // Additional fields
-        restaurantName: business.name || "",
-        available: item.available,
-      }))
-    );
-  }, [userBusinesses]);
+        restaurantName: String(
+          (business as any).business_name || (business as any).name || ""
+        ),
+        available: Boolean(item.available),
+      }));
+    });
+  }, [userBusinesses, businessMenus]);
 
   // Filter data
   const filteredBusinesses = useMemo(() => {
@@ -219,15 +236,77 @@ export default function Businesses() {
   }, [businesses, searchQuery, statusFilter, typeFilter]);
 
   const filteredMenuItems = useMemo(() => {
-    return allMenuItems.filter((item) => {
+    // If a restaurant is selected and it has a menu from backend, prefer that source
+    const selectedId = selectedRestaurant ? String(selectedRestaurant.id) : "";
+    const selectedBusiness = (userBusinesses || []).find(
+      (b) => String(b.id) === selectedId
+    );
+
+    const baseItems =
+      selectedBusiness &&
+      Array.isArray(selectedBusiness.menu) &&
+      (selectedBusiness.menu as any[]).length > 0
+        ? (selectedBusiness.menu || []).map((item) => ({
+            id: String(item.id),
+            name: String(item.name || ""),
+            description: String(item.description || ""),
+            price: Number(item.price || 0),
+            category: String(item.category || "main"),
+            availability: item.available ? "available" : "unavailable",
+            photo: null,
+            ingredients: "",
+            allergens: "",
+            preparationTime: "",
+            calories: "",
+            restaurantId: selectedId,
+            status: "active",
+            createdAt: new Date().toISOString(),
+            restaurantName: String(
+              (selectedBusiness as any).business_name ||
+                (selectedBusiness as any).name ||
+                ""
+            ),
+            available: Boolean(item.available),
+          }))
+        : allMenuItems;
+
+    // Fallback: if UI's selectedRestaurant object contains menu but userBusinesses hasn't,
+    // use it to render so the tab isn't empty after opening details.
+    const effectiveItems =
+      (!baseItems || baseItems.length === 0) &&
+      selectedRestaurant &&
+      Array.isArray((selectedRestaurant as any).menu)
+        ? ((selectedRestaurant as any).menu as any[]).map((item: any) => ({
+            id: String(item.id),
+            name: String(item.name || ""),
+            description: String(item.description || ""),
+            price: Number(item.price || 0),
+            category: String(item.category || "main"),
+            availability: item.available ? "available" : "unavailable",
+            photo: null,
+            ingredients: "",
+            allergens: "",
+            preparationTime: "",
+            calories: "",
+            restaurantId: selectedId,
+            status: "active",
+            createdAt: new Date().toISOString(),
+            restaurantName: String(selectedRestaurant.name || ""),
+            available: Boolean(item.available),
+          }))
+        : baseItems;
+
+    return effectiveItems.filter((item) => {
       const matchesSearch =
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase());
+        item.name.toLowerCase().includes((searchQuery || "").toLowerCase()) ||
+        item.description
+          .toLowerCase()
+          .includes((searchQuery || "").toLowerCase());
       const matchesRestaurant =
-        !selectedRestaurant || item.restaurantId === selectedRestaurant.id;
+        !selectedRestaurant || item.restaurantId === selectedId;
       return matchesSearch && matchesRestaurant;
     });
-  }, [allMenuItems, searchQuery, selectedRestaurant]);
+  }, [allMenuItems, searchQuery, selectedRestaurant, userBusinesses]);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -354,9 +433,37 @@ export default function Businesses() {
   const handleMenuSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Check if business is selected
+    if (!selectedRestaurant) {
+      toast.error("Please select a business first");
+      addNotification({
+        type: "system",
+        title: "Business Required",
+        message: "Please select a business before adding menu items",
+        priority: "high",
+        actionRequired: true,
+      });
+      return;
+    }
+
+    // Check authorization
+    if (!canCreateBusiness()) {
+      const msg = "You need Admin or Business Owner role to add menu items";
+      toast.error(msg);
+      addNotification({
+        type: "system",
+        title: "Unauthorized",
+        message: msg,
+        priority: "high",
+        actionRequired: false,
+      });
+      return;
+    }
+
     try {
       setSubmittingMenu(true);
       let uploadedPhotoUrl: string | null = null;
+
       if (menuForm.photo instanceof File) {
         const { secureUrl } = await uploadImage({
           file: menuForm.photo,
@@ -365,45 +472,52 @@ export default function Businesses() {
         uploadedPhotoUrl = secureUrl;
       }
 
-      const payload = {
-        restaurantId: selectedRestaurant?.id || null,
-        name: menuForm.name,
+      const payload: AddMenuItemPayload = {
+        item_name: menuForm.name,
         description: menuForm.description,
         price: Number(menuForm.price),
-        category: menuForm.category,
-        availability: menuForm.availability,
-        photo: uploadedPhotoUrl,
+        is_available: menuForm.availability === "available",
+        imageUrl: uploadedPhotoUrl || "",
         ingredients: menuForm.ingredients,
-        allergens: menuForm.allergens,
-        preparationTime: menuForm.preparationTime,
-        calories: menuForm.calories,
+        currency: "RWF",
+        business_id: Number(selectedRestaurant.id),
       };
 
-      addNotification({
-        type: "system",
-        title: editingMenu ? "Menu Item Updated" : "Menu Item Added",
-        message: `${menuForm.name} has been ${
-          editingMenu ? "updated" : "added"
-        } successfully`,
-        priority: "medium",
-        actionRequired: false,
-      });
-      toast.success("Menu item saved successfully");
+      // Debug: log the exact payload being sent to the backend
+      console.log("🚀 Sending menu payload to API:", payload);
 
-      // TODO: send 'payload' to your backend
-      resetMenuForm();
+      const response = await addMenuItem(payload);
+
+      // Debug: log API response
+      console.log("✅ API response (menu/add):", response);
+
+      if (response.success) {
+        addNotification({
+          type: "system",
+          title: "Menu Item Added",
+          message: `${menuForm.name} has been added successfully to ${selectedRestaurant.name}`,
+          priority: "medium",
+          actionRequired: false,
+        });
+        toast.success("Menu item added successfully");
+        resetMenuForm();
+        setShowMenuModal(false);
+
+        // Refresh businesses to show updated menu
+        fetchUserBusinesses();
+      } else {
+        throw new Error(response.error || "Failed to add menu item");
+      }
     } catch (error: any) {
-      console.error("Menu item photo upload failed:", error?.message || error);
+      console.error("Menu item submission failed:", error?.message || error);
       addNotification({
         type: "system",
-        title: "Photo Upload Failed",
-        message: error?.message || "Could not upload photo. Please try again.",
+        title: "Menu Item Failed",
+        message: error?.message || "Could not add menu item. Please try again.",
         priority: "high",
         actionRequired: false,
       });
-      toast.error(
-        error?.message || "Could not upload photo. Please try again."
-      );
+      toast.error(error?.message || "Failed to add menu item");
     } finally {
       setSubmittingMenu(false);
     }
@@ -509,6 +623,97 @@ export default function Businesses() {
     }
   };
 
+  const handleBulkDelete = () => {
+    if (selectedBusinesses.length === 0) return;
+
+    const businessNames = selectedBusinesses
+      .map((id) => businesses.find((b) => b.id === id)?.name)
+      .filter(Boolean)
+      .join(", ");
+
+    if (
+      window.confirm(
+        `Are you sure you want to delete ${selectedBusinesses.length} business(es): ${businessNames}?`
+      )
+    ) {
+      addNotification({
+        type: "system",
+        title: "Bulk Delete",
+        message: `${selectedBusinesses.length} businesses have been deleted successfully`,
+        priority: "high",
+        actionRequired: false,
+      });
+      setSelectedBusinesses([]);
+    }
+  };
+
+  const handleBulkExport = () => {
+    if (selectedBusinesses.length === 0) return;
+
+    const selectedBusinessData = selectedBusinesses
+      .map((id) => businesses.find((b) => b.id === id))
+      .filter(Boolean);
+
+    const csvContent = [
+      ["Name", "Location", "Type", "Status", "Cuisine", "Rating", "Capacity"],
+      ...selectedBusinessData.map((business) => [
+        business?.name || "",
+        business?.location || "",
+        business?.type || "",
+        business?.status || "",
+        (business as any)?.cuisine || "",
+        business?.rating?.toString() || "",
+        ((business as any)?.capacity || 0).toString(),
+      ]),
+    ]
+      .map((row) => row.join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `businesses-export-${
+      new Date().toISOString().split("T")[0]
+    }.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+
+    addNotification({
+      type: "system",
+      title: "Export Complete",
+      message: `${selectedBusinesses.length} businesses exported successfully`,
+      priority: "medium",
+      actionRequired: false,
+    });
+  };
+
+  const handleBulkStatusChange = (
+    newStatus: "active" | "inactive" | "maintenance"
+  ) => {
+    if (selectedBusinesses.length === 0) return;
+
+    const businessNames = selectedBusinesses
+      .map((id) => businesses.find((b) => b.id === id)?.name)
+      .filter(Boolean)
+      .join(", ");
+
+    if (
+      window.confirm(
+        `Are you sure you want to change status to ${newStatus} for ${selectedBusinesses.length} business(es): ${businessNames}?`
+      )
+    ) {
+      addNotification({
+        type: "system",
+        title: "Bulk Status Update",
+        message: `${selectedBusinesses.length} businesses status updated to ${newStatus}`,
+        priority: "medium",
+        actionRequired: false,
+      });
+      setSelectedBusinesses([]);
+    }
+  };
+
   const handleDeleteMenu = (_menuId: string) => {
     if (window.confirm("Are you sure you want to delete this menu item?")) {
       addNotification({
@@ -522,20 +727,20 @@ export default function Businesses() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-surface-secondary via-surface-primary to-surface-secondary ">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-brand/5 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-accent/5 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-success/3 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-orange-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-green-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-500/3 rounded-full blur-3xl"></div>
       </div>
 
       <div className="relative space-y-8 p-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-text-primary">Businesses</h1>
-            <p className="text-text-secondary mt-1">
+            <h1 className="text-3xl font-bold text-gray-900">Businesses</h1>
+            <p className="text-gray-600 mt-1">
               Manage your restaurants, bars, and cafes
             </p>
           </div>
@@ -556,7 +761,7 @@ export default function Businesses() {
                 resetBusinessForm();
                 setShowBusinessModal(true);
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-brand to-brand-hover text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-200"
             >
               <Plus className="w-5 h-5" />
               Add Business
@@ -576,14 +781,14 @@ export default function Businesses() {
         </div>
 
         {/* Tabs */}
-        <div className="bg-surface-card rounded-2xl border border-border-subtle shadow-sm">
-          <div className="flex border-b border-border-subtle">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+          <div className="flex border-b border-gray-200">
             <button
               onClick={() => setActiveTab("businesses")}
               className={`px-6 py-4 text-sm font-semibold transition-all duration-200 ${
                 activeTab === "businesses"
-                  ? "text-brand border-b-2 border-brand bg-brand/5"
-                  : "text-text-secondary hover:text-text-primary hover:bg-surface-secondary/50"
+                  ? "text-orange-600 border-b-2 border-orange-600 bg-orange-50"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
               }`}
             >
               <Building2 className="w-4 h-4 inline mr-2" />
@@ -593,8 +798,8 @@ export default function Businesses() {
               onClick={() => setActiveTab("menu")}
               className={`px-6 py-4 text-sm font-semibold transition-all duration-200 ${
                 activeTab === "menu"
-                  ? "text-brand border-b-2 border-brand bg-brand/5"
-                  : "text-text-secondary hover:text-text-primary hover:bg-surface-secondary/50"
+                  ? "text-orange-600 border-b-2 border-orange-600 bg-orange-50"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
               }`}
             >
               <Menu className="w-4 h-4 inline mr-2" />
@@ -606,13 +811,13 @@ export default function Businesses() {
             {/* Search and Filters */}
             <div className="flex flex-col lg:flex-row gap-4 items-center mb-6">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary w-5 h-5" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
                 <input
                   type="text"
                   placeholder={`Search ${activeTab}...`}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all duration-200"
                 />
               </div>
 
@@ -622,7 +827,7 @@ export default function Businesses() {
                     <select
                       value={statusFilter}
                       onChange={(e) => setStatusFilter(e.target.value)}
-                      className="px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
+                      className="px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all duration-200"
                     >
                       <option value="all">All Status</option>
                       <option value="active">Active</option>
@@ -632,7 +837,7 @@ export default function Businesses() {
                     <select
                       value={typeFilter}
                       onChange={(e) => setTypeFilter(e.target.value)}
-                      className="px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
+                      className="px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all duration-200"
                     >
                       <option value="all">All Types</option>
                       <option value="restaurant">Restaurant</option>
@@ -651,7 +856,7 @@ export default function Businesses() {
                       );
                       setSelectedRestaurant(business || null);
                     }}
-                    className="px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all duration-200"
+                    className="px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all duration-200"
                   >
                     <option value="">All Restaurants</option>
                     {businesses.map((business) => (
@@ -662,7 +867,7 @@ export default function Businesses() {
                   </select>
                 )}
 
-                <button className="flex items-center gap-2 px-4 py-3 border-2 border-border-subtle rounded-xl bg-surface-secondary text-text-primary hover:bg-surface-card transition-all duration-200">
+                <button className="flex items-center gap-2 px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-900 hover:bg-white transition-all duration-200">
                   <Filter className="w-4 h-4" />
                   Filters
                 </button>
@@ -675,27 +880,23 @@ export default function Businesses() {
                 {loadingBusinesses ? (
                   <div className="flex items-center justify-center py-12">
                     <div className="text-center">
-                      <RefreshCw className="w-8 h-8 animate-spin text-brand mx-auto mb-4" />
-                      <p className="text-text-secondary">
-                        Loading businesses...
-                      </p>
+                      <RefreshCw className="w-8 h-8 animate-spin text-orange-500 mx-auto mb-4" />
+                      <p className="text-gray-600">Loading businesses...</p>
                     </div>
                   </div>
                 ) : businessesError ? (
                   <div className="flex items-center justify-center py-12">
                     <div className="text-center">
-                      <div className="w-16 h-16 bg-error/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span className="text-error text-2xl">⚠️</span>
+                      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-red-500 text-2xl">⚠️</span>
                       </div>
-                      <h3 className="text-lg font-semibold text-text-primary mb-2">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
                         Failed to load businesses
                       </h3>
-                      <p className="text-text-secondary mb-4">
-                        {businessesError}
-                      </p>
+                      <p className="text-gray-600 mb-4">{businessesError}</p>
                       <button
                         onClick={fetchUserBusinesses}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-text-inverted rounded-md hover:bg-brand-dark transition-colors"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors"
                       >
                         <RefreshCw className="w-4 h-4" />
                         Try Again
@@ -705,11 +906,11 @@ export default function Businesses() {
                 ) : filteredBusinesses.length === 0 ? (
                   <div className="flex items-center justify-center py-12">
                     <div className="text-center">
-                      <Building2 className="w-16 h-16 text-text-muted mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-text-primary mb-2">
+                      <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
                         No businesses found
                       </h3>
-                      <p className="text-text-secondary mb-4">
+                      <p className="text-gray-600 mb-4">
                         {userBusinesses.length === 0
                           ? "You haven't registered any businesses yet."
                           : "No businesses match your current filters."}
@@ -721,7 +922,7 @@ export default function Businesses() {
                             resetBusinessForm();
                             setShowBusinessModal(true);
                           }}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-text-inverted rounded-md hover:bg-brand-dark transition-colors"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors"
                         >
                           <Plus className="w-4 h-4" />
                           Add Your First Business
@@ -741,6 +942,9 @@ export default function Businesses() {
                     }}
                     onEditBusiness={handleEditBusiness}
                     onDeleteBusiness={handleDeleteBusiness}
+                    onBulkDelete={handleBulkDelete}
+                    onBulkExport={handleBulkExport}
+                    onBulkStatusChange={handleBulkStatusChange}
                   />
                 )}
               </>
