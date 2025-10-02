@@ -2,13 +2,15 @@ import React, { useState, useMemo, useEffect } from "react";
 import { toast } from "react-toastify";
 import { Plus, Search, Menu, Building2, Filter, RefreshCw } from "lucide-react";
 
-import { useOwnerDashboard } from "./context";
+import { useOwnerDashboard } from "./context"; 
 import uploadImage from "../../../services/imageUpload";
 import {
   registerBusiness,
   canCreateBusiness,
   getUserBusinesses,
   addMenuItem,
+  getBusinessMenu,
+  getMenuCategories,
   type UserBusiness,
 } from "./apiServises";
 import type {
@@ -23,14 +25,11 @@ import type {
   BusinessFormData,
   MenuFormData,
 } from "../../../types/business";
-// import { mockBusinesses, mockMenuItems } from "../../../data/mockBusinessData"; // Removed - using API data
 import BusinessTable from "./business/BusinessTable";
 import MenuGrid from "./business/MenuGrid";
 import BusinessModal from "./business/BusinessModal";
 import MenuModal from "./business/MenuModal";
 import BusinessDetailsModal from "./business/BusinessDetailsModal";
-
-// import { getSessionUser } from "../../../auth/session";
 
 export default function Businesses() {
   const { addNotification } = useOwnerDashboard();
@@ -55,6 +54,9 @@ export default function Businesses() {
   const [loadingBusinesses, setLoadingBusinesses] = useState(false);
   const [businessesError, setBusinessesError] = useState<string>("");
   const [businessMenus, setBusinessMenus] = useState<Record<string, any[]>>({});
+  const [loadingMenu, setLoadingMenu] = useState(false);
+  const [menuError, setMenuError] = useState<string>("");
+  const [menuCategories, setMenuCategories] = useState<any[]>([]);
 
   // Fetch user businesses
   const fetchUserBusinesses = async () => {
@@ -80,7 +82,7 @@ export default function Businesses() {
           actionRequired: false,
         });
       } else {
-        console.error("❌ Failed to fetch businesses:", response.error);
+        console.error("Failed to fetch businesses:", response.error);
         setBusinessesError(response.error || "Failed to load businesses");
         toast.error(response.error || "Failed to load businesses");
       }
@@ -93,9 +95,25 @@ export default function Businesses() {
     }
   };
 
-  // Load businesses on component mount
+  // Fetch menu categories
+  const fetchMenuCategories = async () => {
+    try {
+      const response = await getMenuCategories();
+      if (response.success && response.data) {
+        setMenuCategories(response.data);
+        console.log("Menu categories loaded:", response.data);
+      } else {
+        console.error("Failed to fetch categories:", response.error);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  // Load businesses and categories on component mount
   useEffect(() => {
     fetchUserBusinesses();
+    fetchMenuCategories();
   }, []);
 
   // Build menus map directly from getUserBusinesses response
@@ -103,12 +121,109 @@ export default function Businesses() {
     const map: Record<string, any[]> = {};
     (userBusinesses || []).forEach((b) => {
       const id = String(b.id);
-      map[id] = Array.isArray((b as any).menu)
-        ? ((b as any).menu as any[])
+      const menuData = (b as any).menu;
+      // Handle both array and object responses
+      map[id] = Array.isArray(menuData)
+        ? menuData
+        : menuData?.items && Array.isArray(menuData.items)
+        ? menuData.items
         : [];
     });
     setBusinessMenus(map);
+    console.log("Built menu map from businesses:", map);
   }, [userBusinesses]);
+
+  // Handle Menu tab business selection (single business or all)
+  const handleMenuBusinessSelect = async (value: string) => {
+    if (value === "__all__") {
+      // All Restaurants selected
+      setSelectedRestaurant(null);
+      setMenuError("");
+      setLoadingMenu(true);
+
+      try {
+        const ids = (userBusinesses || []).map((b) => String(b.id));
+
+        // Fetch menus for ALL businesses
+        const results = await Promise.all(
+          ids.map(async (id) => {
+            const res = await getBusinessMenu(id);
+            if (res.success && res.data) {
+              const raw = res.data;
+              // Handle multiple response formats
+              const items = Array.isArray(raw)
+                ? raw
+                : Array.isArray(raw?.menu)
+                ? raw.menu
+                : Array.isArray(raw?.items)
+                ? raw.items
+                : [];
+              console.log(
+                `Loaded menu for business ${id}:`,
+                items.length,
+                "items"
+              );
+              return { id, items };
+            }
+            console.log(`No menu data for business ${id}`);
+            return { id, items: [] as any[] };
+          })
+        );
+
+        // Update state with all menus
+        const newMenus: Record<string, any[]> = {};
+        results.forEach(({ id, items }) => {
+          newMenus[id] = items;
+        });
+        setBusinessMenus(newMenus);
+
+        console.log("Total menus loaded:", Object.keys(newMenus).length);
+      } catch (e: any) {
+        console.error("Failed to load menus:", e);
+        setMenuError(e?.message || "Failed to load menus");
+      } finally {
+        setLoadingMenu(false);
+      }
+      return;
+    }
+
+    // Single business selected
+    const business = businesses.find((b) => b.id === value);
+    setSelectedRestaurant(business || null);
+    if (!business) return;
+
+    const id = String(business.id);
+
+    // Always fetch fresh menu data when selecting a business
+    try {
+      setLoadingMenu(true);
+      setMenuError("");
+      const res = await getBusinessMenu(id);
+
+      if (res.success && res.data) {
+        const raw = res.data;
+        // Handle multiple response formats
+        const items = Array.isArray(raw)
+          ? raw
+          : Array.isArray(raw?.menu)
+          ? raw.menu
+          : Array.isArray(raw?.items)
+          ? raw.items
+          : [];
+
+        setBusinessMenus((prev) => ({ ...prev, [id]: items }));
+        console.log(`Loaded menu for business ${id}:`, items.length, "items");
+      } else {
+        console.error("Failed to load menu:", res.error);
+        setMenuError(res.error || "Failed to load menu");
+      }
+    } catch (e: any) {
+      console.error("Menu fetch error:", e);
+      setMenuError(e?.message || "Failed to load menu");
+    } finally {
+      setLoadingMenu(false);
+    }
+  };
 
   // Form states
   const [businessForm, setBusinessForm] = useState<BusinessFormData>({
@@ -159,12 +274,11 @@ export default function Businesses() {
       status: business.openNow
         ? "active"
         : ("inactive" as "active" | "inactive" | "maintenance"),
-      revenue: 0, // Not provided in API
-      staffCount: 0, // Not provided in API
+      revenue: 0,
+      staffCount: 0,
       rating: typeof business.rating === "number" ? business.rating : 0,
       lastUpdated: new Date().toISOString(),
       createdAt: new Date().toISOString(),
-      // Additional API fields
       cuisine: business.cuisine || "",
       city: business.city || "",
       phone: business.phone || "",
@@ -186,32 +300,113 @@ export default function Businesses() {
     return converted;
   }, [userBusinesses]);
 
+  // Helper to ensure menu is available when entering Menu tab
+  useEffect(() => {
+    const ensureMenuLoaded = async () => {
+      if (activeTab !== "menu") return;
+      if (businesses.length === 0) return;
+
+      const selectedId = selectedRestaurant
+        ? String(selectedRestaurant.id)
+        : "";
+
+      if (!selectedId) {
+        // No selection; auto-select "All Restaurants"
+        handleMenuBusinessSelect("__all__");
+        return;
+      }
+
+      // Fetch menu for selected business if not already loaded
+      const currentMenu = businessMenus[selectedId] || [];
+      if (currentMenu.length === 0) {
+        setLoadingMenu(true);
+        setMenuError("");
+        const res = await getBusinessMenu(selectedId);
+        if (res.success && res.data) {
+          const raw = res.data;
+          const items = Array.isArray(raw)
+            ? raw
+            : Array.isArray(raw?.menu)
+            ? raw.menu
+            : Array.isArray(raw?.items)
+            ? raw.items
+            : [];
+          setBusinessMenus((prev) => ({ ...prev, [selectedId]: items }));
+          console.log(
+            `Auto-loaded menu for business ${selectedId}:`,
+            items.length,
+            "items"
+          );
+        } else {
+          setMenuError(res.error || "Failed to load menu");
+        }
+        setLoadingMenu(false);
+      }
+    };
+
+    ensureMenuLoaded();
+  }, [activeTab, businesses.length]);
+
   // Get all menu items from all businesses
   const allMenuItems = useMemo(() => {
-    return (userBusinesses || []).flatMap((business) => {
+    const items: any[] = [];
+
+    (userBusinesses || []).forEach((business) => {
       const id = String(business.id);
-      const menu = businessMenus[id] || (business.menu as any[]) || [];
-      return menu.map((item: any) => ({
-        id: String(item.id),
-        name: String(item.name || ""),
-        description: String(item.description || ""),
-        price: Number(item.price || 0),
-        category: String(item.category || "main"),
-        availability: item.available ? "available" : "unavailable",
-        photo: null,
-        ingredients: String(item.ingredients || ""),
-        allergens: String(item.allergens || ""),
-        preparationTime: String(item.preparationTime || ""),
-        calories: String(item.calories || ""),
-        restaurantId: id,
-        status: "active",
-        createdAt: new Date().toISOString(),
-        restaurantName: String(
-          (business as any).business_name || (business as any).name || ""
-        ),
-        available: Boolean(item.available),
-      }));
+      const businessName = String(
+        (business as any).business_name || (business as any).name || ""
+      );
+
+      // Get menu from businessMenus state (primary source)
+      let menu = businessMenus[id] || [];
+
+      // Fallback to business.menu if businessMenus is empty
+      if (menu.length === 0 && (business as any).menu) {
+        const rawMenu = (business as any).menu;
+        menu = Array.isArray(rawMenu)
+          ? rawMenu
+          : Array.isArray(rawMenu?.items)
+          ? rawMenu.items
+          : [];
+      }
+
+      menu.forEach((item: any) => {
+        // Extract category name from category object or use string directly
+        let categoryName = "main";
+        if (item.category) {
+          if (typeof item.category === "object" && item.category.category_name) {
+            categoryName = item.category.category_name;
+          } else if (typeof item.category === "string") {
+            categoryName = item.category;
+          }
+        }
+
+        items.push({
+          id: String(item.id),
+          name: String(item.name || item.item_name || ""),
+          description: String(item.description || ""),
+          price: Number(item.price || 0),
+          category: categoryName,
+          availability:
+            item.available || item.is_available ? "available" : "unavailable",
+          photo: item.imageUrl || item.image || null,
+          ingredients: String(item.ingredients || ""),
+          allergens: String(item.allergens || ""),
+          preparationTime: String(
+            item.preparationTime || item.preparation_time || ""
+          ),
+          calories: String(item.calories || ""),
+          restaurantId: id,
+          status: "active",
+          createdAt: new Date().toISOString(),
+          restaurantName: businessName,
+          available: Boolean(item.available || item.is_available),
+        });
+      });
     });
+
+    console.log("Total menu items aggregated:", items.length);
+    return items;
   }, [userBusinesses, businessMenus]);
 
   // Filter data
@@ -236,77 +431,68 @@ export default function Businesses() {
   }, [businesses, searchQuery, statusFilter, typeFilter]);
 
   const filteredMenuItems = useMemo(() => {
-    // If a restaurant is selected and it has a menu from backend, prefer that source
     const selectedId = selectedRestaurant ? String(selectedRestaurant.id) : "";
-    const selectedBusiness = (userBusinesses || []).find(
-      (b) => String(b.id) === selectedId
-    );
 
-    const baseItems =
-      selectedBusiness &&
-      Array.isArray(selectedBusiness.menu) &&
-      (selectedBusiness.menu as any[]).length > 0
-        ? (selectedBusiness.menu || []).map((item) => ({
-            id: String(item.id),
-            name: String(item.name || ""),
-            description: String(item.description || ""),
-            price: Number(item.price || 0),
-            category: String(item.category || "main"),
-            availability: item.available ? "available" : "unavailable",
-            photo: null,
-            ingredients: "",
-            allergens: "",
-            preparationTime: "",
-            calories: "",
-            restaurantId: selectedId,
-            status: "active",
-            createdAt: new Date().toISOString(),
-            restaurantName: String(
-              (selectedBusiness as any).business_name ||
-                (selectedBusiness as any).name ||
-                ""
-            ),
-            available: Boolean(item.available),
-          }))
-        : allMenuItems;
+    // Determine which items to filter
+    let baseItems: any[] = [];
 
-    // Fallback: if UI's selectedRestaurant object contains menu but userBusinesses hasn't,
-    // use it to render so the tab isn't empty after opening details.
-    const effectiveItems =
-      (!baseItems || baseItems.length === 0) &&
-      selectedRestaurant &&
-      Array.isArray((selectedRestaurant as any).menu)
-        ? ((selectedRestaurant as any).menu as any[]).map((item: any) => ({
-            id: String(item.id),
-            name: String(item.name || ""),
-            description: String(item.description || ""),
-            price: Number(item.price || 0),
-            category: String(item.category || "main"),
-            availability: item.available ? "available" : "unavailable",
-            photo: null,
-            ingredients: "",
-            allergens: "",
-            preparationTime: "",
-            calories: "",
-            restaurantId: selectedId,
-            status: "active",
-            createdAt: new Date().toISOString(),
-            restaurantName: String(selectedRestaurant.name || ""),
-            available: Boolean(item.available),
-          }))
-        : baseItems;
+    if (selectedRestaurant) {
+      // Single restaurant selected - get its menu
+      const menu = businessMenus[selectedId] || [];
 
-    return effectiveItems.filter((item) => {
+      baseItems = menu.map((item: any) => {
+        // Extract category name from category object or use string directly
+        let categoryName = "main";
+        if (item.category) {
+          if (typeof item.category === "object" && item.category.category_name) {
+            categoryName = item.category.category_name;
+          } else if (typeof item.category === "string") {
+            categoryName = item.category;
+          }
+        }
+
+        return {
+          id: String(item.id),
+          name: String(item.name || item.item_name || ""),
+          description: String(item.description || ""),
+          price: Number(item.price || 0),
+          category: categoryName,
+          availability:
+            item.available || item.is_available ? "available" : "unavailable",
+          photo: item.imageUrl || item.image || null,
+          ingredients: String(item.ingredients || ""),
+          allergens: String(item.allergens || ""),
+          preparationTime: String(
+            item.preparationTime || item.preparation_time || ""
+          ),
+          calories: String(item.calories || ""),
+          restaurantId: selectedId,
+          status: "active",
+          createdAt: new Date().toISOString(),
+          restaurantName: String(selectedRestaurant.name || ""),
+          available: Boolean(item.available || item.is_available),
+        };
+      });
+    } else {
+      // All restaurants - use aggregated items
+      baseItems = allMenuItems;
+    }
+
+    // Apply search filter
+    const filtered = baseItems.filter((item) => {
       const matchesSearch =
         item.name.toLowerCase().includes((searchQuery || "").toLowerCase()) ||
         item.description
           .toLowerCase()
           .includes((searchQuery || "").toLowerCase());
-      const matchesRestaurant =
-        !selectedRestaurant || item.restaurantId === selectedId;
-      return matchesSearch && matchesRestaurant;
+      return matchesSearch;
     });
-  }, [allMenuItems, searchQuery, selectedRestaurant, userBusinesses]);
+
+    console.log(
+      `Filtered menu items: ${filtered.length} (from ${baseItems.length} total)`
+    );
+    return filtered;
+  }, [allMenuItems, searchQuery, selectedRestaurant, businessMenus]);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -351,19 +537,8 @@ export default function Businesses() {
         website: businessForm.website || undefined,
         accept_reservations: Boolean(businessForm.acceptsReservations),
         business_logo: uploadedLogoUrl || undefined,
-        // Additional optional fields you may support later
-        // location: businessForm.location,
-        // city: businessForm.city,
-        // opens_at: businessForm.opensAt,
-        // closes_at: businessForm.closesAt,
-        // capacity: businessForm.capacity,
-        // price_range: businessForm.priceRange,
-        // payment_methods: businessForm.paymentMethods,
-        // amenities: businessForm.amenities,
-        // tags: businessForm.tags,
       };
 
-      // Permission check via api service
       if (!canCreateBusiness()) {
         const msg =
           "You need Admin or Business Owner role to create businesses";
@@ -408,6 +583,7 @@ export default function Businesses() {
       toast.success(result.message || "Business created successfully");
 
       resetBusinessForm();
+      await fetchUserBusinesses();
     } catch (error: any) {
       console.error("Business logo upload failed:", error?.message || error);
       addNotification({
@@ -433,7 +609,6 @@ export default function Businesses() {
   const handleMenuSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Check if business is selected
     if (!selectedRestaurant) {
       toast.error("Please select a business first");
       addNotification({
@@ -446,7 +621,6 @@ export default function Businesses() {
       return;
     }
 
-    // Check authorization
     if (!canCreateBusiness()) {
       const msg = "You need Admin or Business Owner role to add menu items";
       toast.error(msg);
@@ -472,24 +646,35 @@ export default function Businesses() {
         uploadedPhotoUrl = secureUrl;
       }
 
+      // Map category string to category_id from API categories
+      let categoryId = 0;
+      if (menuCategories.length > 0) {
+        const category = menuCategories.find(
+          (cat) => cat.category_name?.toLowerCase() === menuForm.category.toLowerCase()
+        );
+        categoryId = category?.id || 0;
+      }
+
       const payload: AddMenuItemPayload = {
-        item_name: menuForm.name,
+        name: menuForm.name,
         description: menuForm.description,
-        price: Number(menuForm.price),
+        price: Number(menuForm.price) || 0,
         is_available: menuForm.availability === "available",
-        imageUrl: uploadedPhotoUrl || "",
-        ingredients: menuForm.ingredients,
+        ingredients: menuForm.ingredients || "",
+        allergens: menuForm.allergens || "",
+        image: uploadedPhotoUrl || "",
         currency: "RWF",
+        calories: Number(menuForm.calories) || 0,
+        preparationTime: Number(menuForm.preparationTime) || 0,
+        category_id: categoryId,
         business_id: Number(selectedRestaurant.id),
       };
 
-      // Debug: log the exact payload being sent to the backend
-      console.log("🚀 Sending menu payload to API:", payload);
+      console.log("Sending menu payload to API:", payload);
 
       const response = await addMenuItem(payload);
 
-      // Debug: log API response
-      console.log("✅ API response (menu/add):", response);
+      console.log("API response (menu/add):", response);
 
       if (response.success) {
         addNotification({
@@ -503,8 +688,22 @@ export default function Businesses() {
         resetMenuForm();
         setShowMenuModal(false);
 
-        // Refresh businesses to show updated menu
-        fetchUserBusinesses();
+        await fetchUserBusinesses();
+
+        // Refresh menu for the selected restaurant
+        const id = String(selectedRestaurant.id);
+        const res = await getBusinessMenu(id);
+        if (res.success && res.data) {
+          const raw = res.data;
+          const items = Array.isArray(raw)
+            ? raw
+            : Array.isArray(raw?.menu)
+            ? raw.menu
+            : Array.isArray(raw?.items)
+            ? raw.items
+            : [];
+          setBusinessMenus((prev) => ({ ...prev, [id]: items }));
+        }
       } else {
         throw new Error(response.error || "Failed to add menu item");
       }
@@ -849,18 +1048,13 @@ export default function Businesses() {
 
                 {activeTab === "menu" && (
                   <select
-                    value={selectedRestaurant?.id || ""}
-                    onChange={(e) => {
-                      const business = businesses.find(
-                        (b) => b.id === e.target.value
-                      );
-                      setSelectedRestaurant(business || null);
-                    }}
+                    value={selectedRestaurant ? String(selectedRestaurant.id) : "__all__"}
+                    onChange={(e) => handleMenuBusinessSelect(e.target.value)}
                     className="px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all duration-200"
                   >
-                    <option value="">All Restaurants</option>
+                    <option value="__all__">All Restaurants</option>
                     {businesses.map((business) => (
-                      <option key={business.id} value={business.id}>
+                      <option key={String(business.id)} value={String(business.id)}>
                         {business.name}
                       </option>
                     ))}
@@ -952,11 +1146,48 @@ export default function Businesses() {
 
             {/* Menu Items Grid */}
             {activeTab === "menu" && (
-              <MenuGrid
-                menuItems={filteredMenuItems}
-                onEditMenu={handleEditMenu}
-                onDeleteMenu={handleDeleteMenu}
-              />
+              <>
+                {loadingMenu ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="text-center">
+                      <RefreshCw className="w-8 h-8 animate-spin text-orange-500 mx-auto mb-4" />
+                      <p className="text-gray-600">Loading menu...</p>
+                    </div>
+                  </div>
+                ) : menuError ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-red-500 text-2xl">⚠️</span>
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        Failed to load menu
+                      </h3>
+                      <p className="text-gray-600 mb-4">{menuError}</p>
+                    </div>
+                  </div>
+                ) : filteredMenuItems.length === 0 ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="text-center">
+                      <Menu className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        No menu items found
+                      </h3>
+                      <p className="text-gray-600">
+                        {selectedRestaurant
+                          ? "This business has no menu items yet."
+                          : "Select a business to view its menu."}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <MenuGrid
+                    menuItems={filteredMenuItems}
+                    onEditMenu={handleEditMenu}
+                    onDeleteMenu={handleDeleteMenu}
+                  />
+                )}
+              </>
             )}
           </div>
         </div>

@@ -2,7 +2,7 @@ import axios from "axios";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL as string | undefined;
 
-export type RegisterBusinessPayload = {
+export type RegisterBusinessPayload = { 
   business_name: string;
   business_type: string;
   address: string;
@@ -16,13 +16,17 @@ export type RegisterBusinessPayload = {
 };
 
 export type AddMenuItemPayload = {
-  item_name: string;
+  name: string;
   description: string;
   price: number;
   is_available: boolean;
-  imageUrl: string;
   ingredients: string;
+  allergens: string;
+  image: string;
   currency: string;
+  calories: number;
+  preparationTime: number;
+  category_id: number;
   business_id: number;
 };
 
@@ -243,9 +247,6 @@ export async function getUserBusinesses(
   }
 }
 
-// Get business menu by business ID
-// NOTE: getBusinessMenu removed. Menu data is obtained directly from getUserBusinesses
-
 // Add menu item to business
 export async function addMenuItem(
   menuData: AddMenuItemPayload
@@ -265,13 +266,17 @@ export async function addMenuItem(
     }
 
     const payload: AddMenuItemPayload = {
-      item_name: menuData.item_name,
+      name: menuData.name,
       description: menuData.description,
       price: Number(menuData.price),
       is_available: Boolean(menuData.is_available),
-      imageUrl: menuData.imageUrl,
       ingredients: menuData.ingredients,
+      allergens: menuData.allergens,
+      image: menuData.image,
       currency: menuData.currency || "RWF",
+      calories: Number(menuData.calories),
+      preparationTime: Number(menuData.preparationTime),
+      category_id: Number(menuData.category_id) || 0,
       business_id: Number(menuData.business_id),
     };
 
@@ -303,6 +308,135 @@ export async function addMenuItem(
         ? "Business not found"
         : status === 422
         ? "Invalid menu item data"
+        : status === 500
+        ? "Internal server error"
+        : error?.message || "Request failed");
+
+    if (status === 401) {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("token");
+    }
+
+    return {
+      success: false,
+      error: errorMessage,
+      status: status,
+      details: error?.response?.data ?? null,
+    };
+  }
+}
+
+
+// Get all menu categories
+export async function getMenuCategories(): Promise<ApiResponse> {
+  try {
+    if (!BACKEND_URL)
+      throw new Error("Missing VITE_BACKEND_URL in environment");
+
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      return {
+        success: false,
+        error: "Not authenticated. Please log in.",
+        status: 401,
+      };
+    }
+
+    const response = await axios.get(
+      `${BACKEND_URL}/menu-categories/all`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      }
+    );
+
+    return {
+      success: true,
+      data: response.data,
+      message: "Menu categories retrieved successfully",
+      status: response.status,
+    };
+  } catch (error: any) {
+    const status = error?.response?.status;
+    const serverMessage =
+      error?.response?.data?.message || error?.response?.data?.error;
+    const errorMessage =
+      serverMessage ||
+      (status === 401
+        ? "Not authenticated. Please log in."
+        : status === 403
+        ? "Forbidden"
+        : status === 404
+        ? "Categories not found"
+        : status === 500
+        ? "Internal server error"
+        : error?.message || "Request failed");
+
+    if (status === 401) {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("token");
+    }
+
+    return {
+      success: false,
+      error: errorMessage,
+      status: status,
+      details: error?.response?.data ?? null,
+    };
+  }
+}
+
+// Get business menu by business ID
+export async function getBusinessMenu(
+  businessId: string | number
+): Promise<ApiResponse> {
+  try {
+    if (!BACKEND_URL)
+      throw new Error("Missing VITE_BACKEND_URL in environment");
+
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      return {
+        success: false,
+        error: "Not authenticated. Please log in.",
+        status: 401,
+      };
+    }
+
+    const response = await axios.get(
+      `${BACKEND_URL}/menu/business/${businessId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      }
+    );
+    console.log("Menu retrieved successfully", response.data);
+    return {
+      success: true,
+      data: response.data,
+      message: "Menu retrieved successfully",
+      status: response.status,
+    };
+  } catch (error: any) {
+    const status = error?.response?.status;
+    const serverMessage =
+      error?.response?.data?.message || error?.response?.data?.error;
+    const errorMessage =
+      serverMessage ||
+      (status === 401
+        ? "Not authenticated. Please log in."
+        : status === 403
+        ? "Forbidden"
+        : status === 404
+        ? "Menu not found"
         : status === 500
         ? "Internal server error"
         : error?.message || "Request failed");
