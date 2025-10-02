@@ -3,6 +3,8 @@
 export interface CartItem {
   id: string;
   productId: string;
+  businessId?: string; // Restaurant/Business ID - optional for backward compatibility
+  restaurantName?: string; // Restaurant name for display
   name: string;
   description: string;
   price: number;

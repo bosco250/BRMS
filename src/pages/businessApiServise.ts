@@ -1,14 +1,23 @@
 import axios from "axios";
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-export type ApiMenue = {
+export type ApiMenuItem = {
   id: string;
   name: string;
   description: string;
   price: number;
   available: boolean;
+  img?: string; // image URL from API
+  calories?: number;
+  allergens?: string;
+  prep_time?: number;
   popular?: boolean;
   category?: string | null;
+  // Additional fields for display
+  image?: string; // alias for img
+  preparationTime?: number; // alias for prep_time
+  spicy?: boolean;
+  vegetarian?: boolean;
 };
 
 export type ApiOwner = {

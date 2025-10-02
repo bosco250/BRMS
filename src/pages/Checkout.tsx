@@ -2,13 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, CheckCircle, User } from "lucide-react";
 import { useCart } from "../contexts/CartContext";
-import {
+import { 
   formatCurrency,
-  generateOrderNumber,
   calculateOrderTotals,
 } from "../data/checkoutTypes";
 import { toast } from "react-toastify";
 import { getSessionUser } from "../auth/session";
+import { createOrder, type CreateOrderPayload, type OrderItemPayload } from "../services/orderApiService";
 
 const Checkout: React.FC = () => {
   const navigate = useNavigate();
@@ -146,24 +146,106 @@ const Checkout: React.FC = () => {
     }
 
     setIsProcessing(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    const order = {
-      id: `order_${Date.now()}`,
-      orderNumber: generateOrderNumber(),
-      items: [...items],
-      formData: { ...formData },
-      subtotal,
-      tax,
-      deliveryFee,
-      total,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      // Get business ID from first item (all items should be from same restaurant)
+      const businessId = items[0]?.businessId || items[0]?.productId?.split("_")[0] || "1";
 
-    toast.success(`Order Placed Successfully! Order #${order.orderNumber}`);
-    clearCart();
-    navigate("/order-success", { state: { order, isGuest: !isLoggedIn } });
+      // Map cart items to order items
+      const orderItems: OrderItemPayload[] = items.map((item) => ({
+        menu_item_id: item.productId,
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+        total_price: item.totalPrice,
+        modifiers: item.modifiers?.map((mod) => ({
+          name: mod.name,
+          price: mod.price,
+          quantity: mod.quantity,
+        })),
+        special_instructions: item.specialInstructions,
+      }));
+
+      // Build payment details based on payment method
+      const paymentDetails: any = {};
+      if (formData.paymentMethod === "mobile_money") {
+        paymentDetails.mobile_provider = formData.mobileProvider;
+        paymentDetails.mobile_number = formData.mobileNumber;
+      } else if (formData.paymentMethod === "bank_transfer") {
+        paymentDetails.bank_name = formData.bankName;
+        paymentDetails.bank_account = formData.bankAccount;
+        paymentDetails.account_holder = formData.accountHolder;
+      } else if (formData.paymentMethod === "card") {
+        // In production, card details should be tokenized/encrypted
+        paymentDetails.card_number = formData.cardNumber;
+        paymentDetails.card_holder = formData.cardHolder;
+        paymentDetails.card_expiry = formData.cardExpiry;
+        paymentDetails.card_cvv = formData.cardCvv;
+      }
+
+      // Map delivery method to API format
+      const deliveryMethod: "dine_in" | "take_away" | "delivery" =
+        formData.deliveryMethod === "delivery_1hour"
+          ? "delivery"
+          : (formData.deliveryMethod as "dine_in" | "take_away");
+
+      // Map payment method to API format
+      const paymentMethod: "cash_on_delivery" | "mobile_money" | "bank_transfer" | "card" =
+        formData.paymentMethod as "cash_on_delivery" | "mobile_money" | "bank_transfer" | "card";
+
+      // Build order payload
+      const orderPayload: CreateOrderPayload = {
+        customer_id: isLoggedIn ? userInfo?.id : undefined,
+        customer_name: `${formData.firstName} ${formData.lastName}`,
+        customer_email: formData.email,
+        customer_phone: formData.phone,
+        business_id: businessId,
+        items: orderItems,
+        delivery_method: deliveryMethod,
+        delivery_address:
+          formData.deliveryMethod === "delivery_1hour"
+            ? formData.deliveryAddress
+            : undefined,
+        delivery_contact:
+          formData.deliveryMethod === "delivery_1hour"
+            ? formData.deliveryContact
+            : undefined,
+        delivery_instructions:
+          formData.deliveryMethod === "delivery_1hour"
+            ? formData.deliveryInstructions
+            : undefined,
+        payment_method: paymentMethod,
+        payment_details:
+          Object.keys(paymentDetails).length > 0 ? paymentDetails : undefined,
+        subtotal,
+        tax,
+        delivery_fee: deliveryFee,
+        total,
+        is_guest_order: !isLoggedIn,
+      };
+
+      // Create order via API
+      const response = await createOrder(orderPayload);
+
+      if (response.success && response.data) {
+        toast.success(
+          `Order Placed Successfully! Order #${response.data.order_number}`
+        );
+        clearCart();
+        navigate("/order-success", {
+          state: { order: response.data, isGuest: !isLoggedIn },
+        });
+      } else {
+        throw new Error(response.error || "Failed to create order");
+      }
+    } catch (error: any) {
+      console.error("Order creation failed:", error);
+      toast.error(
+        error?.message || "Failed to place order. Please try again."
+      );
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (

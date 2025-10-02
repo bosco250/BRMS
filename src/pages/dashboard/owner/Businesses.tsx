@@ -82,7 +82,6 @@ export default function Businesses() {
           actionRequired: false,
         });
       } else {
-        console.error("Failed to fetch businesses:", response.error);
         setBusinessesError(response.error || "Failed to load businesses");
         toast.error(response.error || "Failed to load businesses");
       }
@@ -101,9 +100,6 @@ export default function Businesses() {
       const response = await getMenuCategories();
       if (response.success && response.data) {
         setMenuCategories(response.data);
-        console.log("Menu categories loaded:", response.data);
-      } else {
-        console.error("Failed to fetch categories:", response.error);
       }
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -130,7 +126,6 @@ export default function Businesses() {
         : [];
     });
     setBusinessMenus(map);
-    console.log("Built menu map from businesses:", map);
   }, [userBusinesses]);
 
   // Handle Menu tab business selection (single business or all)
@@ -158,14 +153,8 @@ export default function Businesses() {
                 : Array.isArray(raw?.items)
                 ? raw.items
                 : [];
-              console.log(
-                `Loaded menu for business ${id}:`,
-                items.length,
-                "items"
-              );
               return { id, items };
             }
-            console.log(`No menu data for business ${id}`);
             return { id, items: [] as any[] };
           })
         );
@@ -176,8 +165,6 @@ export default function Businesses() {
           newMenus[id] = items;
         });
         setBusinessMenus(newMenus);
-
-        console.log("Total menus loaded:", Object.keys(newMenus).length);
       } catch (e: any) {
         console.error("Failed to load menus:", e);
         setMenuError(e?.message || "Failed to load menus");
@@ -212,7 +199,6 @@ export default function Businesses() {
           : [];
 
         setBusinessMenus((prev) => ({ ...prev, [id]: items }));
-        console.log(`Loaded menu for business ${id}:`, items.length, "items");
       } else {
         console.error("Failed to load menu:", res.error);
         setMenuError(res.error || "Failed to load menu");
@@ -332,11 +318,6 @@ export default function Businesses() {
             ? raw.items
             : [];
           setBusinessMenus((prev) => ({ ...prev, [selectedId]: items }));
-          console.log(
-            `Auto-loaded menu for business ${selectedId}:`,
-            items.length,
-            "items"
-          );
         } else {
           setMenuError(res.error || "Failed to load menu");
         }
@@ -405,7 +386,6 @@ export default function Businesses() {
       });
     });
 
-    console.log("Total menu items aggregated:", items.length);
     return items;
   }, [userBusinesses, businessMenus]);
 
@@ -488,9 +468,6 @@ export default function Businesses() {
       return matchesSearch;
     });
 
-    console.log(
-      `Filtered menu items: ${filtered.length} (from ${baseItems.length} total)`
-    );
     return filtered;
   }, [allMenuItems, searchQuery, selectedRestaurant, businessMenus]);
 
@@ -585,7 +562,6 @@ export default function Businesses() {
       resetBusinessForm();
       await fetchUserBusinesses();
     } catch (error: any) {
-      console.error("Business logo upload failed:", error?.message || error);
       addNotification({
         type: "system",
         title: "Business Create Failed",
@@ -670,11 +646,7 @@ export default function Businesses() {
         business_id: Number(selectedRestaurant.id),
       };
 
-      console.log("Sending menu payload to API:", payload);
-
       const response = await addMenuItem(payload);
-
-      console.log("API response (menu/add):", response);
 
       if (response.success) {
         addNotification({
@@ -708,7 +680,6 @@ export default function Businesses() {
         throw new Error(response.error || "Failed to add menu item");
       }
     } catch (error: any) {
-      console.error("Menu item submission failed:", error?.message || error);
       addNotification({
         type: "system",
         title: "Menu Item Failed",

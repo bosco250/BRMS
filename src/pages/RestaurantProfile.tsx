@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useParams, Navigate } from "react-router-dom";
 import {
-  FaStar,
+  FaStar, 
   FaClock,
   FaMapMarkerAlt,
   FaPhone,
@@ -929,9 +929,9 @@ export default function RestaurantProfile() {
                     >
                       {/* Image */}
                       <div className="relative h-40 bg-gray-100 overflow-hidden">
-                        {item.image ? (
+                        {(item.img || item.image) ? (
                           <img
-                            src={item.image}
+                            src={item.img || item.image}
                             alt={item.name}
                             className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                             loading="lazy"
@@ -965,9 +965,28 @@ export default function RestaurantProfile() {
                         <h4 className="font-bold text-gray-900 text-sm mb-1 line-clamp-1">
                           {item.name}
                         </h4>
-                        <p className="text-gray-600 text-xs mb-3 line-clamp-2">
-                          {item.description}
+                        <p className="text-gray-600 text-xs mb-2 line-clamp-2">
+                          {item.description || "Delicious menu item"}
                         </p>
+                        
+                        {/* Additional Info */}
+                        <div className="flex flex-wrap gap-2 text-xs text-gray-500 mb-2">
+                          {item.calories && (
+                            <span className="flex items-center gap-1">
+                              🔥 {item.calories} cal
+                            </span>
+                          )}
+                          {(item.prep_time || item.preparationTime) && (
+                            <span className="flex items-center gap-1">
+                              ⏱️ {item.prep_time || item.preparationTime} min
+                            </span>
+                          )}
+                        </div>
+                        {item.allergens && (
+                          <p className="text-xs text-orange-600 mb-2">
+                            ⚠️ {item.allergens}
+                          </p>
+                        )}
 
                         {/* Add to Order Button */}
                         {item.available ? (
@@ -977,12 +996,12 @@ export default function RestaurantProfile() {
                                 id: `popular_${Date.now()}`,
                                 productId: item.id,
                                 name: item.name,
-                                description: item.description,
+                                description: item.description || "",
                                 price: item.price,
                                 quantity: 1,
                                 totalPrice: item.price,
-                                image: item.image,
-                                category: item.category,
+                                image: item.img || item.image || "",
+                                category: item.category || "",
                                 modifiers: [],
                               };
                               addItem(cartItem);
@@ -1037,9 +1056,9 @@ export default function RestaurantProfile() {
                       >
                         {/* Image */}
                         <div className="relative h-40 bg-gray-100 overflow-hidden">
-                          {item.image ? (
+                          {(item.img || item.image) ? (
                             <img
-                              src={item.image}
+                              src={item.img || item.image}
                               alt={item.name}
                               className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                               loading="lazy"
@@ -1085,9 +1104,28 @@ export default function RestaurantProfile() {
                           <h4 className="font-bold text-gray-900 text-sm mb-1 line-clamp-1">
                             {item.name}
                           </h4>
-                          <p className="text-gray-600 text-xs mb-3 line-clamp-2">
-                            {item.description}
+                          <p className="text-gray-600 text-xs mb-2 line-clamp-2">
+                            {item.description || "Delicious menu item"}
                           </p>
+                          
+                          {/* Additional Info */}
+                          <div className="flex flex-wrap gap-2 text-xs text-gray-500 mb-2">
+                            {item.calories && (
+                              <span className="flex items-center gap-1">
+                                🔥 {item.calories} cal
+                              </span>
+                            )}
+                            {(item.prep_time || item.preparationTime) && (
+                              <span className="flex items-center gap-1">
+                                ⏱️ {item.prep_time || item.preparationTime} min
+                              </span>
+                            )}
+                          </div>
+                          {item.allergens && (
+                            <p className="text-xs text-orange-600 mb-2">
+                              ⚠️ {item.allergens}
+                            </p>
+                          )}
 
                           {/* Add to Order Button */}
                           {item.available ? (
@@ -1097,12 +1135,12 @@ export default function RestaurantProfile() {
                                   id: `item_${Date.now()}`,
                                   productId: item.id,
                                   name: item.name,
-                                  description: item.description,
+                                  description: item.description || "",
                                   price: item.price,
                                   quantity: 1,
                                   totalPrice: item.price,
-                                  image: item.image,
-                                  category: item.category,
+                                  image: item.img || item.image || "",
+                                  category: item.category || "",
                                   modifiers: [],
                                 };
                                 addItem(cartItem);
